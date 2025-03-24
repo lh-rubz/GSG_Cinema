@@ -8,7 +8,7 @@ import { Footer } from "@/components/landing-footer"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "CinemaHub - Your Ultimate Movie Destination",
+  title: "CineHub - Your Ultimate Movie Destination",
   description: "Discover and book tickets for the latest movies",
 }
 
