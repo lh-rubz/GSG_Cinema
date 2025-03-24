@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Movie } from "@/types/movie";
+import { Movie } from "@/types/types";
 import MovieCard from "./movie-card";
 
 export function GenreSection({ movies }) {

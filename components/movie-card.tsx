@@ -1,5 +1,5 @@
 import Link from "next/link"
-import type { Movie } from "@/types/movie"
+import type { Movie } from "@/types/types"
 
 interface MovieCardProps {
   movie: Movie

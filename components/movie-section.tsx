@@ -1,9 +1,15 @@
 import Link from "next/link";
-
-import { Movie } from "@/types/movie";
+import { Movie } from "@/types/types";
 import MovieCard from "./movie-card";
 
-export function MovieSection({ title, subtitle, movies, viewAllLink = "/movies" }) {
+interface MovieSectionProps {
+  title: string;
+  subtitle: string;
+  movies: Movie[];
+  viewAllLink?: string;  
+}
+
+export function MovieSection({ title, subtitle, movies, viewAllLink = "/movies" }: MovieSectionProps) {
   return (
     <section className="py-16 bg-white dark:bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -30,7 +36,7 @@ export function MovieSection({ title, subtitle, movies, viewAllLink = "/movies" 
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {movies.map((movie:Movie) => (
+          {movies.map((movie: Movie) => (
             <MovieCard key={movie.id} movie={movie} />
           ))}
         </div>
