@@ -1,9 +1,10 @@
+// page.tsx
 import SignUpForm from "@/components/signup-form";
 
-export default function SignUnPage() {
+export default function SignUpPage() {
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
+        <main className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-15 bg-gray-100 dark:bg-black text-black dark:text-white">
             <SignUpForm />
-        </div>
+        </main>
     );
 }
