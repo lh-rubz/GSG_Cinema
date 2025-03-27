@@ -1,8 +1,43 @@
+export const ALL_GENRES: MovieGenre[] = [
+  "Action",
+  "Adventure",
+  "Comedy",
+  "Drama",
+  "Fantasy",
+  "Horror",
+  "Mystery",
+  "Romance",
+  "Sci-Fi",
+  "Thriller",
+  "Crime",
+  "Animation",
+  "Documentary",
+  "Family",
+  "Western","Arabic"
+];
+export type MovieGenre = 
+|"Arabic"
+  | "Action"
+  | "Adventure"
+  | "Comedy"
+  | "Drama"
+  | "Fantasy"
+  | "Horror"
+  | "Mystery"
+  | "Romance"
+  | "Sci-Fi"
+  | "Thriller"
+  | "Crime"
+  | "Animation"
+  | "Documentary"
+  | "Family"
+  | "Western";
+
 export interface Movie {
   id: string;
   title: string;
   year: string;
-  genre: string;
+  genre: MovieGenre[]; 
   rating: string;
   description: string;
   image?: string;
@@ -10,6 +45,8 @@ export interface Movie {
   duration?: string;
   releaseDate?: string;
   castIds: string[];
+  status: "coming_soon" | "now_showing";
+  hidden: boolean;
 }
 
 export interface Director {
