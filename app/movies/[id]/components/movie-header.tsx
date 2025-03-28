@@ -59,10 +59,12 @@ export function MovieHeader({ movie, onTrailerClick }: MovieHeaderProps) {
                 ))}
               </div>
               <div className="flex flex-wrap items-center gap-4 text-sm">
-                <span className="flex items-center">
-                  <StarRating rating={parseFloat(movie.rating)} />
-                  {movie.rating}/10
-                </span>
+                {movie.status === "now_showing" && (
+                  <span className="flex items-center">
+                    <StarRating rating={parseFloat(movie.rating)} />
+                    {movie.rating}/10
+                  </span>
+                )}
                 {movie.duration && (
                   <button 
                     onClick={() => setShowHoursFormat(!showHoursFormat)}
