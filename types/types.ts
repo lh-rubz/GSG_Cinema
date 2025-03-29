@@ -43,6 +43,7 @@ export interface Movie {
   image?: string;
   directorId: string;
   duration?: string;
+  trailer:string;
   releaseDate?: string;
   castIds: string[];
   status: "coming_soon" | "now_showing";
@@ -86,6 +87,7 @@ export interface Showtime {
   date: string; // DD-MM-YYYY
   time: string; // HH:MM in 24-hour format
   format: '2D' | '3D' | 'imax' | '4dx';
+  availableSeats:number;
   price: number;
 }
 
@@ -96,15 +98,17 @@ export interface Review {
   rating: number;
   comment: string;
   date: string;
-  likes: number;
   likedBy: string[]; // Track users who liked this review
-  replies: Reply[];//replies ids 
+  replies: string[];//replies ids 
+  reportedBy:string[];
+
 }
 export interface Reply {
   id: string;
   userId: string;
   comment: string;
   date: string;
+  reportedBy: string[]
 }
 export interface User {
   id: string;
@@ -112,9 +116,11 @@ export interface User {
   displayName: string;
   bio?:string;
   email:string;
+  password:string;
   gender:"F"|"M";
   movieIdsPurchased:string[];
   profileImage?: string;
+  role: "admin"|"staff"|"customer"
 
 }
 export interface Ticket{
