@@ -61,7 +61,7 @@ export function MovieHeader({ movie, onTrailerClick }: MovieHeaderProps) {
               <div className="flex flex-wrap items-center gap-4 text-sm">
                 {movie.status === "now_showing" && (
                   <span className="flex items-center">
-                    <StarRating rating={parseFloat(movie.rating)} />
+                    <StarRating rating={parseFloat(movie.rating)/2} />
                     {movie.rating}/10
                   </span>
                 )}
