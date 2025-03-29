@@ -51,7 +51,6 @@ export interface Showtime {
   format: '2D' | '3D' | 'imax' | '4dx';
   price: number;
 }
-
 export interface Review {
   id: string;
   movieId: string;
