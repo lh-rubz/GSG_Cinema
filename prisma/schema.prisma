@@ -114,6 +114,7 @@ model CastMember {
   id        String     @id @default(uuid())
   name      String
   image     String
+  character String
   movies    CastMovie[]
 }
 
