@@ -55,6 +55,7 @@ export interface Director {
   name: string;
   bio: string;
   image: string;
+  movies : Movie[];
 }
 
 export interface CastMember {
