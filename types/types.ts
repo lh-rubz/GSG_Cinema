@@ -63,6 +63,7 @@ export interface CastMember {
   name: string;
   character: string;
   image: string;
+  movies : Movie[];
 }
 export interface Seat {
   id: string;
