@@ -127,3 +127,28 @@
     @apply bg-background text-foreground;
   }
 }
+
+}
+
+@layer components {
+  .gradient-text {
+    background-image: linear-gradient(to right, hsl(var(--primary)), #a855f7);
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  .gradient-border {
+    position: relative;
+  }
+  
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: 0.5rem;
+    background-image: linear-gradient(to right, hsl(var(--primary)), #a855f7);
+    z-index: -10;
+  }
+}
+
