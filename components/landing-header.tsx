@@ -1,12 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { useTheme } from "./theme-provider"
+
 import { usePathname } from "next/navigation"
 import { Film } from "lucide-react"
+import ThemeToggle from "./theme-toggle"
 
 export default function Header() {
-  const { theme, toggleTheme } = useTheme()
+  
   const pathname = usePathname()
 
   // Helper function to determine active link
@@ -19,7 +20,6 @@ export default function Header() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
               <Film className="h-6 w-6 text-red-600 mr-2" />
-              
               <span className="text-red-600 font-bold text-xl">CinemaHub</span>
             </Link>
             <nav className="ml-10 hidden md:flex space-x-8">
@@ -66,31 +66,7 @@ export default function Header() {
             </nav>
           </div>
           <div className="flex items-center space-x-4">
-            <button
-              onClick={toggleTheme}
-              className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white p-1 rounded-full"
-              aria-label="Toggle dark mode"
-            >
-              {theme === "dark" ? (
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                  />
-                </svg>
-              ) : (
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-                  />
-                </svg>
-              )}
-            </button>
+         <ThemeToggle/>
             <Link
               href="/signin"
               className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 text-sm font-medium"

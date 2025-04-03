@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, showtimeId, seatId, price } = body
+    const { id, userId, showtimeId, seatId, price } = body
 
     if (!userId || !showtimeId || !seatId || price === undefined) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -106,6 +106,7 @@ export async function POST(request: NextRequest) {
 
     const ticket = await prisma.ticket.create({
       data: {
+        id,
         userId,
         showtimeId,
         seatId,

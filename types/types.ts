@@ -69,8 +69,8 @@ export interface CastMember {
 export interface Seat {
   id: string;
   number: string;
-  age?: "kid" | "adult";
-  type: "standard" | "premium";
+  age:"kid"|"adult";
+  type: 'standard' | 'premium' ;
   available: boolean;
 }
 
@@ -94,14 +94,6 @@ export interface Showtime {
   price: number;
 }
 
-export interface Promotion {
-  title: string;
-  description: string;
-  expiry_date: string;
-  discount_code: string;
-  discount_percentage: string;
-  image_url: string;
-}
 export interface Review {
   id: string;
   movieId: string;
