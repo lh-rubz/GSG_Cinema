@@ -9,11 +9,13 @@ export const movies: Movie[] = [
     genre: ["Adventure"],
     rating: "8.7",
     duration: "142",
-    directorId: "1",
-    castIds: ["1", "2", "3"],
-    image: "https://medias.unifrance.org/medias/17/148/103441/format_page/the-last-adventure.png",
+    directorId: "d1",
+    castIds: ["c1", "c2", "c3"],
+    image: "https://m.media-amazon.com/images/M/MV5BOGFiNTQzYzAtNTg0MC00NzM1LThiNGMtOGU2NWQyMjkwYmE1XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     status: "now_showing",
-    hidden: false
+    hidden: false,
+    trailer:"https://youtu.be/yDsMZn3olFw?feature=shared"
+
   },
   {
     id: "m2",
@@ -23,11 +25,13 @@ export const movies: Movie[] = [
     genre: ["Thriller"],
     rating: "9.1",
     duration: "128",
-    directorId: "2",
-    castIds: ["7", "8", "9", "6"],
+    directorId: "d2",
+    castIds: ["c7", "c8", "c9", "c6","c1","c5"],
     image: "https://m.media-amazon.com/images/M/MV5BNTNlM2Q0YjQtMTczMy00MWY2LTlhMmEtZDY4YzYxNmI5ZDNkXkEyXkFqcGc@._V1_.jpg",
     status: "now_showing",
-    hidden: false
+    hidden: false,
+    trailer:"https://youtu.be/yDsMZn3olFw?feature=shared"
+
   },
   {
     id: "m3",
@@ -37,11 +41,12 @@ export const movies: Movie[] = [
     genre: ["Romance"],
     rating: "8.5",
     duration: "135",
-    directorId: "2",
-    castIds: ["7", "8", "9", "6"],
+    directorId: "d2",
+    castIds: ["c7", "c8", "c9", "c6"],
     image: "https://m.media-amazon.com/images/M/MV5BNzgwNDdmMjQtZWUwOS00ZDM2LTgzNGUtNWUwZDczMWRhMGM3XkEyXkFqcGc@._V1_.jpg",
     status: "now_showing",
-    hidden: false
+    hidden: false,
+    trailer:"https://youtu.be/yDsMZn3olFw?feature=shared"
   },
   {
     id: "m4",
@@ -51,11 +56,12 @@ export const movies: Movie[] = [
     genre: ["Sci-Fi"],
     rating: "8.9",
     duration: "150",
-    directorId: "2",
-    castIds: ["7", "8", "9", "6"],
+    directorId: "d2",
+    castIds: ["c7", "c8", "c9", "c6"],
     image: "https://cosmicchemist.com/wp-content/uploads/2018/09/51wwdpszual.jpg?w=640",
     status: "coming_soon",
-    hidden: false
+    hidden: false,
+    trailer:"https://youtu.be/yDsMZn3olFw?feature=shared"
   },
   {
     id: "m5",
@@ -65,11 +71,12 @@ export const movies: Movie[] = [
     genre: ["Comedy","Drama"],
     rating: "8.3",
     duration: "118",
-    directorId: "2",
-    castIds: ["7", "8", "9", "6"],
+    directorId: "d2",
+    castIds: ["c7", "c8", "c9", "c6"],
     image: "https://m.media-amazon.com/images/M/MV5BMjdjOGE0MTEtMTAyOC00OTE2LTk0M2YtMWYwMTViNmQ0ZGU3XkEyXkFqcGc@._V1_.jpg",
     status: "coming_soon",
-    hidden: false
+    hidden: false,
+    trailer:"https://youtu.be/yDsMZn3olFw?feature=shared"
   },
   {
     id: "m6",
@@ -79,11 +86,12 @@ export const movies: Movie[] = [
     genre: ["Action"],
     rating: "8.6",
     duration: "155",
-    directorId: "2",
-    castIds: ["7", "8", "9", "6"],
+    directorId: "d2",
+    castIds: ["c7", "c8", "c9", "c6"],
     image: "https://m.media-amazon.com/images/M/MV5BNWFjMmI4MDItYTJhMC00MWE5LTlhZTUtZTExMDk3MTAyZTdlXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     status: "coming_soon",
-    hidden: false
+    hidden: false,
+    trailer:"https://youtu.be/yDsMZn3olFw?feature=shared"
   },
   {
     id: "m7",
@@ -93,11 +101,12 @@ export const movies: Movie[] = [
     genre: ["Horror"],
     rating: "7.9",
     duration: "110",
-    directorId: "2",
-    castIds: ["7", "8", "9", "6"],
+    directorId: "d2",
+    castIds: ["c7", "c8", "c9", "c6"],
     image: "https://m.media-amazon.com/images/M/MV5BNTM2ZWUyOWQtOGVkYS00OWZlLTljOGMtYWI3Yzg2YjEyNjEzXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     status: "now_showing",
-    hidden: true
+    hidden: true,
+    trailer:"https://youtu.be/yDsMZn3olFw?feature=shared"
   },
   {
     id: "m8",
@@ -107,11 +116,12 @@ export const movies: Movie[] = [
     genre: ["Sci-Fi"],
     rating: "8.8",
     duration: "140",
-    directorId: "2",
-    castIds: ["7", "8", "9", "6"],
+    directorId: "d2",
+    castIds: ["c7", "c8", "c9", "c6"],
     image: "https://m.media-amazon.com/images/M/MV5BZjk1OWNlYjAtZGI3OS00YjQxLThkMzItYzhjMjY2OGVhNDViXkEyXkFqcGc@._V1_.jpg",
     status: "now_showing",
-    hidden: false
+    hidden: false,
+    trailer:"https://youtu.be/yDsMZn3olFw?feature=shared"
   },
   {
     id: "m9",
@@ -121,11 +131,12 @@ export const movies: Movie[] = [
     genre: ["Mystery"],
     rating: "8.4",
     duration: "125",
-    directorId: "2",
-    castIds: ["7", "8", "9", "6"],
+    directorId: "d2",
+    castIds: ["c7", "c8", "c9", "c6"],
     image: "https://m.media-amazon.com/images/I/81g5BYxQBOL._AC_UF894,1000_QL80_.jpg",
     status: "coming_soon",
-    hidden: false
+    hidden: false,
+    trailer:"https://youtu.be/yDsMZn3olFw?feature=shared"
   },
   {
     id: "m10",
@@ -135,10 +146,11 @@ export const movies: Movie[] = [
     genre: ["Sci-Fi","Thriller"],
     rating: "9.0",
     duration: "138",
-    directorId: "2",
-    castIds: ["7", "8", "9", "6"],
+    directorId: "d2",
+    castIds: ["c7", "c8", "c9", "c6"],
     image: "https://m.media-amazon.com/images/M/MV5BZmVhYzJlNDYtNzlhZS00MmM5LWE5ODEtZjgwMTViZTRiYTY0XkEyXkFqcGc@._V1_.jpg",
     status: "coming_soon",
-    hidden: false
+    hidden: false,
+    trailer:"https://youtu.be/yDsMZn3olFw?feature=shared" 
   },
 ];
