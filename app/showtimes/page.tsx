@@ -9,125 +9,108 @@ import { useRouter, useSearchParams } from "next/navigation";
 const Page = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const urlDate = searchParams.get('date');
+  const urlDate = searchParams.get("date");
 
-  // Convert dd-mm-yyyy to Date object
-  const parseDBDate = (dateStr: string): Date => {
-    const [day, month, year] = dateStr.split('-').map(Number);
+  // Helper to convert dd-mm-yyyy to Date object (handles no leading zero)
+  const parseDate = (dateStr: string): Date => {
+    const [day, month, year] = dateStr.split("-").map(Number);
     return new Date(year, month - 1, day);
   };
 
-  // Format Date object to dd-mm-yyyy
-  const formatDBDate = (date: Date): string => {
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  // Helper to format Date object to dd-mm-yyyy (with leading zeros)
+  const formatDate = (date: Date): string => {
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const year = date.getFullYear();
     return `${day}-${month}-${year}`;
   };
 
-  // Format date for display (Today, Tomorrow, or Jul 5)
-  const formatDisplayDate = (date: Date): string => {
+  // Get today's date and the next 4 days in dd-mm-yyyy format
+  const getUpcomingDates = () => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-    
-    if (date.toDateString() === today.toDateString()) return "Today";
-    if (date.toDateString() === tomorrow.toDateString()) return "Tomorrow";
-    
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
+    const upcomingDates: string[] = [];
 
-  // Get dates for today and next 4 days
-  const getDisplayDates = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const dates = [];
     for (let i = 0; i < 5; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
-      dates.push(date);
+      upcomingDates.push(formatDate(date));
     }
-    
-    return dates;
+
+    return upcomingDates;
   };
 
-  // Get all available showtime dates from database
-  const allShowtimeDates = [...new Set(showtimes.map(showtime => showtime.date))];
-  
-  // Get dates to display (only those with showtimes)
-  const displayDates = getDisplayDates()
-    .filter(date => {
-      const dbDate = formatDBDate(date);
-      return allShowtimeDates.includes(dbDate);
-    })
-    .map(date => ({
-      dateObj: date,
-      dbDate: formatDBDate(date),
-      displayText: formatDisplayDate(date)
-    }));
+  const dates = getUpcomingDates();
 
-  // Set initial date from URL or first available date
-  const initialDate = urlDate && allShowtimeDates.includes(urlDate) 
-    ? urlDate 
-    : displayDates.length > 0 ? displayDates[0].dbDate : null;
-
-  const [currentDate, setCurrentDate] = useState<string | null>(initialDate);
+  // Set the initial date from URL or default to today
+  const initialDate = urlDate && dates.includes(urlDate) ? urlDate : dates[0];
+  const [currentDate, setCurrentDate] = useState<string>(initialDate);
   const [filteredShowTimes, setFilteredShowTimes] = useState<Showtime[]>([]);
 
-  // Update URL when date changes
+  // Filter showtimes based on selected date
   useEffect(() => {
-    if (currentDate) {
-      router.push(`?date=${currentDate}`);
-      const arr = showtimes.filter(showtime => showtime.date === currentDate);
-      setFilteredShowTimes(arr);
-    }
+    const filtered = showtimes.filter((showtime) => showtime.date === currentDate);
+    setFilteredShowTimes(filtered);
+    router.push(`?date=${currentDate}`);
   }, [currentDate, router]);
 
-  if (!currentDate || displayDates.length === 0) {
-    return (
-      <div className="px-[24px] pt-[130px]">
-        <h2 className="font-bold text-4xl mb-8">Showtimes</h2>
-        <div className="min-h-100 py-8 text-center text-gray-500">
-          No upcoming showtimes available
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="px-[24px] pt-[130px]">
-      <h2 className="font-bold text-4xl mb-8">Showtimes</h2>
+    <div className="px-[24px] pt-[130px] bg-white dark:bg-black min-h-screen">
+      <h2 className="font-bold text-4xl mb-8 text-gray-900 dark:text-white">Showtimes</h2>
+
+      {/* Select Date */}
       <div className="flex flex-col gap-4 mb-8">
-        <p className="font-bold">Select Date</p>
-        <div className="flex gap-2">
-          {displayDates.map(({ dbDate, displayText, dateObj }) => {
-            const hasShowtimes = allShowtimeDates.includes(dbDate);
-            return (
-              <button
-                key={dbDate}
-                className={`hover:bg-[#f4f4f5] transition duration-300 ease-in-out outline-none py-[10px] px-[20px] cursor-pointer text-[14px] rounded-[7px] ${
-                  currentDate === dbDate
-                    ? "text-white bg-rose-600"
-                    : "text-black bg-white border border-gray-300"
-                } ${!hasShowtimes ? "opacity-50 cursor-not-allowed" : ""}`}
-                onClick={() => hasShowtimes && setCurrentDate(dbDate)}
-                disabled={!hasShowtimes}
-              >
-                {displayText}
-              </button>
-            );
-          })}
+        <p className="font-bold text-gray-700 dark:text-gray-300">Select Date</p>
+        <div className="flex gap-2 flex-wrap">
+          {dates.map((date) => (
+            <button
+              key={date}
+              className={`
+                transition-all duration-200 ease-in-out 
+                py-[10px] px-[20px] cursor-pointer text-sm rounded-lg
+                font-medium
+                ${
+                  currentDate === date
+                    ? "text-white bg-rose-600 hover:bg-rose-700 dark:bg-rose-700 dark:hover:bg-rose-600"
+                    : "text-gray-800 bg-white hover:bg-gray-50 border border-gray-200 dark:text-gray-200 dark:bg-gray-900 dark:hover:bg-gray-800 dark:border-gray-800"
+                }
+                focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 dark:focus:ring-offset-black
+                shadow-sm hover:shadow-md
+              `}
+              onClick={() => setCurrentDate(date)}
+            >
+              {parseDate(date).toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+              })}
+            </button>
+          ))}
         </div>
       </div>
-      
+
+      {/* Showtimes Display */}
       {filteredShowTimes.length > 0 ? (
         <ShowTimesContainer moviesShowTimes={filteredShowTimes} />
       ) : (
-        <div className=" py-8 text-center text-gray-500">
-          No showtimes available for {formatDisplayDate(parseDBDate(currentDate))}
+        <div className="py-8 px-4 text-center rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
+          <div className="mx-auto w-12 h-12 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-full mb-3">
+            <svg className="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-700 dark:text-gray-200">
+            No showtimes available for{" "}
+            <span className="text-rose-600 dark:text-rose-500">
+              {parseDate(currentDate).toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+          </h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Please check back later or select another date
+          </p>
         </div>
       )}
     </div>
