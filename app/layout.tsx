@@ -5,6 +5,7 @@ import "./globals.css"
 import Header from "@/components/landing-header"
 import { Footer } from "@/components/landing-footer"
 import { Providers } from "./providers"
+import { Toaster } from "react-hot-toast"
 
  const inter = Inter({ subsets: ["latin"] })
 
@@ -22,7 +23,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className="dark">
       <body
         className={`${inter.className} dark:bg-black dark:text-white bg-white text-gray-900 min-h-screen flex flex-col`}
-      >
+      > <Toaster
+      position="bottom-right"
+      reverseOrder={false}
+    />
         <Providers>
           <Header/>{children}<Footer/></Providers>
       </body>

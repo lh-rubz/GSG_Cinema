@@ -143,3 +143,14 @@ export interface Receipt {
   paymentMethod: "credit_card" | "paypal" | "cash" | "voucher";
   receiptDate: string;
 }
+
+export interface Promotion {
+  id: string
+  title: string
+  description: string
+  image_url: string
+  discount_percentage: number
+  discount_code: string
+  expiry_date: string
+}
+
