@@ -55,6 +55,7 @@ export interface Director {
   name: string;
   bio: string;
   image: string;
+  movies : Movie[];
 }
 
 export interface CastMember {
@@ -62,11 +63,12 @@ export interface CastMember {
   name: string;
   character: string;
   image: string;
+  movies : Movie[];
 }
 export interface Seat {
   id: string;
   number: string;
-  age?:"kid"|"adult";
+  age:"kid"|"adult";
   type: 'standard' | 'premium' ;
   available: boolean;
 }

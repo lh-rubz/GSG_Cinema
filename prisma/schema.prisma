@@ -209,6 +209,7 @@ model User {
   bio               String?   @db.Text
   email             String    @unique
   gender            Gender
+  password          String 
   profileImage      String?
   reviews           Review[]
   replies           Reply[]
