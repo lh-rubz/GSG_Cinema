@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, movieId, rating, comment } = body
+    const {id, userId, movieId, rating, comment } = body
 
     // Validate required fields
     if (!userId || !movieId || rating === undefined || !comment) {
@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
     // Create the review
     const review = await prisma.review.create({
       data: {
+        id,
         userId,
         movieId,
         rating,

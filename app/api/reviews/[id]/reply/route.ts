@@ -30,7 +30,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const body = await request.json()
-    const { userId, comment } = body
+    const {id, userId, comment } = body
 
     if (!userId || !comment) {
       return NextResponse.json({ error: "User ID and comment are required" }, { status: 400 })
@@ -48,6 +48,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     // Create the reply
     const reply = await prisma.reply.create({
       data: {
+        id,
         reviewId: params.id,
         userId,
         comment,

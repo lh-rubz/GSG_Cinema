@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import bcrypt from "bcrypt"
 
 export async function GET(request: NextRequest) {
   try {
@@ -66,11 +67,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Username or email already exists" }, { status: 400 })
     }
 
+    const hashedPassword = await bcrypt.hash(body.password, 10)
+
     const user = await prisma.user.create({
-      data: body,
+      data: {
+        username: body.username,
+        email: body.email,
+        displayName: body.displayName,
+        password: hashedPassword,
+        gender: body.gender,
+        bio: body.bio || null,
+        profileImage: body.profileImage || null,
+      },
     })
 
-    return NextResponse.json(user, { status: 201 })
+    const { password, ...userWithoutPassword } = user
+    return NextResponse.json(userWithoutPassword, { status: 201 })
+    
   } catch (error) {
     console.error("Error creating user:", error)
     return NextResponse.json({ error: "Failed to create user" }, { status: 500 })

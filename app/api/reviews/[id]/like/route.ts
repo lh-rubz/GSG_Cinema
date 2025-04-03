@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const body = await request.json()
-    const { userId } = body
+    const { id, userId } = body
 
     if (!userId) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 })
@@ -34,6 +34,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const updatedReview = await prisma.review.update({
       where: { id: params.id },
       data: {
+        id,
         likes: review.likes + 1,
         likedBy: {
           connect: { id: userId },
