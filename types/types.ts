@@ -92,7 +92,6 @@ export interface Showtime {
   availableSeats:number;
   price: number;
 }
-
 export interface Review {
   id: string;
   movieId: string;
