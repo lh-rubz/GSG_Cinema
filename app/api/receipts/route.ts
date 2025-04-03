@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, movieId, ticketIds, totalPrice, paymentMethod } = body
+    const {id, userId, movieId, ticketIds, totalPrice, paymentMethod } = body
 
     // Validate required fields
     if (!userId || !movieId || !ticketIds || !totalPrice || !paymentMethod) {
@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
     // Create the receipt
     const receipt = await prisma.receipt.create({
       data: {
+        id,
         userId,
         movieId,
         totalPrice,
