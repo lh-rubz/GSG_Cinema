@@ -40,7 +40,7 @@ const PromotionCard = ({ promotion }: Iprops) => {
   if (!mounted) return null
 
   return (
-    <div className="group border-1 border-red-200 relative overflow-hidden rounded-xl bg-white transition-all duration-500 hover:translate-y-[-5px] hover:shadow-2xl dark:bg-black dark:shadow-red-900/20">
+    <div className="group border border-red-200 relative overflow-hidden rounded-xl bg-white transition-all duration-500 hover:translate-y-[-5px] hover:shadow-2xl dark:bg-black dark:shadow-red-900/20">
       {/* Cinema film strip top border */}
       <div className="absolute top-0 left-0 right-0 z-10 flex h-3 w-full">
         {[...Array(20)].map((_, i) => (
