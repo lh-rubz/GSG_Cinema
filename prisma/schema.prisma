@@ -1,0 +1,258 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MovieGenre {
+  Action
+  Adventure
+  Comedy
+  Drama
+  Fantasy
+  Horror
+  Mystery
+  Romance
+  SciFi
+  Thriller
+  Crime
+  Animation
+  Documentary
+  Family
+  Western
+  Arabic
+}
+
+enum MovieStatus {
+  coming_soon
+  now_showing
+}
+
+enum SeatType {
+  standard
+  premium
+}
+
+enum SeatAge {
+  kid
+  adult
+}
+
+enum ScreenType {
+  Standard
+  Premium
+  IMAX
+  FourDX
+}
+
+enum MovieFormat {
+  TwoD
+  ThreeD
+  imax
+  fourDx
+}
+
+enum TicketStatus {
+  reserved
+  paid
+  used
+  deleted
+}
+
+enum PaymentMethod {
+  credit_card
+  paypal
+  cash
+  voucher
+}
+
+enum Gender {
+  F
+  M
+}
+
+model Movie {
+  id          String       @id @default(uuid())
+  title       String
+  year        String
+  genre       MovieGenre[]
+  rating      String
+  description String       @db.Text
+  image       String?
+  directorId  String
+  director    Director     @relation(fields: [directorId], references: [id])
+  duration    String?
+  releaseDate String?
+  cast        CastMovie[]
+  status      MovieStatus
+  hidden      Boolean      @default(false)
+  showtimes   Showtime[]
+  reviews     Review[]
+  receipts    Receipt[]
+
+  @@index([directorId])
+}
+
+model Director {
+  id     String  @id @default(uuid())
+  name   String
+  bio    String  @db.Text
+  image  String
+  movies Movie[]
+}
+
+model CastMember {
+  id        String     @id @default(uuid())
+  name      String
+  image     String
+  character String
+  movies    CastMovie[]
+}
+
+model CastMovie {
+  castMemberId String
+  castMember   CastMember @relation(fields: [castMemberId], references: [id])
+  movieId      String
+  movie        Movie      @relation(fields: [movieId], references: [id])
+  character    String
+
+  @@id([castMemberId, movieId])
+  @@index([castMemberId])
+  @@index([movieId])
+}
+
+model Screen {
+  id        String       @id @default(uuid())
+  name      String
+  type      ScreenType[]
+  capacity  Int
+  rows      Int
+  cols      Int
+  seats     Seat[]
+  showtimes Showtime[]
+}
+
+model Seat {
+  id        String    @id @default(uuid())
+  number    String
+  age       SeatAge?
+  type      SeatType
+  available Boolean   @default(true)
+  screenId  String
+  screen    Screen    @relation(fields: [screenId], references: [id])
+  tickets   Ticket[]
+  row       Int
+  col       Int
+
+  @@index([screenId])
+}
+
+model Showtime {
+  id       String      @id @default(uuid())
+  movieId  String
+  movie    Movie       @relation(fields: [movieId], references: [id])
+  screenId String
+  screen   Screen      @relation(fields: [screenId], references: [id])
+  date     String
+  time     String
+  format   MovieFormat
+  price    Float
+  tickets  Ticket[]
+
+  @@index([movieId])
+  @@index([screenId])
+}
+
+model Review {
+  id       String   @id @default(uuid())
+  movieId  String
+  movie    Movie    @relation(fields: [movieId], references: [id])
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
+  rating   Int
+  comment  String   @db.Text
+  date     String
+  likes    Int      @default(0)
+  likedBy  User[]   @relation("ReviewLikes")
+  replies  Reply[]
+
+  @@index([movieId])
+  @@index([userId])
+}
+
+model Reply {
+  id        String  @id @default(uuid())
+  reviewId  String
+  review    Review  @relation(fields: [reviewId], references: [id])
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  comment   String  @db.Text
+  date      String
+
+  @@index([reviewId])
+  @@index([userId])
+}
+
+model User {
+  id                String    @id @default(uuid())
+  username          String    @unique
+  displayName       String
+  bio               String?   @db.Text
+  email             String    @unique
+  gender            Gender
+  password          String 
+  profileImage      String?
+  reviews           Review[]
+  replies           Reply[]
+  tickets           Ticket[]
+  receipts          Receipt[]
+  likedReviews      Review[]  @relation("ReviewLikes")
+
+  @@index([email])
+  @@index([username])
+}
+
+model Ticket {
+  id            String       @id @default(uuid())
+  userId        String
+  user          User         @relation(fields: [userId], references: [id])
+  showtimeId    String
+  showtime      Showtime     @relation(fields: [showtimeId], references: [id])
+  seatId        String
+  seat          Seat         @relation(fields: [seatId], references: [id])
+  price         Float
+  purchaseDate  String
+  status        TicketStatus
+  deleteReason  String?
+  receipt       Receipt?     @relation(fields: [receiptId], references: [id])
+  receiptId     String?
+
+  @@index([userId])
+  @@index([showtimeId])
+  @@index([seatId])
+  @@index([receiptId])
+}
+
+model Receipt {
+  id             String        @id @default(uuid())
+  userId         String
+  user           User          @relation(fields: [userId], references: [id])
+  movieId        String
+  movie          Movie         @relation(fields: [movieId], references: [id])
+  tickets        Ticket[]
+  totalPrice     Float
+  paymentMethod  PaymentMethod
+  receiptDate    String
+
+  @@index([userId])
+  @@index([movieId])
+}

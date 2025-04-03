@@ -8,18 +8,20 @@ import { Showtime } from "@/types/types";
       id: 'sh1',
       movieId: 'm1',
       screenId: 's1',
-      date: '15-11-2023',
+      date: '29-03-2025',
       time: '10:00',
       format: '2D',
+      availableSeats:90,
       price: 12.99
     },
     {
       id: 'sh2',
       movieId: 'm1',
       screenId: 's1',
-      date: '15-11-2023',
+      date: '29-03-2025',
       time: '13:30',
       format: '2D',
+      availableSeats:80,
       price: 12.99
     },
     {
@@ -29,6 +31,7 @@ import { Showtime } from "@/types/types";
       date: '3-4-2025',
       time: '11:00',
       format: 'imax',
+      availableSeats:90,
       price: 18.99
     },
     
@@ -40,6 +43,7 @@ import { Showtime } from "@/types/types";
       date: '15-11-2023',
       time: '14:00',
       format: '4dx',
+      availableSeats:90,
       price: 22.99
     },
     {
@@ -49,6 +53,7 @@ import { Showtime } from "@/types/types";
       date: '15-11-2023',
       time: '16:30',
       format: '3D',
+      availableSeats:90,
       price: 15.99
     },
     {
@@ -58,6 +63,7 @@ import { Showtime } from "@/types/types";
       date: '16-11-2023',
       time: '12:00',
       format: '3D',
+      availableSeats:90,
       price: 16.99
     }
   ];
