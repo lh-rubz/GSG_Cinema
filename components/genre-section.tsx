@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Movie } from "@/types/types";
 import MovieCard from "./movie-card";
 
-export function GenreSection({ movies }) {
+export function GenreSection({ movies }: { movies: Movie[] }) {
   const genres = ["Action", "Comedy", "Drama", "Sci-Fi", "Horror", "Romance", "Thriller"];
 
   return (
