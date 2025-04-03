@@ -26,7 +26,7 @@ import { Showtime } from "@/types/types";
       id: 'sh3',
       movieId: 'm1',
       screenId: 's2',
-      date: '15-11-2023',
+      date: '3-4-2025',
       time: '11:00',
       format: 'imax',
       price: 18.99
