@@ -28,6 +28,8 @@ export async function GET(request: NextRequest) {
       where: whereClause,
       select: {
         id: true,
+        role: true,
+        password:true,
         username: true,
         displayName: true,
         bio: true,
