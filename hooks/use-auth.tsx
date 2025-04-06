@@ -1,115 +1,213 @@
 "use client"
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { toast } from 'react-hot-toast'; // Importing react-hot-toast
 
-import type React from "react"
+import type { User, Review, Ticket, Receipt } from '@/types/types';
+import { usersApi } from '@/lib/endpoints/users';
 
-import { createContext, useContext, useEffect, useState } from "react"
+const generateUniqueId = async () => {
+  let uniqueId = `u-${Math.floor(Math.random() * 1000000)}`;
+  
+  // Check if the generated ID already exists in the system
+  const existingUser = await usersApi.getUser(uniqueId);
+  if (existingUser.data) {
+    return generateUniqueId();  // If ID exists, recursively generate a new one
+  }
 
-type User = {
-  username: string
-  role: "admin" | "customer" | "user"
+  return uniqueId;
+};
+
+interface AuthContextType {
+  user: (User & { reviews: Review[]; tickets: Ticket[]; receipts: Receipt[] }) | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (userData: {
+    username: string;
+    displayName: string;
+    email: string;
+    password: string;
+    gender: string;
+    bio?: string;
+  }) => Promise<void>;
+  logout: () => void;
+  updateUser: (userData: Partial<User>) => Promise<void>;
 }
 
-type AuthContextType = {
-  user: User | null
-  signIn: (username: string, password: string) => Promise<boolean>
-  signUp: (username: string, password: string, role: "customer" | "user") => Promise<boolean>
-  signOut: () => void
-  isLoading: boolean
-}
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<(User & { reviews: Review[]; tickets: Ticket[]; receipts: Receipt[] }) | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  // Check for existing session on mount
+  // Check for existing session on initial load
   useEffect(() => {
-    const storedUser = sessionStorage.getItem("cinemax-user")
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
-    }
-    setIsLoading(false)
-  }, [])
-
-  const signIn = async (username: string, password: string): Promise<boolean> => {
-    // Simple validation
-    if (!username || !password) {
-      return false
-    }
-
-    // For demo purposes, we'll accept any password
-    // In a real app, you would validate against a backend
-
-    // Special case for admin
-    if (username === "hebaAdmin") {
-      const userData: User = { username, role: "admin" }
-      sessionStorage.setItem("cinemax-user", JSON.stringify(userData))
-      setUser(userData)
-      return true
-    }
-
-    // Check if user exists in session storage (for users who signed up)
-    const storedUsers = sessionStorage.getItem("cinemax-users")
-    const users = storedUsers ? JSON.parse(storedUsers) : {}
-
-    if (users[username] && users[username].password === password) {
-      const userData: User = {
-        username,
-        role: users[username].role,
+    const checkAuth = async () => {
+      try {
+        const storedUser = sessionStorage.getItem('user');
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          // Verify the user exists by fetching their data
+          const userData = await usersApi.getUser(parsedUser.id);
+          setUser(userData.data!);
+          setIsAuthenticated(true);
+        }
+      } catch (err) {
+        sessionStorage.removeItem('user');
+      } finally {
+        setIsLoading(false);
       }
-      sessionStorage.setItem("cinemax-user", JSON.stringify(userData))
-      setUser(userData)
-      return true
+    };
+
+    checkAuth();
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Get all users and find matching email
+      const users = await usersApi.getUsers({ email });
+
+      if (users.data!.length === 0) {
+        throw new Error('User not found');
+      }
+
+      const foundUser = users.data![0];
+
+      // In a real app, you would verify the password properly (hashed comparison)
+      if (foundUser.password !== password) {
+        throw new Error('Invalid password');
+      }
+
+      // Get full user data with relationships
+      const userData = await usersApi.getUser(foundUser.id);
+
+      // Store user in session storage (without password)
+      const { password: _, ...userToStore } = userData.data!;
+      sessionStorage.setItem('user', JSON.stringify(userToStore));
+
+      setUser(userData.data!);
+      setIsAuthenticated(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
+      toast.error(error || 'Login failed'); // Show error notification using react-hot-toast
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const signup = async (userData: {
+    username: string;
+    displayName: string;
+    email: string;
+    password: string;
+    gender: string;
+    bio?: string;
+  }) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Check if email already exists
+      const existingUsers = await usersApi.getUsers({ email: userData.email });
+      if (existingUsers.data!.length > 0) {
+        throw new Error('Email already in use');
+      }
+
+      // Check if username already exists
+      const existingUsernames = await usersApi.getUsers({ username: userData.username });
+      if (existingUsernames.data!.length > 0) {
+        throw new Error('Username already taken');
+      }
+
+      // Generate unique ID for the new user
+      const uniqueId = await generateUniqueId();
+
+      // Create new user (ID will be generated by the server)
+      const newUser = await usersApi.createUser({
+        ...userData,
+        id: uniqueId,
+        profileImage: ''
+      });
+console.log('newUser', newUser.data);
+      // Get full user data with relationships
+      const userDataWithRelations = await usersApi.getUser(uniqueId);
+
+      // Store user in session storage (without password)
+      const { password: _, ...userToStore } = userDataWithRelations.data!;
+      sessionStorage.setItem('user', JSON.stringify(userToStore));
+
+      setUser(userDataWithRelations.data!);
+      setIsAuthenticated(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Signup failed');
+      toast.error(error || 'Signup failed'); // Show error notification using react-hot-toast
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const logout = () => {
+    sessionStorage.removeItem('user');
+    setUser(null);
+    setIsAuthenticated(false);
+  };
+
+  const updateUser = async (userData: Partial<User>) => {
+    if (!user) {
+      throw new Error('User not authenticated');
     }
 
-    // For demo, create a default user if not found
-    const userData: User = { username, role: "user" }
-    sessionStorage.setItem("cinemax-user", JSON.stringify(userData))
-    setUser(userData)
-    return true
-  }
+    setIsLoading(true);
+    setError(null);
 
-  const signUp = async (username: string, password: string, role: "customer" | "user"): Promise<boolean> => {
-    // Simple validation
-    if (!username || !password) {
-      return false
+    try {
+      const updatedUser = await usersApi.updateUser(user.id, userData);
+
+      // Get full updated user data with relationships
+      const userDataWithRelations = await usersApi.getUser(updatedUser.data!.id);
+
+      // Update session storage (without password)
+      const { password: _, ...userToStore } = userDataWithRelations.data!;
+      sessionStorage.setItem('user', JSON.stringify(userToStore));
+
+      setUser(userDataWithRelations.data!);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Update failed');
+      toast.error(error || 'Update failed'); // Show error notification using react-hot-toast
+      throw err;
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    // Get existing users or initialize empty object
-    const storedUsers = sessionStorage.getItem("cinemax-users")
-    const users = storedUsers ? JSON.parse(storedUsers) : {}
+  return (
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated,
+      isLoading,
+      error,
+      login,
+      signup,
+      logout,
+      updateUser
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
 
-    // Check if username already exists
-    if (users[username]) {
-      return false
-    }
-
-    // Add new user
-    users[username] = { password, role }
-    sessionStorage.setItem("cinemax-users", JSON.stringify(users))
-
-    // Auto sign in after sign up
-    const userData: User = { username, role }
-    sessionStorage.setItem("cinemax-user", JSON.stringify(userData))
-    setUser(userData)
-
-    return true
-  }
-
-  const signOut = () => {
-    sessionStorage.removeItem("cinemax-user")
-    setUser(null)
-  }
-
-  return <AuthContext.Provider value={{ user, signIn, signUp, signOut, isLoading }}>{children}</AuthContext.Provider>
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext)
+export const useAuth = () => {
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-  return context
-}
-
+  return context;
+};

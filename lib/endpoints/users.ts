@@ -18,7 +18,7 @@ export const usersApi = {
   },
   
   async createUser(user: {
-    id: string;
+    id?: string;
     username: string;
     displayName: string;
     bio?:string;
@@ -27,6 +27,7 @@ export const usersApi = {
     profileImage?: string;
     password: string;
   }) {
+    console.log(user);
     return apiClient.post<User>('/users', user);
   },
   

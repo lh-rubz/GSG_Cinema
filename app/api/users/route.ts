@@ -34,7 +34,6 @@ export async function GET(request: NextRequest) {
         email: true,
         gender: true,
         profileImage: true,
-        // Include counts of related entities
         _count: {
           select: {
             reviews: true,
@@ -64,13 +63,20 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingUser) {
-      return NextResponse.json({ error: "Username or email already exists" }, { status: 400 })
+      if (existingUser.username === body.username) {
+        return NextResponse.json({ error: "Username already exists" }, { status: 400 })
+      }
+      if (existingUser.email === body.email) {
+        return NextResponse.json({ error: "Email already exists" }, { status: 400 })
+      }
     }
 
+    // Hash the password before storing it
     const hashedPassword = await bcrypt.hash(body.password, 10)
 
     const user = await prisma.user.create({
       data: {
+        id:body.id,
         username: body.username,
         email: body.email,
         displayName: body.displayName,
@@ -81,12 +87,12 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Remove password from the response
     const { password, ...userWithoutPassword } = user
     return NextResponse.json(userWithoutPassword, { status: 201 })
     
   } catch (error) {
     console.error("Error creating user:", error)
-    return NextResponse.json({ error: "Failed to create user" }, { status: 500 })
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Failed to create user" }, { status: 500 })
   }
 }
-
