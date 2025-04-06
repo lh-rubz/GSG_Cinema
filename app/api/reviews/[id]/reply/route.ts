@@ -14,6 +14,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             profileImage: true,
           },
         },
+        reports: {
+          select: {
+            userId: true,
+          },
+        },
       },
       orderBy: {
         date: "asc",
@@ -30,7 +35,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const body = await request.json()
-    const {id, userId, comment } = body
+    const { id, userId, comment } = body
 
     if (!userId || !comment) {
       return NextResponse.json({ error: "User ID and comment are required" }, { status: 400 })
@@ -45,7 +50,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: "Review not found" }, { status: 404 })
     }
 
-    // Create the reply
+    // Create the reply with empty reportedBy array
     const reply = await prisma.reply.create({
       data: {
         id,
@@ -72,4 +77,3 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     return NextResponse.json({ error: "Failed to create reply" }, { status: 500 })
   }
 }
-

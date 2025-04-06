@@ -1,5 +1,5 @@
 import { apiClient } from '../client';
-import type { Review, User, Movie, Reply } from '@/types/types';
+import type { Review, User, Movie, Reply, ReplyWithUser } from '@/types/types';
 
 export const reviewsApi = {
   async getReviews(params?: {
@@ -55,5 +55,6 @@ export const reviewsApi = {
     comment: string;
   }) {
     return apiClient.post<Reply>(`/reviews/${reviewId}/reply`, reply);
-  }
+  },
+  
 };

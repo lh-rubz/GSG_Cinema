@@ -18,7 +18,7 @@ export const usersApi = {
   },
   
   async createUser(user: {
-    id: string;
+    id?: string;
     username: string;
     displayName: string;
     bio?:string;

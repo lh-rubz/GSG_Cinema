@@ -93,6 +93,19 @@ export interface Showtime {
   availableSeats: number;
   price: number;
 }
+export interface ReplyWithUser extends Reply {
+  user: {
+    id: string;
+    username: string;
+    displayName: string;
+    profileImage?: string;
+  };
+}
+
+export interface ReportedReply extends ReplyWithUser {
+  reportCount: number;
+  reportedBy: string[];
+}
 
 export interface Review {
   id: string;

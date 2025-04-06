@@ -197,8 +197,22 @@ model Reply {
   user      User    @relation(fields: [userId], references: [id])
   comment   String  @db.Text
   date      String
+  reports   ReplyReport[]
 
   @@index([reviewId])
+  @@index([userId])
+}
+
+model ReplyReport {
+  id        String   @default(uuid())
+  replyId   String
+  reply     Reply    @relation(fields: [replyId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@id([replyId, userId])
+  @@index([replyId])
   @@index([userId])
 }
 
@@ -215,6 +229,7 @@ model User {
   replies           Reply[]
   tickets           Ticket[]
   receipts          Receipt[]
+  replyReports      ReplyReport[]
   likedReviews      Review[]  @relation("ReviewLikes")
 
   @@index([email])
