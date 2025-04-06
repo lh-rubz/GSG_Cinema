@@ -1,3 +1,5 @@
+import { color } from "framer-motion";
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: 'class',
@@ -17,6 +19,12 @@ module.exports = {
         error: 'dark:bg-red-900 dark:text-red-100 dark:border-red-800',
       }
     }},
+    colors:{
+      colors: {
+        'gray-750': '#6c6c6c', 
+        'gray-650': '#7e7e7e',
+      },
+    }
   },
   plugins: [],
 }
