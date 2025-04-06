@@ -98,6 +98,7 @@ model Movie {
   director    Director     @relation(fields: [directorId], references: [id])
   duration    String?
   releaseDate String?
+  trailer     String
   cast        CastMovie[]
   status      MovieStatus
   hidden      Boolean      @default(false)
@@ -144,6 +145,7 @@ model Screen {
   rows      Int
   cols      Int
   seats     Seat[]
+  seatMap   Json?     
   showtimes Showtime[]
 }
 
