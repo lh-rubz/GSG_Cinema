@@ -47,9 +47,9 @@ export default function SignUpForm() {
         password: formData.password,
         gender: formData.gender,
         bio: formData.bio,
+        role: "User",
         displayName: formData.displayName || formData.username,
       })
-      toast.success("Account created successfully!")
     } catch (error) {
       // Error is already handled in the AuthContext
     }

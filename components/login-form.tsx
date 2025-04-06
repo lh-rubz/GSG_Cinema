@@ -1,26 +1,27 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { FaSignInAlt, FaEye, FaEyeSlash, FaUser, FaLock } from "react-icons/fa"
 import Link from "next/link"
+import { toast } from "react-hot-toast"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function LoginForm() {
-  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("") // Changed from username to email to match your auth context
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const { login, isLoading, error } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false)
-      // Handle login success or redirect
-    }, 1000)
+    
+    try {
+      await login(email, password)
+      toast.success("Logged in successfully!")
+      // You might want to redirect here or the auth context can handle it
+    } catch (err) {
+      // Error is already handled in the auth context
+    }
   }
 
   return (
@@ -43,19 +44,19 @@ export default function LoginForm() {
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Username */}
+              {/* Email (changed from username) */}
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Username</label>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Email</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <FaUser className="text-zinc-400 dark:text-zinc-500" />
                   </div>
                   <input
-                    type="text"
+                    type="email"
                     className="w-full pl-10 pr-3 py-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-700 text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-600 focus:ring-2 focus:ring-red-500 dark:focus:ring-red-600 focus:border-transparent focus:outline-none transition-all"
-                    placeholder="Enter your username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
@@ -65,12 +66,6 @@ export default function LoginForm() {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Password</label>
-                  <a
-                    href="#"
-                    className="text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-500 dark:hover:text-red-300 transition-colors"
-                  >
-                    Forgot password?
-                  </a>
                 </div>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -94,18 +89,12 @@ export default function LoginForm() {
                 </div>
               </div>
 
-              {/* Remember me checkbox */}
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-zinc-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-zinc-700 dark:text-zinc-300">
-                  Remember me
-                </label>
-              </div>
+              {/* Error message */}
+              {error && (
+                <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md dark:bg-red-900 dark:text-red-100">
+                  {error}
+                </div>
+              )}
 
               {/* Submit Button */}
               <div>
@@ -165,4 +154,3 @@ export default function LoginForm() {
     </div>
   )
 }
-

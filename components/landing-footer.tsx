@@ -85,13 +85,11 @@ export function Footer() {
                 <span className="sr-only">YouTube</span>
               </Link>
             </div>
-            <p className="mt-4 text-sm text-muted-foreground dark:text-gray-400">
-              Subscribe to our newsletter for updates on new releases and promotions.
-            </p>
+           
           </div>
         </div>
         <div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground dark:text-gray-400">
-          <p>&copy; {new Date().getFullYear()} CineHub. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} CinemaHub. All rights reserved.</p>
         </div>
       </div>
     </footer>

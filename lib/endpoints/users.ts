@@ -16,6 +16,7 @@ export const usersApi = {
       receipts: Receipt[];
     }>(`/users/${id}`);
   },
+
   
   async createUser(user: {
     id?: string;
@@ -28,7 +29,7 @@ export const usersApi = {
     password: string;
     role: 'Admin' | 'Staff' | 'User';
   }) {
-    console.log(user);
+    console.log("Heloooo"+user);
     return apiClient.post<User>('/users', user);
   },
   
