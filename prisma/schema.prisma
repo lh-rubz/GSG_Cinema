@@ -80,6 +80,12 @@ enum Gender {
   M
 }
 
+enum Role {
+  Admin
+  User
+  Staff
+}
+
 model Movie {
   id          String       @id @default(uuid())
   title       String
@@ -216,6 +222,7 @@ model User {
   tickets           Ticket[]
   receipts          Receipt[]
   likedReviews      Review[]  @relation("ReviewLikes")
+  role              Role
 
   @@index([email])
   @@index([username])
