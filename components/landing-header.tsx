@@ -20,7 +20,7 @@ export default function Header() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
               <Film className="h-6 w-6 text-red-600 mr-2" />
-              <span className="text-red-600 font-bold text-xl">CinemaHub</span>
+              <span className="text-white font-bold text-xl">CinemaHub</span>
             </Link>
             <nav className="ml-10 hidden md:flex space-x-8">
               <Link

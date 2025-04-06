@@ -26,6 +26,7 @@ export const usersApi = {
     gender:string;
     profileImage?: string;
     password: string;
+    role: 'Admin' | 'Staff' | 'User';
   }) {
     console.log(user);
     return apiClient.post<User>('/users', user);

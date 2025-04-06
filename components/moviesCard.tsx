@@ -10,7 +10,7 @@ export default function MovieCard({ movie }: MovieCardProps) {
   const isComingSoon = movie.status === "coming_soon";
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 ease-in-out border border-gray-100 dark:border-gray-700 hover:translate-y-[-4px] h-full flex flex-col">
+    <div className="bg-white dark:bg-zinc-800 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 ease-in-out border border-gray-100 dark:border-zinc-700 hover:translate-y-[-4px] h-full flex flex-col">
       <div className="relative aspect-[3/4]">
         <img
           src={

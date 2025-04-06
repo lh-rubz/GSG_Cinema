@@ -3,13 +3,13 @@ import { Film, Facebook, Twitter, Instagram, Youtube } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="border-t bg-background dark:bg-gray-900">
+    <footer className="border-t bg-background dark:bg-black">
       <div className="container mx-auto px-4 py-8 md:py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="flex flex-col gap-2">
             <Link href="/" className="flex items-center gap-2">
-              <Film className="h-6 w-6 text-primary dark:text-white" />
-              <span className="font-bold text-gray-900 dark:text-white">CineHub</span>
+              <Film className="h-6 w-6 text-primary dark:text-red-700" />
+              <span className="font-bold text-gray-900 dark:text-white">CinemaHub</span>
             </Link>
             <p className="text-sm text-muted-foreground dark:text-gray-400">
               Your ultimate cinema experience with the latest movies and premium comfort.
