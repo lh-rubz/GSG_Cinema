@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { LogOut, Settings, Ticket as TicketIcon, Calendar, Tag, Edit, Mail, MessageSquare, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import LoadingSpinner from "@/components/loading-spinner";
-import type { Review, Ticket } from "../../types/types";
+import Loading from "../loading";
 
 
 export default function ProfilePage() {
@@ -83,7 +82,7 @@ export default function ProfilePage() {
   return (
     <>
       {/* Loading Spinner */}
-      {isLoggingOut && <LoadingSpinner fullScreen text="Signing out..." />}
+     <Suspense fallback={ <Loading fullScreen text="Signing out..." />}/>
 
       {/* Logout Confirmation Dialog */}
       {showLogoutDialog && !isLoggingOut && (

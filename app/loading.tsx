@@ -9,7 +9,7 @@ interface LoadingSpinnerProps {
   text?: string
 }
 
-export default function LoadingSpinner({ 
+export default function Loading({ 
   size = 40, 
   fullScreen = false,
   text = "Loading..."

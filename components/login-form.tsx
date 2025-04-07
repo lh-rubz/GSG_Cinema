@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { FaSignInAlt, FaEye, FaEyeSlash, FaUser, FaLock } from "react-icons/fa"
 import Link from "next/link"
 import { toast } from "react-hot-toast"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
-import LoadingSpinner from "@/components/loading-spinner"
+import Loading from "@/app/loading"
 
 export default function LoginForm() {
   const [email, setEmail] = useState("")
@@ -51,9 +51,7 @@ export default function LoginForm() {
 
   return (
     <div className="min-h-screen min-w-screen flex items-center justify-center px-4 py-12 bg-zinc-50 dark:bg-zinc-900">
-      {/* Loading Spinner */}
-      {isLoading && <LoadingSpinner fullScreen text="Signing in..." />}
-
+     <Suspense fallback={<Loading/>}/>
       <div className="w-full max-w-md">
         {/* Card with subtle gradient border */}
         <div className="relative bg-white dark:bg-zinc-800 rounded-2xl shadow-xl overflow-hidden">
