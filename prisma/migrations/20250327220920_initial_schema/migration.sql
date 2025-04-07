@@ -39,7 +39,7 @@ CREATE TABLE "Movie" (
     "releaseDate" TEXT,
     "status" "MovieStatus" NOT NULL,
     "hidden" BOOLEAN NOT NULL DEFAULT false,
-
+    
     CONSTRAINT "Movie_pkey" PRIMARY KEY ("id")
 );
 

@@ -1,14 +1,15 @@
 "use client"
 
 import Link from "next/link"
-
 import { usePathname } from "next/navigation"
-import { Film } from "lucide-react"
+import { Film, User } from "lucide-react"
 import ThemeToggle from "./theme-toggle"
+import { useAuth } from "@/hooks/use-auth"
+import Image from "next/image"
 
 export default function Header() {
-  
   const pathname = usePathname()
+  const { user, isAuthenticated, isLoading } = useAuth()
 
   // Helper function to determine active link
   const isActive = (path: string) => pathname === path
@@ -66,19 +67,45 @@ export default function Header() {
             </nav>
           </div>
           <div className="flex items-center space-x-4">
-         <ThemeToggle/>
-            <Link
-              href="/signin"
-              className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 text-sm font-medium"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/signup"
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium"
-            >
-              Sign Up
-            </Link>
+            <ThemeToggle/>
+            {isLoading ? (
+              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+            ) : isAuthenticated && user ? (
+              <Link
+                href="/profile"
+                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              >
+                {user.profileImage ? (
+                  <Image
+                    src={user.profileImage}
+                    alt={user.displayName || "User"}
+                    width={32}
+                    height={32}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-red-600 dark:bg-red-700 flex items-center justify-center text-white font-semibold">
+                    {user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                )}
+                <span className="hidden md:inline">{user.displayName}</span>
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/signin"
+                  className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 text-sm font-medium"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/signup"
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

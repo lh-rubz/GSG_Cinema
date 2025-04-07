@@ -35,6 +35,7 @@ export const moviesApi = {
     year: string;
     directorId: string;
     castIds?: string[];
+    trailer?: string;
     characters?: Record<string, string>;
   }) {
     return apiClient.post<Movie>('/movies', movie);

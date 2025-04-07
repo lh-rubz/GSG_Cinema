@@ -1,24 +1,48 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { FaSignInAlt, FaEye, FaEyeSlash, FaUser, FaLock } from "react-icons/fa"
 import Link from "next/link"
 import { toast } from "react-hot-toast"
 import { useAuth } from "@/hooks/use-auth"
+import { useRouter } from "next/navigation"
 
 export default function LoginForm() {
-  const [email, setEmail] = useState("") // Changed from username to email to match your auth context
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
-  const { login, isLoading, error } = useAuth()
+  const { login, isLoading, error, user, isAuthenticated } = useAuth()
+  const router = useRouter()
+
+  // Handle successful login and redirection
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      // Determine the redirect path based on user role
+      let redirectPath = '/'
+      switch (user.role) {
+        case 'Admin':
+          redirectPath = '/admin'
+          break
+        case 'Staff':
+          redirectPath = '/staff'
+          break
+        case 'User':
+          redirectPath = '/profile'
+          break
+      }
+
+      // Only redirect if we're not already on the target page
+      if (window.location.pathname !== redirectPath) {
+        router.push(redirectPath)
+      }
+    }
+  }, [isAuthenticated, user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
     try {
       await login(email, password)
       toast.success("Logged in successfully!")
-      // You might want to redirect here or the auth context can handle it
     } catch (err) {
       // Error is already handled in the auth context
     }
@@ -44,7 +68,7 @@ export default function LoginForm() {
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Email (changed from username) */}
+              {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Email</label>
                 <div className="relative">

@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
         gender: body.gender,
         bio: body.bio || null,
         profileImage: body.profileImage || null,
-        role: body.role
+        
       },
     })
 
