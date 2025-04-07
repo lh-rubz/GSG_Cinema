@@ -14,15 +14,15 @@ interface NoMoviesFoundProps {
 
 export const NoMoviesFound = ({ filters, onResetFilters }: NoMoviesFoundProps) => (
   <div className="flex flex-col items-center justify-center py-16 text-center">
-    <div className="text-gray-400 dark:text-gray-500 mb-4">
+    <div className="text-zinc-400 dark:text-zinc-500 mb-4">
       <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     </div>
-    <h3 className="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
+    <h3 className="text-xl font-medium text-zinc-700 dark:text-zinc-300 mb-2">
       No movies found
     </h3>
-    <p className="text-gray-500 dark:text-gray-400 max-w-md">
+    <p className="text-zinc-500 dark:text-zinc-400 max-w-md">
       {filters.genre || filters.year || filters.search
         ? "Try adjusting your filters to see more results."
         : `There are currently no ${filters.activeTab === ActiveTab.NOW ? 'now showing' : 'coming soon'} movies.`}

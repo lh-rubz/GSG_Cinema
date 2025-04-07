@@ -16,9 +16,10 @@ export const usersApi = {
       receipts: Receipt[];
     }>(`/users/${id}`);
   },
+
   
   async createUser(user: {
-    id: string;
+    id?: string;
     username: string;
     displayName: string;
     bio?:string;
@@ -26,7 +27,9 @@ export const usersApi = {
     gender:string;
     profileImage?: string;
     password: string;
+    role: 'Admin' | 'Staff' | 'User';
   }) {
+    console.log("Heloooo"+user);
     return apiClient.post<User>('/users', user);
   },
   
