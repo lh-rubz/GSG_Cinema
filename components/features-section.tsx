@@ -66,8 +66,8 @@ export function FeaturesSection() {
       <section className="py-16 bg-white dark:bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Our Cinema Features</h2>
-            <p className="text-gray-600 dark:text-gray-400">
+            <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">Our Cinema Features</h2>
+            <p className="text-zinc-600 dark:text-zinc-400">
               Experience the best in movie entertainment with our state-of-the-art facilities
             </p>
           </div>
@@ -76,13 +76,13 @@ export function FeaturesSection() {
             {features.map((feature, index) => (
               <div 
                 key={index}
-                className="bg-gray-50 dark:bg-gray-900 p-8 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col items-center text-center"
+                className="bg-zinc-50 dark:bg-zinc-900 p-8 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col items-center text-center"
               >
                 <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
-                <p className="text-gray-600 dark:text-gray-400">{feature.description}</p>
+                <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">{feature.title}</h3>
+                <p className="text-zinc-600 dark:text-zinc-400">{feature.description}</p>
               </div>
             ))}
           </div>

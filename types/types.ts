@@ -122,7 +122,7 @@ export interface User {
   gender: "F" | "M";
   movieIdsPurchased: string[];
   profileImage?: string;
-  role: "admin" | "staff" | "customer";
+  role: "Admin" | "Staff" | "User";
 }
 export interface Ticket {
   id: string;

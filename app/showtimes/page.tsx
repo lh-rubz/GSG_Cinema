@@ -54,12 +54,12 @@ const Page = () => {
   }, [currentDate, router]);
 
   return (
-    <div className="px-[24px] pt-[130px] bg-white dark:bg-black min-h-screen">
-      <h2 className="font-bold text-4xl mb-8 text-gray-900 dark:text-white">Showtimes</h2>
+    <div className="px-[24px] pt-[130px] bg-white max-h-full dark:bg-zinc-900 min-h-screen">
+      <h2 className="font-bold text-4xl mb-8 text-zinc-900 dark:text-white">Showtimes</h2>
 
       {/* Select Date */}
       <div className="flex flex-col gap-4 mb-8">
-        <p className="font-bold text-gray-700 dark:text-gray-300">Select Date</p>
+        <p className="font-bold text-zinc-700 dark:text-zinc-300">Select Date</p>
         <div className="flex gap-2 flex-wrap">
           {dates.map((date) => (
             <button
@@ -70,10 +70,10 @@ const Page = () => {
                 font-medium
                 ${
                   currentDate === date
-                    ? "text-white bg-rose-600 hover:bg-rose-700 dark:bg-rose-700 dark:hover:bg-rose-600"
-                    : "text-gray-800 bg-white hover:bg-gray-50 border border-gray-200 dark:text-gray-200 dark:bg-gray-900 dark:hover:bg-gray-800 dark:border-gray-800"
+                    ? "text-white bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
+                    : "text-zinc-800 bg-white hover:bg-zinc-50 border border-zinc-200 dark:text-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:border-zinc-800"
                 }
-                focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 dark:focus:ring-offset-black
+                focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-black
                 shadow-sm hover:shadow-md
               `}
               onClick={() => setCurrentDate(date)}
@@ -92,15 +92,15 @@ const Page = () => {
       {filteredShowTimes.length > 0 ? (
         <ShowTimesContainer moviesShowTimes={filteredShowTimes} />
       ) : (
-        <div className="py-8 px-4 text-center rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
-          <div className="mx-auto w-12 h-12 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-full mb-3">
-            <svg className="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className=" py-10 px-6 text-center rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm">
+          <div className="mx-auto w-14 h-14 flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 rounded-full mb-3">
+            <svg className="w-8 h-8 text-zinc-400 dark:text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h3 className="text-lg font-medium text-gray-700 dark:text-gray-200">
+          <h3 className="text-lg font-medium text-zinc-700 dark:text-zinc-200">
             No showtimes available for{" "}
-            <span className="text-rose-600 dark:text-rose-500">
+            <span className="text-red-600 dark:text-red-500">
               {parseDate(currentDate).toLocaleDateString("en-US", {
                 weekday: "short",
                 month: "short",
@@ -108,7 +108,7 @@ const Page = () => {
               })}
             </span>
           </h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
             Please check back later or select another date
           </p>
         </div>
