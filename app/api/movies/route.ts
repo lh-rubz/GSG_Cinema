@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import {CastMemberInput} from '@/types/types';
 
 
 export async function GET(request: NextRequest) {
@@ -82,42 +83,69 @@ export async function GET(request: NextRequest) {
 //     }
 // }
 
-
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { castIds, ...movieData } = body
+    const body = await request.json();
+    
+    // 1. Get cast data in proper format
+    const { cast = [] as CastMemberInput[], ...movieData } = body;
 
+     // Add default character name for missing entries
+     const processedCast = cast.map((member: CastMemberInput) => ({
+      castMemberId: member.castMemberId,
+      character: member.character || "Unknown Character" 
+    }));
+
+    // 2. Validate input format
+    if (!Array.isArray(cast)) {
+      return NextResponse.json(
+        { error: "Cast must be an array of objects with castMemberId and character" },
+        { status: 400 }
+      );
+    }
+
+    // 3. Verify cast members exist
+    const castMemberIds = processedCast.map((m : CastMemberInput) => m.castMemberId);
+    const existingCast = await prisma.castMember.findMany({
+      where: { id: { in: castMemberIds } }
+    });
+
+    if (existingCast.length !== castMemberIds.length) {
+      return NextResponse.json(
+        { error: "One or more cast members not found" },
+        { status: 400 }
+      );
+    }
+
+    console.log(castMemberIds);
+
+    // 4. Create movie with proper cast relation
     const movie = await prisma.movie.create({
       data: {
         ...movieData,
-        ...(castIds && castIds.length > 0
-          ? {
-              cast: {
-                create: castIds.map((castId: string) => ({
-                  castMember: {
-                    connect: { id: castId },
-                  },
-                  character: body.characters?.[castId] || "Unknown Character",
-                })),
-              },
-            }
-          : {}),
+        cast: {
+          create: processedCast.map((member: CastMemberInput)  => ({
+            castMemberId: member.castMemberId,
+            character: member.character
+          }))
+        }
       },
       include: {
         director: true,
         cast: {
           include: {
-            castMember: true,
-          },
-        },
-      },
-    })
+            castMember: true
+          }
+        }
+      }
+    });
 
-    return NextResponse.json(movie, { status: 201 })
+    return NextResponse.json(movie, { status: 201 });
   } catch (error) {
-    console.error("Error creating movie:", error)
-    return NextResponse.json({ error: "Failed to create movie" }, { status: 500 })
+    console.error("Error creating movie:", error);
+    return NextResponse.json(
+      { error: "Failed to create movie" },
+      { status: 500 }
+    );
   }
 }
-
