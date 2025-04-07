@@ -59,7 +59,7 @@ const Page = () => {
 
       {/* Select Date */}
       <div className="flex flex-col gap-4 mb-8">
-        <p className="font-bold text-zinc-700 dark:text-gray-300">Select Date</p>
+        <p className="font-bold text-zinc-700 dark:text-zinc-300">Select Date</p>
         <div className="flex gap-2 flex-wrap">
           {dates.map((date) => (
             <button
@@ -71,7 +71,7 @@ const Page = () => {
                 ${
                   currentDate === date
                     ? "text-white bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
-                    : "text-gray-800 bg-white hover:bg-zinc-50 border border-zinc-200 dark:text-gray-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:border-zinc-800"
+                    : "text-zinc-800 bg-white hover:bg-zinc-50 border border-zinc-200 dark:text-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:border-zinc-800"
                 }
                 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-black
                 shadow-sm hover:shadow-md
@@ -108,7 +108,7 @@ const Page = () => {
               })}
             </span>
           </h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
             Please check back later or select another date
           </p>
         </div>

@@ -73,10 +73,10 @@ const PromotionCard = ({ promotion }: Iprops) => {
 
       {/* Content */}
       <div className="relative p-6">
-        <p className="mb-4 text-gray-700 line-clamp-2 dark:text-gray-300">{promotion.description}</p>
+        <p className="mb-4 text-zinc-700 line-clamp-2 dark:text-zinc-300">{promotion.description}</p>
 
         {/* Expiry date - now using the formatDate function */}
-        <div className="mb-5 flex items-center text-gray-600 dark:text-gray-400">
+        <div className="mb-5 flex items-center text-zinc-600 dark:text-zinc-400">
           <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0 text-red-600 dark:text-red-500" />
           <span className="text-sm">
             Valid until {formatDate(promotion.expiry_date)}
@@ -100,7 +100,7 @@ const PromotionCard = ({ promotion }: Iprops) => {
           <div className="flex items-center justify-between mr-5">
             <div className="w-full px-6 py-3">
               <div className="text-xs uppercase tracking-wider text-red-600 dark:text-red-500">Cinema Promo</div>
-              <div className="font-mono text-lg font-bold text-gray-900 dark:text-white">{promotion.discount_code}</div>
+              <div className="font-mono text-lg font-bold text-zinc-900 dark:text-white">{promotion.discount_code}</div>
             </div>
             <button
               onClick={handleCopyCode}
