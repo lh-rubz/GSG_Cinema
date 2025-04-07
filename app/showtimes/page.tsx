@@ -1,10 +1,10 @@
 "use client";
-import React, { useEffect } from "react";
-import { showtimes } from "@/data/showtimes";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ShowTimesContainer from "@/components/showTimesContainer";
 import { Showtime } from "@/types/types";
 import { useRouter, useSearchParams } from "next/navigation";
+import { showtimesApi } from "@/lib/endpoints/showtimes";
+import { Loading } from "@/components/loading-inline";
 
 const Page = () => {
   const router = useRouter();
@@ -40,18 +40,47 @@ const Page = () => {
   };
 
   const dates = getUpcomingDates();
-
-  // Set the initial date from URL or default to today
   const initialDate = urlDate && dates.includes(urlDate) ? urlDate : dates[0];
   const [currentDate, setCurrentDate] = useState<string>(initialDate);
-  const [filteredShowTimes, setFilteredShowTimes] = useState<Showtime[]>([]);
+  const [filteredShowTimes, setFilteredShowTimes] = useState<Showtime[]|undefined>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Filter showtimes based on selected date
+  // Fetch showtimes based on selected date
   useEffect(() => {
-    const filtered = showtimes.filter((showtime) => showtime.date === currentDate);
-    setFilteredShowTimes(filtered);
-    router.push(`?date=${currentDate}`);
+    const fetchShowtimes = async () => {
+      try {
+        setIsLoading(true);
+        const response = await showtimesApi.getShowtimes({ date: currentDate });
+        setFilteredShowTimes(response.data);
+        router.push(`?date=${currentDate}`);
+      } catch (err) {
+        console.error("Failed to fetch showtimes:", err);
+        setError("Failed to load showtimes. Please try again later.");
+        setFilteredShowTimes([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchShowtimes();
   }, [currentDate, router]);
+
+  if (isLoading) {
+    return (
+      <div className="px-[24px] pt-[130px] bg-white dark:bg-zinc-900 min-h-screen flex items-center justify-center">
+        <Loading text="Loading showtimes..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="px-[24px] pt-[130px] bg-white dark:bg-zinc-900 min-h-screen flex items-center justify-center">
+        <p className="text-red-500 dark:text-red-400">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="px-[24px] pt-[130px] bg-white max-h-full dark:bg-zinc-900 min-h-screen">
@@ -89,10 +118,10 @@ const Page = () => {
       </div>
 
       {/* Showtimes Display */}
-      {filteredShowTimes.length > 0 ? (
-        <ShowTimesContainer moviesShowTimes={filteredShowTimes} />
+      {filteredShowTimes!.length > 0 ? (
+        <ShowTimesContainer moviesShowTimes={filteredShowTimes!} />
       ) : (
-        <div className=" py-10 px-6 text-center rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm">
+        <div className="py-10 px-6 text-center rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm">
           <div className="mx-auto w-14 h-14 flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 rounded-full mb-3">
             <svg className="w-8 h-8 text-zinc-400 dark:text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

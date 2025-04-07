@@ -1,3 +1,5 @@
+import { Cast } from "@prisma/client/runtime/library";
+
 export const ALL_GENRES: MovieGenre[] = [
   "Action",
   "Adventure",
@@ -46,7 +48,7 @@ export interface Movie {
   duration?: string;
   trailer: string;
   releaseDate?: string;
-  castIds: string[];
+  casts: Cast<any, any>[]; 
   status: "coming_soon" | "now_showing";
   hidden: boolean;
 }

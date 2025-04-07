@@ -153,3 +153,5 @@ const ResetButton = ({ onClick }: { onClick: () => void }) => (
     Reset Filters
   </button>
 );
+
+export { MovieGenre };
