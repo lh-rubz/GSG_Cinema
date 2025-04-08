@@ -1,26 +1,36 @@
 "use client";
-import { useTheme } from "next-themes";
-import { PuffLoader } from "react-spinners";
+
+import { useEffect, useState } from "react"
 
 interface LoadingProps {
-    text?: string;
-    color?: string;
-  }
-  
-export const Loading = ({ text = "Loading...", color }: LoadingProps) => {
-    const { theme } = useTheme();
-    const loaderColor = color || (theme === "dark" ? "#ffffff" : "#dc2626");
-  
+  text?: string
+  className?: string
+  loaderColor?: string
+}
+
+export function Loading({ text = "Loading...", className, loaderColor = "#ffffff" }: LoadingProps) {
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  const baseClasses = "flex flex-col items-center justify-center gap-4 py-16"
+  const containerClasses = className ? `${baseClasses} ${className}` : baseClasses
+
+  if (!isClient) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 py-16">
-        <PuffLoader 
-          color={loaderColor} 
-          size={50}
-          speedMultiplier={1.2}
-        />
-        <p className="text-lg font-medium text-zinc-800 dark:text-zinc-200 animate-pulse">
-          {text}
-        </p>
+      <div className={containerClasses}>
+        <div className="w-12 h-12 border-4 border-zinc-200 dark:border-zinc-700 border-t-red-500 dark:border-t-red-400 rounded-full animate-spin" />
+        <p className="text-zinc-600 dark:text-zinc-400">{text}</p>
       </div>
-    );
-  };
+    )
+  }
+
+  return (
+    <div className={containerClasses}>
+      <div className="w-12 h-12 border-4 border-zinc-200 dark:border-zinc-700 border-t-red-500 dark:border-t-red-400 rounded-full animate-spin" />
+      <p className="text-zinc-600 dark:text-zinc-400">{text}</p>
+    </div>
+  )
+}

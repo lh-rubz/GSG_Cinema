@@ -70,10 +70,10 @@ export interface CastMember {
 }
 export interface Seat {
   id: string;
-  number: string;
-  age:"kid"|"adult";
-  type: 'standard' | 'premium' ;
-  available: boolean;
+  row: number;
+  column: number;
+  type: string;
+  status: string;
 }
 
 export interface Screen {

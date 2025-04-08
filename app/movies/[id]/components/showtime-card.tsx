@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useState } from "react"
 
 interface ShowtimeCardProps {
-  showtime: Showtime
+  showtime: any
  
 }
 
@@ -98,7 +98,7 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
 
         <div className="flex justify-between items-center">
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            {showtime.availableSeats} seats available
+            {showtime.screen.seats?.filter(seat => seat.available == true).length} seats available
           </div>
           <Link href={`/book/${showtime.id}`}>
           <button 
