@@ -6,6 +6,9 @@ import Header from "@/components/landing-header"
 import { Footer } from "@/components/landing-footer"
 import { Providers } from "./providers"
 import { Toaster } from "react-hot-toast"
+import { AuthProvider } from "@/hooks/use-auth"
+import { Suspense } from "react"
+import Loading from "./loading"
 
  const inter = Inter({ subsets: ["latin"] })
 
@@ -21,15 +24,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning className="dark">
+     <Suspense fallback={<Loading />}>
       <body
         className={`${inter.className} dark:bg-black dark:text-white bg-white text-gray-900 min-h-screen flex flex-col`}
-      > <Toaster
+      ><AuthProvider> 
+      <Toaster
       position="bottom-right"
       reverseOrder={false}
     />
         <Providers>
-          <Header/>{children}<Footer/></Providers>
+          <Header/>{children}<Footer/></Providers></AuthProvider>
       </body>
+      </Suspense>
     </html>
   )
 }

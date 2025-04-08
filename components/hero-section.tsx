@@ -23,7 +23,7 @@ export function HeroSection() {
           <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-6 leading-tight bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
             Experience <span className="text-white">Movies</span> Like Never Before
           </h1>
-          <p className="text-xl md:text-2xl text-gray-200 mb-10 font-medium">
+          <p className="text-xl md:text-2xl text-zinc-200 mb-10 font-medium">
             Immerse yourself in the ultimate cinema experience with state-of-the-art sound, crystal clear projection,
             and premium comfort.
           </p>

@@ -7,7 +7,7 @@ interface MovieCardProps {
 
 export default function MovieCard({ movie }: MovieCardProps) {
   return (
-    <div className="group relative bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+    <div className="group relative bg-white dark:bg-zinc-800 rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
       {/* Poster with hover effect */}
       <div className="relative aspect-[2/3] overflow-hidden">
         <img
@@ -28,16 +28,16 @@ export default function MovieCard({ movie }: MovieCardProps) {
 
       {/* Movie info */}
       <div className="p-4">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 line-clamp-1">{movie.title}</h3>
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1 line-clamp-1">{movie.title}</h3>
         
         <div className="flex justify-between items-center mb-3">
-          <span className="text-sm text-gray-600 dark:text-gray-400">{movie.year}</span>
-          <span className="text-xs font-medium px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-full">
-            {movie.genre}
+          <span className="text-sm text-zinc-600 dark:text-zinc-400">{movie.year}</span>
+          <span className="text-xs font-medium px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-full">
+            {movie.genre.join(" • ")}
           </span>
         </div>
 
-        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
+        <p className="text-sm text-zinc-600 dark:text-zinc-300 mb-4 line-clamp-2">
           {movie.description}
         </p>
 

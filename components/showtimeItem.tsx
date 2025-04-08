@@ -31,14 +31,14 @@ const ShowtimeItem = ({ showTimes, movie }: Iprops) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 shadow-lg dark:shadow-gray-800/50 rounded-lg w-full mx-auto max-w-6xl flex flex-col items-start border border-gray-300 dark:border-gray-700 md:flex-row overflow-hidden transition-colors duration-300">
+    <div className="bg-white dark:bg-zinc-900 shadow-lg dark:shadow-zinc-800/50 rounded-lg w-full mx-auto max-w-6xl flex flex-col items-start border border-zinc-300 dark:border-zinc-700 md:flex-row overflow-hidden transition-colors duration-300">
       {/* Movie Poster */}
       <div className="md:w-1/4 w-full aspect-[2/3] relative">
         <img
           src={movie.image || ""}
           alt={`${movie.title} poster`}
           title={`${movie.title} poster`}
-          className="w-full h-full object-cover bg-gray-200 dark:bg-gray-800"
+          className="w-full h-full object-cover bg-zinc-200 dark:bg-zinc-800"
           onError={(e) => {
             (e.target as HTMLImageElement).src = '/placeholder-movie.png';
           }}
@@ -49,12 +49,12 @@ const ShowtimeItem = ({ showTimes, movie }: Iprops) => {
       <div className="md:w-3/4 w-full p-6 flex flex-col justify-center relative">
         {/* Title and Metadata */}
         <div className="pr-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{movie.title}</h2>
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">{movie.title}</h2>
           <div className="flex items-center gap-3 mt-1 text-sm">
-            <span className="text-gray-600 dark:text-gray-400">{movie.genre}</span>
-            <span className="text-gray-400 dark:text-gray-500">•</span>
+            <span className="text-zinc-600 dark:text-zinc-400">{movie.genre}</span>
+            <span className="text-zinc-400 dark:text-zinc-500">•</span>
             <span 
-              className="text-gray-600 dark:text-gray-400 flex items-center gap-1 cursor-pointer hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+              className="text-zinc-600 dark:text-zinc-400 flex items-center gap-1 cursor-pointer hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
               onClick={() => setShowHours(!showHours)}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -67,7 +67,7 @@ const ShowtimeItem = ({ showTimes, movie }: Iprops) => {
 
         {/* Showtimes */}
         <div className="mt-4">
-          <h3 className="text-gray-700 dark:text-gray-300 font-semibold">
+          <h3 className="text-zinc-700 dark:text-zinc-300 font-semibold">
             Available Showtimes:
           </h3>
           <div className="mt-2 flex gap-3 flex-wrap">
@@ -77,12 +77,12 @@ const ShowtimeItem = ({ showTimes, movie }: Iprops) => {
                 <Link
                   key={index}
                   href={{ pathname: "/booking", query: { showtime: show.id } }}
-                  className="text-gray-900 dark:text-white bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg flex flex-col px-4 py-2 justify-center items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm hover:shadow-md min-w-[80px] group"
+                  className="text-zinc-900 dark:text-white bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg flex flex-col px-4 py-2 justify-center items-center hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all duration-200 shadow-sm hover:shadow-md min-w-[80px] group"
                 >
                   <span className="font-medium group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
                     {show.time}
                   </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                     {theater?.name}
                   </span>
                 </Link>

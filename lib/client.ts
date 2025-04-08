@@ -56,6 +56,7 @@ export const apiClient = {
   
   async post<T, D = any>(endpoint: string, data: D): Promise<ApiResponse<T>> {
     try {
+      console.log('POST request to:', `${API_BASE_URL}${endpoint}`, data);  // Log the request details
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: {
@@ -65,6 +66,9 @@ export const apiClient = {
       });
       
       const responseData = await response.json();
+      if (!response.ok) {
+        console.error(`Failed to POST to ${endpoint}`, responseData);  // Log error details
+      }
       
       return {
         data: response.ok ? responseData : undefined,
@@ -79,6 +83,7 @@ export const apiClient = {
       };
     }
   },
+  
   
   async put<T, D = any>(endpoint: string, data: D): Promise<ApiResponse<T>> {
     try {

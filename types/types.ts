@@ -1,3 +1,5 @@
+import { Cast } from "@prisma/client/runtime/library";
+
 export const ALL_GENRES: MovieGenre[] = [
   "Action",
   "Adventure",
@@ -46,7 +48,7 @@ export interface Movie {
   duration?: string;
   trailer: string;
   releaseDate?: string;
-  castIds: string[];
+  casts: Cast<any, any>[]; 
   status: "coming_soon" | "now_showing";
   hidden: boolean;
 }
@@ -68,10 +70,10 @@ export interface CastMember {
 }
 export interface Seat {
   id: string;
-  number: string;
-  age:"kid"|"adult";
-  type: 'standard' | 'premium' ;
-  available: boolean;
+  row: number;
+  column: number;
+  type: string;
+  status: string;
 }
 
 export interface Screen {
@@ -122,7 +124,7 @@ export interface User {
   gender: "F" | "M";
   movieIdsPurchased: string[];
   profileImage?: string;
-  role: "admin" | "staff" | "customer";
+  role: "Admin" | "Staff" | "User";
 }
 export interface Ticket {
   id: string;

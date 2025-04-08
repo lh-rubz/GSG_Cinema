@@ -8,9 +8,9 @@ const api = axios.create({
 (async () => {
   try {
     const directorData: Director[] = [
-      {id: "d1", name: "Christopher Nolan", bio: "Christopher Edward Nolan is a British-American filmmaker...", image: "https://example.com/images/nolan.jpg" },
-      {id: "d2", name: "Denis Villeneuve", bio: "Denis Villeneuve is a Canadian filmmaker...", image: "https://example.com/images/villeneuve.jpg" },
-      {id: "d3", name: "Greta Gerwig", bio: "Greta Celeste Gerwig is an American actress and filmmaker. She has received nominations for the Academy Award for Best Director, Best Original Screenplay, and Best Adapted Screenplay.", image: "https://example.com/images/greta-gerwig.jpg" }
+      {id: "d1", name: "Christopher Nolan", bio: "Christopher Edward Nolan is a British-American filmmaker...", image: "https://cdn.britannica.com/37/255737-050-9BB3FEDA/Christopher-Nolan-Movie-film-director-Oppenheimer-UK-premiere-2023.jpg" },
+      {id: "d2", name: "Denis Villeneuve", bio: "Denis Villeneuve is a Canadian filmmaker...", image: "https://upload.wikimedia.org/wikipedia/commons/a/a4/Denis_Villeneuve_by_Gage_Skidmore.jpg" },
+      {id: "d3", name: "Greta Gerwig", bio: "Greta Celeste Gerwig is an American actress and filmmaker. She has received nominations for the Academy Award for Best Director, Best Original Screenplay, and Best Adapted Screenplay.", image: "https://mediaproxy.tvtropes.org/width/1200/https://static.tvtropes.org/pmwiki/pub/images/greta_gerwig_6.jpg" }
     ];
 
     const directorResponses: AxiosResponse[] = await Promise.all(directorData.map(d => api.post('/directors', d)));
