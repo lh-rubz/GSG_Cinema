@@ -81,9 +81,7 @@ export default function ProfilePage() {
 
   return (
     <>
-      {/* Loading Spinner */}
-     <Suspense fallback={ <Loading fullScreen text="Signing out..." />}/>
-
+     
       {/* Logout Confirmation Dialog */}
       {showLogoutDialog && !isLoggingOut && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

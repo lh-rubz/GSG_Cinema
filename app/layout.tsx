@@ -24,7 +24,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning className="dark">
-     <Suspense fallback={<Loading fullScreen text="Loading"/>}/>
+     <Suspense fallback={<Loading />}>
       <body
         className={`${inter.className} dark:bg-black dark:text-white bg-white text-gray-900 min-h-screen flex flex-col`}
       ><AuthProvider> 
@@ -35,6 +35,7 @@ export default function RootLayout({
         <Providers>
           <Header/>{children}<Footer/></Providers></AuthProvider>
       </body>
+      </Suspense>
     </html>
   )
 }

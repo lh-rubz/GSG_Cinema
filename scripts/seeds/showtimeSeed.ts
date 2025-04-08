@@ -13,7 +13,7 @@ const api = axios.create({
             "id": "sh1",
             "movieId": "m1", 
             "screenId": "s1", 
-            "date": "2023-05-15",
+            "date": "09-04-2025",
             "time": "18:30",
             "format": "TwoD",
             "price": 12.99
@@ -22,7 +22,7 @@ const api = axios.create({
             "id": "sh2",
             "movieId": "m5", 
             "screenId": "s1", 
-            "date": "2023-05-15",
+            "date": "10-04-2025",
             "time": "20:00",
             "format": "ThreeD",
             "price": 14.99

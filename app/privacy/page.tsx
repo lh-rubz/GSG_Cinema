@@ -7,17 +7,19 @@ export const metadata: Metadata = {
   description: "Privacy policy for CineHub services",
 }
 
-export default function PrivacyPage() {
+
+export default async  function PrivacyPage() {
+
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="bg-white dark:bg-gray-800 shadow-sm">
+    <main className="min-h-screen bg-zinc-50 dark:bg-zinc-900 py-8">
+      <div className="bg-white dark:bg-zinc-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-12">
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-50 dark:bg-red-900/20 mb-4">
               <Shield className="h-6 w-6 text-red-600 dark:text-red-400" />
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Privacy Policy</h1>
-            <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">
+            <h1 className="text-4xl font-bold text-zinc-900 dark:text-white">Privacy Policy</h1>
+            <p className="mt-2 text-lg text-zinc-600 dark:text-zinc-300">
               Last updated: March 23, 2024
             </p>
           </div>
@@ -86,15 +88,15 @@ export default function PrivacyPage() {
             <Section icon={<Mail size={20} />} title="7. Contact Us">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                 <div className="flex items-start space-x-3">
-                  <Mail className="h-5 w-5 text-gray-500 dark:text-gray-400 mt-0.5 flex-shrink-0" />
+                  <Mail className="h-5 w-5 text-zinc-500 dark:text-zinc-400 mt-0.5 flex-shrink-0" />
                   <span>privacy@cineHub.com</span>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <Phone className="h-5 w-5 text-gray-500 dark:text-gray-400 mt-0.5 flex-shrink-0" />
+                  <Phone className="h-5 w-5 text-zinc-500 dark:text-zinc-400 mt-0.5 flex-shrink-0" />
                   <span>(970) 123-4567-510</span>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <MapPin className="h-5 w-5 text-gray-500 dark:text-gray-400 mt-0.5 flex-shrink-0" />
+                  <MapPin className="h-5 w-5 text-zinc-500 dark:text-zinc-400 mt-0.5 flex-shrink-0" />
                   <span>Icon mall, Surda, Ramallah, Palestine🍉</span>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -118,7 +120,7 @@ function Section({ icon, title, children }: { icon: React.ReactNode, title: stri
         <div className="mr-3 text-red-600 dark:text-red-400">
           {icon}
         </div>
-        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+        <h2 className="text-2xl font-semibold text-zinc-900 dark:text-white">
           {title}
         </h2>
       </div>
