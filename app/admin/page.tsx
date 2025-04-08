@@ -1,0 +1,291 @@
+'use client'
+
+import { useState, useEffect } from "react"
+import Link from "next/link"
+import { Film, Users, User, Video, Cast, MonitorPlay, Ticket, TrendingUp, AlertCircle, Calendar } from "lucide-react"
+import { moviesApi } from "@/lib/endpoints/movies"
+import { statsApi } from "@/lib/endpoints/stats"
+import type { Movie, Director } from "@/types/types"
+import type { Stats } from "@/lib/endpoints/stats"
+
+// Define a type for the movie with director information
+interface MovieWithDirector extends Movie {
+  director?: Director;
+}
+
+export default function AdminDashboard() {
+  const [stats, setStats] = useState<Stats>({
+    totalMovies: 0,
+    activeCustomers: 0,
+    ticketsSold: 0,
+    revenue: 0,
+    ticketsTrend: 0,
+    revenueTrend: 0
+  })
+  const [upcomingMovies, setUpcomingMovies] = useState<MovieWithDirector[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true)
+        
+        const statsResponse = await statsApi.getStats()
+        if (statsResponse.error) {
+          console.error('Error fetching stats:', statsResponse.error)
+          setError(statsResponse.error)
+        } else {
+          setStats(statsResponse.data || {
+            totalMovies: 0,
+            activeCustomers: 0,
+            ticketsSold: 0,
+            revenue: 0,
+            ticketsTrend: 0,
+            revenueTrend: 0
+          })
+        }
+        
+        const moviesResponse = await moviesApi.getMovies({ status: 'coming_soon' })
+        if (moviesResponse.error) {
+          console.error('Error fetching upcoming movies:', moviesResponse.error)
+          setError(moviesResponse.error)
+        } else {
+          setUpcomingMovies(moviesResponse.data || [])
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err)
+        setError(err instanceof Error ? err.message : 'An unknown error occurred')
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Loading dashboard data...</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-red-500">Error: {error}</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <div className="text-sm text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          title="Total Movies"
+          value={stats.totalMovies.toString()}
+          icon={<Film className="h-5 w-5" />}
+          trend="+12% from last month"
+          trendUp={true}
+        />
+        <StatCard
+          title="Active Customers"
+          value={stats.activeCustomers.toString()}
+          icon={<User className="h-5 w-5" />}
+          trend="+8% from last month"
+          trendUp={true}
+        />
+        <StatCard
+          title="Tickets Sold"
+          value={stats.ticketsSold.toString()}
+          icon={<Ticket className="h-5 w-5" />}
+          trend={`${stats.ticketsTrend}% from last month`}
+          trendUp={stats.ticketsTrend >= 0}
+        />
+        <StatCard
+          title="Revenue"
+          value={`$${stats.revenue.toLocaleString()}`}
+          icon={<TrendingUp className="h-5 w-5" />}
+          trend={`${stats.revenueTrend}% from last month`}
+          trendUp={stats.revenueTrend >= 0}
+        />
+      </div>
+
+      {/* Quick access */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="border border-border rounded-lg overflow-hidden">
+          <div className="bg-muted px-4 py-3 border-b border-border">
+            <h2 className="font-medium">Quick Access</h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4">
+            <QuickAccessCard title="Movies" icon={<Film className="h-6 w-6" />} href="/admin/movies" />
+            <QuickAccessCard title="Showtimes" icon={<Calendar className="h-6 w-6" />} href="/admin/showtimes" />
+            <QuickAccessCard title="Staff" icon={<Users className="h-6 w-6" />} href="/admin/staff" />
+            <QuickAccessCard title="Customers" icon={<User className="h-6 w-6" />} href="/admin/customers" />
+            <QuickAccessCard title="Directors" icon={<Video className="h-6 w-6" />} href="/admin/directors" />
+            <QuickAccessCard title="Cast" icon={<Cast className="h-6 w-6" />} href="/admin/cast" />
+            <QuickAccessCard title="Screens" icon={<MonitorPlay className="h-6 w-6" />} href="/admin/screens" />
+            <QuickAccessCard title="Tickets" icon={<Ticket className="h-6 w-6" />} href="/admin/tickets" />
+          </div>
+        </div>
+
+        <div className="border border-border rounded-lg overflow-hidden">
+          <div className="bg-muted px-4 py-3 border-b border-border">
+            <h2 className="font-medium">Recent Activity</h2>
+          </div>
+          <div className="divide-y divide-border">
+            <ActivityItem
+              title="New movie added"
+              description="Dune: Part Two was added to the catalog by admin"
+              time="2 hours ago"
+              icon={<Film className="h-4 w-4" />}
+            />
+            <ActivityItem
+              title="Ticket status updated"
+              description="5 tickets were marked as used"
+              time="4 hours ago"
+              icon={<Ticket className="h-4 w-4" />}
+            />
+            <ActivityItem
+              title="New staff member"
+              description="John Doe was added as staff"
+              time="Yesterday"
+              icon={<Users className="h-4 w-4" />}
+            />
+            <ActivityItem
+              title="Screen maintenance"
+              description="IMAX Screen 1 scheduled for maintenance"
+              time="2 days ago"
+              icon={<AlertCircle className="h-4 w-4" />}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Upcoming releases */}
+      <div className="border border-border rounded-lg overflow-hidden">
+        <div className="bg-muted px-4 py-3 border-b border-border">
+          <h2 className="font-medium">Upcoming Movie Releases</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="px-4 py-3 text-left text-sm font-medium">Movie</th>
+                <th className="px-4 py-3 text-left text-sm font-medium">Release Date</th>
+                <th className="px-4 py-3 text-left text-sm font-medium">Director</th>
+                <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {upcomingMovies.length > 0 ? (
+                upcomingMovies.map((movie: MovieWithDirector) => (
+                  <tr key={movie.id} className="border-b border-border">
+                    <td className="px-4 py-3 text-sm">{movie.title}</td>
+                    <td className="px-4 py-3 text-sm">{movie.releaseDate || 'TBA'}</td>
+                    <td className="px-4 py-3 text-sm">{movie.director?.name || 'Unknown'}</td>
+                    <td className="px-4 py-3 text-sm">
+                      <span className="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500">
+                        Coming Soon
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="px-4 py-3 text-sm text-center text-muted-foreground">
+                    No upcoming movies found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function StatCard({
+  title,
+  value,
+  icon,
+  trend,
+  trendUp,
+}: {
+  title: string
+  value: string
+  icon: React.ReactNode
+  trend: string
+  trendUp: boolean
+}) {
+  return (
+    <div className="border border-border rounded-lg p-4 bg-card">
+      <div className="flex items-center justify-between">
+        <div className="text-muted-foreground">{title}</div>
+        <div className="p-2 rounded-full bg-primary/10 text-primary">{icon}</div>
+      </div>
+      <div className="mt-2 text-2xl font-bold">{value}</div>
+      <div className={`mt-2 text-xs flex items-center ${trendUp ? "text-green-500" : "text-red-500"}`}>
+        {trendUp ? (
+          <TrendingUp className="h-3 w-3 mr-1" />
+        ) : (
+          <TrendingUp className="h-3 w-3 mr-1 transform rotate-180" />
+        )}
+        {trend}
+      </div>
+    </div>
+  )
+}
+
+function QuickAccessCard({
+  title,
+  icon,
+  href,
+}: {
+  title: string
+  icon: React.ReactNode
+  href: string
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex flex-col items-center justify-center p-4 border border-border rounded-lg hover:bg-secondary transition-colors"
+    >
+      <div className="p-3 rounded-full bg-primary/10 text-primary">{icon}</div>
+      <div className="mt-2 text-sm font-medium">{title}</div>
+    </Link>
+  )
+}
+
+function ActivityItem({
+  title,
+  description,
+  time,
+  icon,
+}: {
+  title: string
+  description: string
+  time: string
+  icon: React.ReactNode
+}) {
+  return (
+    <div className="flex items-start gap-3 p-4">
+      <div className="p-2 rounded-full bg-primary/10 text-primary shrink-0">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <p className="font-medium">{title}</p>
+        <p className="text-sm text-muted-foreground">{description}</p>
+        <p className="text-xs text-muted-foreground mt-1">{time}</p>
+      </div>
+    </div>
+  )
+}
+

@@ -10,3 +10,4 @@ export { showtimesApi } from './endpoints/showtimes';
 export { ticketsApi } from './endpoints/tickets';
 export { receiptsApi } from './endpoints/receipts';
 export { reviewsApi } from './endpoints/reviews';
+export { statsApi } from './endpoints/stats';

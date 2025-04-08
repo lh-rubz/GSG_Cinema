@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { SeatType } from "@prisma/client"
-import { ScreenInput } from "@/types/types"
 
 // GET: Fetch all screens
 export async function GET(request: NextRequest) {

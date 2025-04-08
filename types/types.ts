@@ -77,7 +77,7 @@ export interface Seat {
 export interface Screen {
   id: string;
   name: string;
-  type: ("Standard" | "Premium" | "IMAX" | "4DX")[];
+  type: ("Standard" | "Premium" | "IMAX" | "FourDX")[];
   capacity: number;
   rows: number;
   cols: number;
@@ -89,7 +89,7 @@ export interface Showtime {
   screenId: string;
   date: string; // DD-MM-YYYY
   time: string; // HH:MM in 24-hour format
-  format: "2D" | "3D" | "imax" | "4dx";
+  format: "TwoD" | "ThreeD" | "imax" | "fourDx";
   availableSeats: number;
   price: number;
 }

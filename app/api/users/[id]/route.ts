@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { Role } from "@prisma/client"
 
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
@@ -52,25 +53,53 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   try {
     const body = await request.json()
 
-    // Check if username or email already exists (if being updated)
-    if (body.username || body.email) {
-      const existingUser = await prisma.user.findFirst({
+    // Check if username already exists (if being updated)
+    if (body.username) {
+      const existingUsername = await prisma.user.findFirst({
         where: {
-          OR: [body.username ? { username: body.username } : {}, body.email ? { email: body.email } : {}],
+          username: body.username,
           NOT: {
             id: params.id,
           },
         },
       })
 
-      if (existingUser) {
-        return NextResponse.json({ error: "Username or email already exists" }, { status: 400 })
+      if (existingUsername) {
+        return NextResponse.json({ error: "Username already exists" }, { status: 400 })
       }
+    }
+
+    // Check if email already exists (if being updated)
+    if (body.email) {
+      const existingEmail = await prisma.user.findFirst({
+        where: {
+          email: body.email,
+          NOT: {
+            id: params.id,
+          },
+        },
+      })
+
+      if (existingEmail) {
+        return NextResponse.json({ error: "Email already exists" }, { status: 400 })
+      }
+    }
+
+    // Handle role update if provided
+    let updateData = { ...body }
+    if (body.role) {
+      let role: Role = Role.User // Default role
+      if (body.role === "Staff" || body.role === "staff") {
+        role = Role.Staff
+      } else if (body.role === "Admin" || body.role === "admin") {
+        role = Role.Admin
+      }
+      updateData.role = role
     }
 
     const user = await prisma.user.update({
       where: { id: params.id },
-      data: body,
+      data: updateData,
     })
 
     return NextResponse.json(user)
