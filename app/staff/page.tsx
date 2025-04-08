@@ -1,8 +1,75 @@
-import type React from "react"
+"use client"
+
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Film, Ticket, Calendar } from "lucide-react"
+import { moviesApi } from "@/lib/endpoints/movies"
+import { showtimesApi } from "@/lib/endpoints/showtimes"
+import { ticketsApi } from "@/lib/endpoints/tickets"
+import type { Movie, Showtime, Ticket as TicketType, Screen as CinemaScreen } from "@/types/types"
+import { screensApi } from "@/lib/endpoints/screens"
 
 export default function StaffDashboard() {
+  const [isLoading, setIsLoading] = useState(true)
+  const [moviesToday, setMoviesToday] = useState<Movie[]>([])
+  const [ticketsSoldToday, setTicketsSoldToday] = useState(0)
+  const [pendingTickets, setPendingTickets] = useState<TicketType[]>([])
+  const [todayShowtimes, setTodayShowtimes] = useState<Showtime[]>([])
+  const [screens, setScreens] = useState<CinemaScreen[]>([])
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
+
+  const fetchDashboardData = async () => {
+    try {
+      setIsLoading(true)
+      const today = new Date().toISOString().split('T')[0]
+      const screensResponse = await screensApi.getScreens()
+      if (screensResponse.data) {
+        setScreens(screensResponse.data)
+      }
+
+      const showtimesResponse = await showtimesApi.getShowtimes({ date: today })
+      if (showtimesResponse.data) {
+        const movieIds = [...new Set(showtimesResponse.data.map(st => st.movieId))]
+        const moviesResponse = await moviesApi.getMovies({ status: "now_showing" })
+        if (moviesResponse.data) {
+          const todayMovies = moviesResponse.data.filter(movie => 
+            movieIds.includes(movie.id) && !movie.hidden
+          )
+          setMoviesToday(todayMovies)
+        }
+        setTodayShowtimes(showtimesResponse.data)
+      }
+
+      const ticketsResponse = await ticketsApi.getTickets({ status: "paid" })
+      if (ticketsResponse.data) {
+        const todayTickets = ticketsResponse.data.filter(ticket => 
+          ticket.purchaseDate.startsWith(today)
+        )
+        setTicketsSoldToday(todayTickets.length)
+      }
+
+      const pendingResponse = await ticketsApi.getTickets({ status: "reserved" })
+      if (pendingResponse.data) {
+        setPendingTickets(pendingResponse.data)
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Loading dashboard data...</div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -12,9 +79,9 @@ export default function StaffDashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <StatCard title="Movies Showing Today" value="8" icon={<Film className="h-5 w-5" />} />
-        <StatCard title="Tickets Sold Today" value="124" icon={<Ticket className="h-5 w-5" />} />
-        <StatCard title="Pending Tickets" value="18" icon={<Calendar className="h-5 w-5" />} />
+        <StatCard title="Movies Showing Today" value={moviesToday.length.toString()} icon={<Film className="h-5 w-5" />} />
+        <StatCard title="Tickets Sold Today" value={ticketsSoldToday.toString()} icon={<Ticket className="h-5 w-5" />} />
+        <StatCard title="Pending Tickets" value={pendingTickets.length.toString()} icon={<Calendar className="h-5 w-5" />} />
       </div>
 
       {/* Quick access */}
@@ -34,10 +101,23 @@ export default function StaffDashboard() {
             <h2 className="font-medium">Today's Showtimes</h2>
           </div>
           <div className="divide-y divide-border">
-            <ShowtimeItem title="Dune: Part Two" time="14:30" screen="Screen 1" availableSeats={45} />
-            <ShowtimeItem title="Oppenheimer" time="15:45" screen="Screen 2" availableSeats={32} />
-            <ShowtimeItem title="Dune: Part Two" time="18:00" screen="Screen 1" availableSeats={28} />
-            <ShowtimeItem title="Gladiator II" time="20:15" screen="Screen 3" availableSeats={50} />
+            {todayShowtimes.map((showtime) => {
+              const screen = screens.find(s => s.id === showtime.screenId);
+              return (
+                <ShowtimeItem
+                  key={showtime.id}
+                  title={moviesToday.find(m => m.id === showtime.movieId)?.title || "Unknown Movie"}
+                  time={showtime.time}
+                  screen={screen?.name || "Unknown Screen"}
+                  availableSeats={screen?.capacity || 0}
+                />
+              );
+            })}
+            {todayShowtimes.length === 0 && (
+              <div className="p-4 text-center text-muted-foreground">
+                No showtimes scheduled for today
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -61,57 +141,36 @@ export default function StaffDashboard() {
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-border">
-                <td className="px-4 py-3 text-sm">T1001</td>
-                <td className="px-4 py-3 text-sm">John Doe</td>
-                <td className="px-4 py-3 text-sm">Dune: Part Two</td>
-                <td className="px-4 py-3 text-sm">Today, 14:30</td>
-                <td className="px-4 py-3 text-sm">A12</td>
-                <td className="px-4 py-3 text-sm">
-                  <span className="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500">
-                    Reserved
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-sm">
-                  <Link href="/staff/tickets" className="text-primary hover:underline">
-                    Manage
-                  </Link>
-                </td>
-              </tr>
-              <tr className="border-b border-border">
-                <td className="px-4 py-3 text-sm">T1002</td>
-                <td className="px-4 py-3 text-sm">Jane Smith</td>
-                <td className="px-4 py-3 text-sm">Oppenheimer</td>
-                <td className="px-4 py-3 text-sm">Today, 15:45</td>
-                <td className="px-4 py-3 text-sm">B7</td>
-                <td className="px-4 py-3 text-sm">
-                  <span className="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500">
-                    Reserved
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-sm">
-                  <Link href="/staff/tickets" className="text-primary hover:underline">
-                    Manage
-                  </Link>
-                </td>
-              </tr>
-              <tr>
-                <td className="px-4 py-3 text-sm">T1003</td>
-                <td className="px-4 py-3 text-sm">Mike Johnson</td>
-                <td className="px-4 py-3 text-sm">Dune: Part Two</td>
-                <td className="px-4 py-3 text-sm">Today, 18:00</td>
-                <td className="px-4 py-3 text-sm">C5</td>
-                <td className="px-4 py-3 text-sm">
-                  <span className="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500">
-                    Reserved
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-sm">
-                  <Link href="/staff/tickets" className="text-primary hover:underline">
-                    Manage
-                  </Link>
-                </td>
-              </tr>
+              {pendingTickets.map((ticket) => {
+                const showtime = todayShowtimes.find(st => st.id === ticket.showtimeId)
+                const movie = moviesToday.find(m => m.id === showtime?.movieId)
+                return (
+                  <tr key={ticket.id} className="border-b border-border">
+                    <td className="px-4 py-3 text-sm">{ticket.id}</td>
+                    <td className="px-4 py-3 text-sm">{ticket.userId}</td>
+                    <td className="px-4 py-3 text-sm">{movie?.title || "Unknown Movie"}</td>
+                    <td className="px-4 py-3 text-sm">{showtime ? `${showtime.date} at ${showtime.time}` : "Unknown Time"}</td>
+                    <td className="px-4 py-3 text-sm">{ticket.seatId}</td>
+                    <td className="px-4 py-3 text-sm">
+                      <span className="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500">
+                        Reserved
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      <Link href="/staff/tickets" className="text-primary hover:underline">
+                        Manage
+                      </Link>
+                    </td>
+                  </tr>
+                )
+              })}
+              {pendingTickets.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                    No pending tickets
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

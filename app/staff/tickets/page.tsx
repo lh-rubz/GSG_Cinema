@@ -2,86 +2,112 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Ticket } from "lucide-react"
 import { Modal } from "@/components/modal"
 import { FormField } from "@/components/form-field"
-import type { Ticket as TicketType } from "@/types"
+import type { Ticket as TicketType } from "@/types/types"
+import { ticketsApi } from "@/lib/endpoints/tickets"
 
-// Sample data
-const sampleTickets: TicketType[] = [
-  {
-    id: "1",
-    userId: "101",
-    showtimeId: "201",
-    seatId: "A1",
-    price: 12.99,
-    purchaseDate: "2024-04-05",
-    status: "reserved",
-  },
-  {
-    id: "2",
-    userId: "102",
-    showtimeId: "202",
-    seatId: "B3",
-    price: 12.99,
-    purchaseDate: "2024-04-05",
-    status: "paid",
-  },
-  {
-    id: "3",
-    userId: "103",
-    showtimeId: "203",
-    seatId: "C5",
-    price: 15.99,
-    purchaseDate: "2024-04-06",
-    status: "used",
-  },
-  {
-    id: "4",
-    userId: "104",
-    showtimeId: "204",
-    seatId: "D7",
-    price: 12.99,
-    purchaseDate: "2024-04-06",
-    status: "deleted",
-    deleteReason: "Customer requested refund",
-  },
-]
-
-// Mock data for dropdowns
-const mockMovies = [
-  { id: "1", title: "Dune: Part Two" },
-  { id: "2", title: "Oppenheimer" },
-  { id: "3", title: "Gladiator II" },
-]
-
-const mockUsers = [
-  { id: "101", name: "John Doe" },
-  { id: "102", name: "Jane Smith" },
-  { id: "103", name: "Robert Johnson" },
-  { id: "104", name: "Emily Davis" },
-]
-
-const mockShowtimes = [
-  { id: "201", movieId: "1", time: "18:00", date: "05-04-2024" },
-  { id: "202", movieId: "1", time: "21:00", date: "05-04-2024" },
-  { id: "203", movieId: "2", time: "19:30", date: "06-04-2024" },
-  { id: "204", movieId: "3", time: "20:00", date: "06-04-2024" },
-]
+// Define extended ticket type with nested objects
+interface ExtendedTicket extends TicketType {
+  user?: {
+    id: string;
+    username: string;
+    displayName: string;
+    email: string;
+  };
+  showtime?: {
+    id: string;
+    movieId: string;
+    screenId: string;
+    date: string;
+    time: string;
+    format: string;
+    price: number;
+    movie?: {
+      id: string;
+      title: string;
+      year: string;
+      genre: string[];
+      rating: string;
+      description: string;
+      image: string;
+      directorId: string;
+      duration: string;
+      releaseDate: string | null;
+      trailer: string;
+      status: string;
+      hidden: boolean;
+    };
+    screen?: {
+      id: string;
+      name: string;
+      type: string[];
+      capacity: number;
+      rows: number;
+      cols: number;
+      seatMap: any;
+    };
+  };
+  seat?: {
+    id: string;
+    number: string;
+    age: string | null;
+    type: string;
+    available: boolean;
+    screenId: string;
+    row: number;
+    col: number;
+  };
+  receipt?: {
+    id: string;
+    userId: string;
+    movieId: string;
+    totalPrice: number;
+    paymentMethod: string;
+    receiptDate: string;
+  };
+  status: "reserved" | "paid" | "used" | "deleted";
+}
 
 export default function StaffTicketsPage() {
-  const [tickets, setTickets] = useState<TicketType[]>(sampleTickets)
+  const [tickets, setTickets] = useState<ExtendedTicket[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
-  const [currentTicket, setCurrentTicket] = useState<TicketType | null>(null)
+  const [currentTicket, setCurrentTicket] = useState<ExtendedTicket | null>(null)
   const [formData, setFormData] = useState<Partial<TicketType>>({
     status: "reserved",
     deleteReason: "",
   })
 
-  const handleUpdateTicket = (ticket: TicketType) => {
+  useEffect(() => {
+    fetchTickets()
+  }, [])
+
+  const fetchTickets = async () => {
+    try {
+      setIsLoading(true)
+      const response = await ticketsApi.getTickets()
+      
+      if (response.error) {
+        console.error(`Failed to fetch tickets: ${response.error}`)
+        return
+      }
+      
+      if (response.data) {
+        setTickets(response.data as ExtendedTicket[])
+      }
+    } catch (error) {
+      console.error("An error occurred while fetching tickets", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleUpdateTicket = (ticket: ExtendedTicket) => {
     setCurrentTicket(ticket)
     setFormData({
       status: ticket.status,
@@ -90,19 +116,44 @@ export default function StaffTicketsPage() {
     setIsUpdateModalOpen(true)
   }
 
-  const handleSaveTicket = () => {
+  const handleSaveTicket = async () => {
     if (isUpdateModalOpen && currentTicket) {
-      const updatedTickets = tickets.map((ticket) =>
-        ticket.id === currentTicket.id
-          ? {
-              ...ticket,
-              status: formData.status || ticket.status,
-              deleteReason: formData.status === "deleted" ? formData.deleteReason : undefined,
-            }
-          : ticket,
-      )
-      setTickets(updatedTickets)
-      setIsUpdateModalOpen(false)
+      try {
+        const isChangingFromDeleted = currentTicket.status === "deleted" && formData.status !== "deleted";
+        
+        const updateData: any = {
+          status: formData.status || currentTicket.status,
+        };
+        
+        if (formData.status === "deleted") {
+          updateData.deleteReason = formData.deleteReason || "Cancelled by staff";
+        } else if (isChangingFromDeleted) {
+          updateData.deleteReason = null;
+        }
+        
+        console.log("Updating ticket with data:", updateData);
+        
+        const response = await ticketsApi.updateTicket(currentTicket.id, updateData);
+        
+        if (response.error) {
+          console.error(`Failed to update ticket: ${response.error}`);
+          return;
+        }
+        
+        if (response.data) {
+          const updatedTickets = tickets.map((ticket) =>
+            ticket.id === currentTicket.id ? { 
+              ...ticket, 
+              ...response.data,
+              deleteReason: isChangingFromDeleted ? undefined : (formData.status === "deleted" ? formData.deleteReason : ticket.deleteReason)
+            } : ticket
+          );
+          setTickets(updatedTickets);
+          setIsUpdateModalOpen(false);
+        }
+      } catch (error) {
+        console.error("An error occurred while updating the ticket", error);
+      }
     }
   }
 
@@ -111,41 +162,47 @@ export default function StaffTicketsPage() {
     setFormData({ ...formData, [name]: value })
   }
 
-  // Helper function to get movie title from showtime
-  const getMovieTitle = (showtimeId: string) => {
-    const showtime = mockShowtimes.find((s) => s.id === showtimeId)
-    if (!showtime) return "Unknown Movie"
-
-    const movie = mockMovies.find((m) => m.id === showtime.movieId)
-    return movie ? movie.title : "Unknown Movie"
+  const getMovieTitle = (ticket: ExtendedTicket) => {
+    return ticket.showtime?.movie?.title || "Unknown Movie"
   }
 
-  // Helper function to get user name
-  const getUserName = (userId: string) => {
-    const user = mockUsers.find((u) => u.id === userId)
-    return user ? user.name : "Unknown User"
+  const getUserName = (ticket: ExtendedTicket) => {
+    return ticket.user?.displayName || "Unknown User"
   }
 
-  // Helper function to get showtime details
-  const getShowtimeDetails = (showtimeId: string) => {
-    const showtime = mockShowtimes.find((s) => s.id === showtimeId)
-    return showtime ? `${showtime.date} at ${showtime.time}` : "Unknown Time"
+  const getShowtimeDetails = (ticket: ExtendedTicket) => {
+    if (!ticket.showtime) return "Unknown Time"
+    return `${ticket.showtime.date} at ${ticket.showtime.time}`
+  }
+
+  const getScreenName = (ticket: ExtendedTicket) => {
+    return ticket.showtime?.screen?.name || "Unknown Screen"
   }
 
   const filteredTickets = tickets.filter((ticket) => {
-    const movieTitle = getMovieTitle(ticket.showtimeId)
-    const userName = getUserName(ticket.userId)
+    const movieTitle = getMovieTitle(ticket)
+    const userName = getUserName(ticket)
+    const screenName = getScreenName(ticket)
 
     const matchesSearch =
       ticket.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       movieTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
       userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.seatId.toLowerCase().includes(searchTerm.toLowerCase())
+      ticket.seatId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      screenName.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesStatus = statusFilter === "all" || ticket.status === statusFilter
 
     return matchesSearch && matchesStatus
   })
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Loading tickets...</div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -183,7 +240,7 @@ export default function StaffTicketsPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-muted">
-                <th className="px-4 py-3 text-left text-sm font-medium">Ticket ID</th>
+                <th className="px-4 py-3 text-left text-sm font-medium">Screen</th>
                 <th className="px-4 py-3 text-left text-sm font-medium">Customer</th>
                 <th className="px-4 py-3 text-left text-sm font-medium">Movie</th>
                 <th className="px-4 py-3 text-left text-sm font-medium">Showtime</th>
@@ -212,10 +269,10 @@ export default function StaffTicketsPage() {
 
                   return (
                     <tr key={ticket.id} className="border-t border-border">
-                      <td className="px-4 py-3 text-sm">{ticket.id}</td>
-                      <td className="px-4 py-3 text-sm">{getUserName(ticket.userId)}</td>
-                      <td className="px-4 py-3 text-sm">{getMovieTitle(ticket.showtimeId)}</td>
-                      <td className="px-4 py-3 text-sm">{getShowtimeDetails(ticket.showtimeId)}</td>
+                      <td className="px-4 py-3 text-sm">{getScreenName(ticket)}</td>
+                      <td className="px-4 py-3 text-sm">{getUserName(ticket)}</td>
+                      <td className="px-4 py-3 text-sm">{getMovieTitle(ticket)}</td>
+                      <td className="px-4 py-3 text-sm">{getShowtimeDetails(ticket)}</td>
                       <td className="px-4 py-3 text-sm">{ticket.seatId}</td>
                       <td className="px-4 py-3 text-sm">${ticket.price.toFixed(2)}</td>
                       <td className="px-4 py-3 text-sm">
@@ -256,15 +313,15 @@ export default function StaffTicketsPage() {
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
                   <p className="text-muted-foreground">Movie:</p>
-                  <p className="font-medium">{getMovieTitle(currentTicket.showtimeId)}</p>
+                  <p className="font-medium">{getMovieTitle(currentTicket)}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Customer:</p>
-                  <p className="font-medium">{getUserName(currentTicket.userId)}</p>
+                  <p className="font-medium">{getUserName(currentTicket)}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Showtime:</p>
-                  <p className="font-medium">{getShowtimeDetails(currentTicket.showtimeId)}</p>
+                  <p className="font-medium">{getShowtimeDetails(currentTicket)}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Seat:</p>

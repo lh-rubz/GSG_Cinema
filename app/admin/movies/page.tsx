@@ -145,7 +145,6 @@ export default function MoviesPage() {
           setCastMembers([])
         }
       } else if (isEditModalOpen && currentMovie) {
-        // When updating a movie, exclude directorId and cast information
         const { directorId, castIds, ...updateData } = formData
         
         const response = await moviesApi.updateMovie(currentMovie.id, {

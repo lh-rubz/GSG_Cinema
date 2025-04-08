@@ -1,67 +1,39 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Film, Star } from "lucide-react"
-import type { Movie } from "@/types"
-
-// Sample data
-const sampleMovies: Movie[] = [
-  {
-    id: "1",
-    title: "Dune: Part Two",
-    year: "2024",
-    genre: ["Sci-Fi", "Adventure", "Drama"],
-    rating: "8.7",
-    description:
-      "Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family.",
-    image: "/movies/dune.jpg",
-    directorId: "1",
-    duration: "166 min",
-    trailer: "https://www.youtube.com/watch?v=Way9Dexny3w",
-    releaseDate: "01-03-2024",
-    castIds: ["1", "2", "3"],
-    status: "now_showing",
-    hidden: false,
-  },
-  {
-    id: "2",
-    title: "Oppenheimer",
-    year: "2023",
-    genre: ["Biography", "Drama", "History"],
-    rating: "8.5",
-    description:
-      "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb.",
-    image: "/movies/oppenheimer.jpg",
-    directorId: "2",
-    duration: "180 min",
-    trailer: "https://www.youtube.com/watch?v=uYPbbksJxIg",
-    releaseDate: "21-07-2023",
-    castIds: ["4", "5", "6"],
-    status: "now_showing",
-    hidden: false,
-  },
-  {
-    id: "3",
-    title: "Gladiator II",
-    year: "2024",
-    genre: ["Action", "Adventure", "Drama"],
-    rating: "N/A",
-    description: "The sequel to the 2000 film Gladiator, following a new character in ancient Rome.",
-    image: "/movies/gladiator2.jpg",
-    directorId: "3",
-    duration: "150 min",
-    trailer: "https://www.youtube.com/watch?v=L2JOgCy4Mkg",
-    releaseDate: "22-11-2024",
-    castIds: ["7", "8", "9"],
-    status: "coming_soon",
-    hidden: false,
-  },
-]
+import type { Movie } from "@/types/types"
+import { moviesApi } from "@/lib/endpoints/movies"
 
 export default function StaffMoviesPage() {
-  const [movies, setMovies] = useState<Movie[]>(sampleMovies)
+  const [movies, setMovies] = useState<Movie[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
+
+  useEffect(() => {
+    fetchMovies()
+  }, [])
+
+  const fetchMovies = async () => {
+    try {
+      setIsLoading(true)
+      const response = await moviesApi.getMovies({ hidden: false })
+      
+      if (response.error) {
+        console.error(`Failed to fetch movies: ${response.error}`)
+        return
+      }
+      
+      if (response.data) {
+        setMovies(response.data)
+      }
+    } catch (error) {
+      console.error("An error occurred while fetching movies", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const filteredMovies = movies.filter((movie) => {
     const matchesSearch =
@@ -72,6 +44,14 @@ export default function StaffMoviesPage() {
 
     return matchesSearch && matchesStatus && !movie.hidden
   })
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Loading movies...</div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
