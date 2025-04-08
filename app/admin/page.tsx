@@ -83,8 +83,8 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <div className="text-sm text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</div>
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Dashboard</h1>
+        <div className="text-sm text-zinc-500 dark:text-zinc-400">Last updated: {new Date().toLocaleDateString()}</div>
       </div>
 
       {/* Stats */}
@@ -121,9 +121,9 @@ export default function AdminDashboard() {
 
       {/* Quick access */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="border border-border rounded-lg overflow-hidden">
-          <div className="bg-muted px-4 py-3 border-b border-border">
-            <h2 className="font-medium">Quick Access</h2>
+        <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden bg-white dark:bg-zinc-800">
+          <div className="bg-zinc-50 dark:bg-zinc-800/50 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+            <h2 className="font-medium text-zinc-900 dark:text-white">Quick Access</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4">
             <QuickAccessCard title="Movies" icon={<Film className="h-6 w-6" />} href="/admin/movies" />
@@ -137,11 +137,11 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="border border-border rounded-lg overflow-hidden">
-          <div className="bg-muted px-4 py-3 border-b border-border">
-            <h2 className="font-medium">Recent Activity</h2>
+        <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden bg-white dark:bg-zinc-800">
+          <div className="bg-zinc-50 dark:bg-zinc-800/50 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+            <h2 className="font-medium text-zinc-900 dark:text-white">Recent Activity</h2>
           </div>
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-zinc-200 dark:divide-zinc-700">
             <ActivityItem
               title="New movie added"
               description="Dune: Part Two was added to the catalog by admin"
@@ -171,27 +171,27 @@ export default function AdminDashboard() {
       </div>
 
       {/* Upcoming releases */}
-      <div className="border border-border rounded-lg overflow-hidden">
-        <div className="bg-muted px-4 py-3 border-b border-border">
-          <h2 className="font-medium">Upcoming Movie Releases</h2>
+      <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden bg-white dark:bg-zinc-800">
+        <div className="bg-zinc-50 dark:bg-zinc-800/50 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+          <h2 className="font-medium text-zinc-900 dark:text-white">Upcoming Movie Releases</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-border">
-                <th className="px-4 py-3 text-left text-sm font-medium">Movie</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Release Date</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Director</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
+              <tr className="border-b border-zinc-200 dark:border-zinc-800">
+                <th className="px-4 py-3 text-left text-sm font-medium text-zinc-600 dark:text-zinc-400">Movie</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-zinc-600 dark:text-zinc-400">Release Date</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-zinc-600 dark:text-zinc-400">Director</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-zinc-600 dark:text-zinc-400">Status</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
               {upcomingMovies.length > 0 ? (
                 upcomingMovies.map((movie: MovieWithDirector) => (
-                  <tr key={movie.id} className="border-b border-border">
-                    <td className="px-4 py-3 text-sm">{movie.title}</td>
-                    <td className="px-4 py-3 text-sm">{movie.releaseDate || 'TBA'}</td>
-                    <td className="px-4 py-3 text-sm">{movie.director?.name || 'Unknown'}</td>
+                  <tr key={movie.id} className="border-b border-zinc-200 dark:border-zinc-800">
+                    <td className="px-4 py-3 text-sm text-zinc-900 dark:text-white">{movie.title}</td>
+                    <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">{movie.releaseDate || 'TBA'}</td>
+                    <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">{movie.director?.name || 'Unknown'}</td>
                     <td className="px-4 py-3 text-sm">
                       <span className="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500">
                         Coming Soon
@@ -201,7 +201,7 @@ export default function AdminDashboard() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="px-4 py-3 text-sm text-center text-muted-foreground">
+                  <td colSpan={4} className="px-4 py-3 text-sm text-center text-zinc-600 dark:text-zinc-400">
                     No upcoming movies found
                   </td>
                 </tr>
@@ -228,13 +228,13 @@ function StatCard({
   trendUp: boolean
 }) {
   return (
-    <div className="border border-border rounded-lg p-4 bg-card">
+    <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg p-4 bg-white dark:bg-zinc-800">
       <div className="flex items-center justify-between">
-        <div className="text-muted-foreground">{title}</div>
-        <div className="p-2 rounded-full bg-primary/10 text-primary">{icon}</div>
+        <div className="text-zinc-600 dark:text-zinc-400">{title}</div>
+        <div className="p-2 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">{icon}</div>
       </div>
-      <div className="mt-2 text-2xl font-bold">{value}</div>
-      <div className={`mt-2 text-xs flex items-center ${trendUp ? "text-green-500" : "text-red-500"}`}>
+      <div className="mt-2 text-2xl font-bold text-zinc-900 dark:text-white">{value}</div>
+      <div className={`mt-2 text-xs flex items-center ${trendUp ? "text-green-500 dark:text-green-400" : "text-red-500 dark:text-red-400"}`}>
         {trendUp ? (
           <TrendingUp className="h-3 w-3 mr-1" />
         ) : (
@@ -258,10 +258,10 @@ function QuickAccessCard({
   return (
     <Link
       href={href}
-      className="flex flex-col items-center justify-center p-4 border border-border rounded-lg hover:bg-secondary transition-colors"
+      className="flex flex-col items-center justify-center p-4 border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors"
     >
-      <div className="p-3 rounded-full bg-primary/10 text-primary">{icon}</div>
-      <div className="mt-2 text-sm font-medium">{title}</div>
+      <div className="p-3 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">{icon}</div>
+      <div className="mt-2 text-sm font-medium text-zinc-900 dark:text-white">{title}</div>
     </Link>
   )
 }
@@ -278,12 +278,12 @@ function ActivityItem({
   icon: React.ReactNode
 }) {
   return (
-    <div className="flex items-start gap-3 p-4">
-      <div className="p-2 rounded-full bg-primary/10 text-primary shrink-0">{icon}</div>
+    <div className="flex items-start gap-3 p-4 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700/50">
+      <div className="p-2 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 shrink-0">{icon}</div>
       <div className="flex-1 min-w-0">
-        <p className="font-medium">{title}</p>
-        <p className="text-sm text-muted-foreground">{description}</p>
-        <p className="text-xs text-muted-foreground mt-1">{time}</p>
+        <p className="font-medium text-zinc-900 dark:text-white">{title}</p>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">{description}</p>
+        <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">{time}</p>
       </div>
     </div>
   )

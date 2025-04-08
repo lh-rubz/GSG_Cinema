@@ -37,7 +37,6 @@ export async function GET(request: NextRequest) {
         email: true,
         gender: true,
         profileImage: true,
-        role: true,
         // Include counts of related entities
         _count: {
           select: {
@@ -78,11 +77,11 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    if (existingUser) {
-      if (existingUser.username === body.username) {
+    if (existingEmail) {
+      if (existingUsername === body.username) {
         return NextResponse.json({ error: "Username already exists" }, { status: 400 })
       }
-      if (existingUser.email === body.email) {
+      if (existingEmail.email === body.email) {
         return NextResponse.json({ error: "Email already exists" }, { status: 400 })
       }
     }
@@ -108,7 +107,7 @@ export async function POST(request: NextRequest) {
         gender: body.gender,
         bio: body.bio || null,
         profileImage: body.profileImage || null,
-        role: role // Use the determined role
+       
       },
     })
 

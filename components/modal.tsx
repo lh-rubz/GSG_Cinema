@@ -64,14 +64,21 @@ export function Modal({ isOpen, onClose, title, children, size = "md" }: ModalPr
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div ref={modalRef} className={`${sizeClasses[size]} w-full bg-card rounded-lg shadow-lg overflow-hidden`}>
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h3 className="text-lg font-medium">{title}</h3>
-          <button onClick={onClose} className="p-1 rounded-md hover:bg-secondary transition-colors" aria-label="Close">
+      <div 
+        ref={modalRef} 
+        className={`${sizeClasses[size]} w-full bg-white dark:bg-zinc-800 rounded-lg shadow-lg shadow-black/10 dark:shadow-black/30 overflow-hidden`}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-700">
+          <h3 className="text-lg font-medium text-zinc-900 dark:text-white">{title}</h3>
+          <button 
+            onClick={onClose} 
+            className="p-1 rounded-md text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-white transition-colors" 
+            aria-label="Close"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="p-4">{children}</div>
+        <div className="p-4 text-zinc-900 dark:text-zinc-100">{children}</div>
       </div>
     </div>
   )
