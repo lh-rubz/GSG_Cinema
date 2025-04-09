@@ -26,6 +26,7 @@ export default function MovieDetailsPage() {
   const [showTrailer, setShowTrailer] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string>("") // TODO: Get from auth context
 
   useEffect(() => {
     const fetchMovieData = async () => {
@@ -98,7 +99,11 @@ export default function MovieDetailsPage() {
         )}
         
         {activeTab === "reviews" && (
-          <ReviewsTab reviews={reviews} />
+          <ReviewsTab 
+            reviews={reviews} 
+            movieId={movie!.id}
+            userId={userId}
+          />
         )}
       </div>
 
