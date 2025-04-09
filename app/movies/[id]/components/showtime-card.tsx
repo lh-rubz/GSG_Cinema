@@ -1,5 +1,5 @@
 import { getScreenById } from "@/lib/screens-data"
-import { Showtime } from "@/types/types"
+import { Seat, Showtime } from "@/types/types"
 import Link from "next/link"
 import { useState } from "react"
 
@@ -91,16 +91,16 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
         </div>
 
         <div className="flex flex-wrap gap-2 mb-4">
-          <span className={`px-3 py-1 rounded-full text-xs font-bold ${formatStyles[showtime.format]}`}>
+          <span className={`px-3 py-1 rounded-full text-xs font-bold ${formatStyles[showtime.format as keyof typeof formatStyles]}`}>
             {showtime.format.toUpperCase()}
           </span>
         </div>
 
         <div className="flex justify-between items-center">
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            {showtime.screen.seats?.filter(seat => seat.available == true).length} seats available
+            {showtime.screen.seats?.filter((seat: Seat) => seat.available == true).length} seats available
           </div>
-          <Link href={`/book/${showtime.id}`}>
+          <Link href={`/booking/${showtime.id}`}>
           <button 
            
             className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors duration-200"

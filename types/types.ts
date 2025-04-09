@@ -70,10 +70,13 @@ export interface CastMember {
 }
 export interface Seat {
   id: string;
-  row: number;
-  column: number;
+  number: string;
   type: string;
-  status: string;
+  available: boolean;
+  screenId: string;
+  row: number;
+  col: number;
+  age?: string;
 }
 
 export interface Screen {
@@ -135,6 +138,7 @@ export interface Ticket {
   purchaseDate: string;
   status: "reserved" | "paid" | "used" | "deleted";
   deleteReason?: string;
+  receiptId?: string;
 }
 export interface Receipt {
   id: string;

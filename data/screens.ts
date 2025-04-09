@@ -48,12 +48,15 @@ export function generateSeatMap(rows: number, cols: number): Seat[][] {
     for (let r = 0; r < rows; r++) {
       const row: Seat[] = [];
       for (let c = 0; c < cols; c++) {
+        const seatNumber = `${rowLetters[r]}${c+1}`;
         row.push({
-          id: `${rowLetters[r]}${c+1}`,
-          number: `${rowLetters[r]}${c+1}`,
+          id: `s1_${seatNumber}`,
+          number: seatNumber,
           type: r === 0 ? 'premium' : 'standard', // Only first row is premium
-          available: true 
-          
+          available: true,
+          screenId: 's1',
+          row: r,
+          col: c
         });
       }
       seatMap.push(row);
