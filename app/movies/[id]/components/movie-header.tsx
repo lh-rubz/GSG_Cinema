@@ -41,7 +41,7 @@ export function MovieHeader({ movie, onTrailerClick }: MovieHeaderProps) {
                 alt={movie.title}
                 width={300}
                 height={450}
-                className="w-40 h-60 object-cover rounded-lg shadow-2xl border-4 border-white dark:border-gray-800"
+                className="w-40 h-60 object-cover rounded-lg shadow-2xl border-4 border-white dark:border-zinc-800"
               />
               <span className={`absolute top-0 right-0 ${statusBadge.color} text-white text-xs px-2 py-1 rounded-bl-lg rounded-tr-lg`}>
                 {statusBadge.text}

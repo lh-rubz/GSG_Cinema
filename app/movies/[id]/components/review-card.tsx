@@ -230,7 +230,7 @@ export function ReviewCard({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-100 dark:border-gray-800 p-6 mb-6">
+    <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 border border-zinc-100 dark:border-zinc-800 p-6 mb-6">
       {/* Review Header */}
       <div className="flex items-start gap-3 mb-4">
         <div className="relative">
@@ -238,10 +238,10 @@ export function ReviewCard({
             <img
               src={review.user.profileImage}
               alt={review.user.displayName || review.user.username || "User"}
-              className="h-10 w-10 rounded-full border-2 border-white dark:border-gray-800 object-cover"
+              className="h-10 w-10 rounded-full border-2 border-white dark:border-zinc-800 object-cover"
             />
           ) : (
-            <div className="h-10 w-10 rounded-full border-2 border-white dark:border-gray-800 bg-red-600 flex items-center justify-center text-white font-semibold">
+            <div className="h-10 w-10 rounded-full border-2 border-white dark:border-zinc-800 bg-red-600 flex items-center justify-center text-white font-semibold">
               {review.user.displayName ? review.user.displayName.charAt(0).toUpperCase() : 
                review.user.username ? review.user.username.charAt(0).toUpperCase() : 'U'}
             </div>
@@ -251,12 +251,12 @@ export function ReviewCard({
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="font-medium text-gray-900 dark:text-white">
+              <h3 className="font-medium text-zinc-900 dark:text-white">
                 {review.user.displayName || review.user.username || "User"}
               </h3>
               <div className="flex items-center mt-1 gap-2">
                 <StarRating rating={review.rating} />
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs text-zinc-500 dark:text-zinc-400">
                   {formatDate(review.date)}
                 </span>
               </div>
@@ -266,17 +266,17 @@ export function ReviewCard({
               <div className="relative">
                 <button 
                   onClick={() => setShowMoreMenu(showMoreMenu === `review-${review.id}` ? null : `review-${review.id}`)}
-                  className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                 >
-                  <MoreHorizontal className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                  <MoreHorizontal className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
                 </button>
 
                 {showMoreMenu === `review-${review.id}` && (
-                  <div className="absolute right-0 top-8 z-10 bg-white dark:bg-gray-800 shadow-lg rounded-md p-1 w-40 border border-gray-200 dark:border-gray-700">
+                  <div className="absolute right-0 top-8 z-10 bg-white dark:bg-zinc-800 shadow-lg rounded-md p-1 w-40 border border-zinc-200 dark:border-zinc-700">
                     <button 
                       onClick={() => handleReport('review', review.id)}
                       disabled={isReportedByUser}
-                      className={`w-full text-left px-3 py-2 text-sm flex items-center rounded-sm ${isReportedByUser ? 'text-gray-400 dark:text-gray-500' : 'text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                      className={`w-full text-left px-3 py-2 text-sm flex items-center rounded-sm ${isReportedByUser ? 'text-zinc-400 dark:text-zinc-500' : 'text-red-500 hover:bg-zinc-100 dark:hover:bg-zinc-700'}`}
                     >
                       <Flag className="h-4 w-4 mr-2" />
                       {isReportedByUser ? 'Reported' : 'Report Review'}
@@ -291,14 +291,14 @@ export function ReviewCard({
 
       {/* Review Content */}
       <div className="ml-[52px]">
-        <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">{review.comment}</p>
+        <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4">{review.comment}</p>
 
         {/* Review Actions */}
         <div className="flex items-center gap-4 mb-4">
           <button 
             onClick={handleLike}
             disabled={isLiking}
-            className={`flex items-center gap-1.5 h-8 px-2 rounded-md ${isLiked ? 'text-red-500 hover:text-red-600' : 'text-gray-500 dark:text-gray-400 hover:text-rose-500'}`}
+            className={`flex items-center gap-1.5 h-8 px-2 rounded-md ${isLiked ? 'text-red-500 hover:text-red-600' : 'text-zinc-500 dark:text-zinc-400 hover:text-rose-500'}`}
           >
             <HeartIcon className="h-4 w-4" fill={isLiked ? 'currentColor' : 'none'} />
             <span className="text-xs font-medium">{likeCount}</span>
@@ -312,7 +312,7 @@ export function ReviewCard({
               }
               setShowReplyForm(!showReplyForm)
             }}
-            className="flex items-center gap-1.5 h-8 px-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-blue-500"
+            className="flex items-center gap-1.5 h-8 px-2 rounded-md text-zinc-500 dark:text-zinc-400 hover:text-blue-500"
           >
             <MessageSquare className="h-4 w-4" />
             <span className="text-xs font-medium">{replyCount}</span>
@@ -321,7 +321,7 @@ export function ReviewCard({
           {replyCount > 0 && (
             <button
               onClick={() => setShowReplies(!showReplies)}
-              className="flex items-center gap-1.5 h-8 px-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-blue-500 ml-auto"
+              className="flex items-center gap-1.5 h-8 px-2 rounded-md text-zinc-500 dark:text-zinc-400 hover:text-blue-500 ml-auto"
             >
               {showReplies ? (
                 <>
@@ -346,7 +346,7 @@ export function ReviewCard({
               value={newReply}
               onChange={(e) => setNewReply(e.target.value)}
               placeholder="Write a reply..."
-              className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-200 dark:border-gray-700 focus:border-transparent"
+              className="flex-1 bg-zinc-50 dark:bg-zinc-800 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 border border-zinc-200 dark:border-zinc-700 focus:border-transparent"
               onKeyDown={(e) => e.key === 'Enter' && handleAddReply()}
             />
             <button
@@ -361,7 +361,7 @@ export function ReviewCard({
 
         {/* Replies Section */}
         {replyCount > 0 && showReplies && (
-          <div className="border-l-2 border-gray-200 dark:border-gray-700 pl-4 relative">
+          <div className="border-l-2 border-zinc-200 dark:border-zinc-700 pl-4 relative">
             <div className={`space-y-4 ${showAllReplies && replyCount > defaultVisibleReplies ? 'max-h-[300px] overflow-y-auto pr-2' : ''}`}>
               {visibleReplies.map((reply) => {
                 const isReplyReportedByUser = user && reply.reportedBy ? reply.reportedBy.includes(user.id) : false
@@ -373,10 +373,10 @@ export function ReviewCard({
                         <img
                           src={reply.user.profileImage}
                           alt={reply.user.displayName || reply.user.username || "User"}
-                          className="h-7 w-7 rounded-full border border-gray-200 dark:border-gray-700 object-cover"
+                          className="h-7 w-7 rounded-full border border-zinc-200 dark:border-zinc-700 object-cover"
                         />
                       ) : (
-                        <div className="h-7 w-7 rounded-full border border-gray-200 dark:border-gray-700 bg-red-600 flex items-center justify-center text-white text-xs font-semibold">
+                        <div className="h-7 w-7 rounded-full border border-zinc-200 dark:border-zinc-700 bg-red-600 flex items-center justify-center text-white text-xs font-semibold">
                           {reply.user.displayName ? reply.user.displayName.charAt(0).toUpperCase() : 
                            reply.user.username ? reply.user.username.charAt(0).toUpperCase() : 'U'}
                         </div>
@@ -385,10 +385,10 @@ export function ReviewCard({
                       <div className="flex-1">
                         <div className="flex justify-between items-start">
                           <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                            <h4 className="text-sm font-medium text-zinc-900 dark:text-white">
                               {reply.user.displayName || reply.user.username || "User"}
                             </h4>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                            <span className="text-xs text-zinc-500 dark:text-zinc-400">
                               {formatDate(reply.date)}
                             </span>
                             {isReplyReportedByUser && (
@@ -402,17 +402,17 @@ export function ReviewCard({
                             <div className="relative">
                               <button
                                 onClick={() => setShowMoreMenu(showMoreMenu === `reply-${reply.id}` ? null : `reply-${reply.id}`)}
-                                className="opacity-0 group-hover:opacity-100 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                                className="opacity-0 group-hover:opacity-100 p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all"
                               >
-                                <MoreHorizontal className="h-3 w-3 text-gray-500 dark:text-gray-400" />
+                                <MoreHorizontal className="h-3 w-3 text-zinc-500 dark:text-zinc-400" />
                               </button>
 
                               {showMoreMenu === `reply-${reply.id}` && (
-                                <div className="absolute right-0 top-6 z-10 bg-white dark:bg-gray-800 shadow-lg rounded-md p-1 w-40 border border-gray-200 dark:border-gray-700">
+                                <div className="absolute right-0 top-6 z-10 bg-white dark:bg-zinc-800 shadow-lg rounded-md p-1 w-40 border border-zinc-200 dark:border-zinc-700">
                                   <button 
                                     onClick={() => handleReport('reply', reply.id)}
                                     disabled={isReplyReportedByUser}
-                                    className={`w-full text-left px-3 py-2 text-sm flex items-center rounded-sm ${isReplyReportedByUser ? 'text-gray-400 dark:text-gray-500' : 'text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                                    className={`w-full text-left px-3 py-2 text-sm flex items-center rounded-sm ${isReplyReportedByUser ? 'text-zinc-400 dark:text-zinc-500' : 'text-red-500 hover:bg-zinc-100 dark:hover:bg-zinc-700'}`}
                                   >
                                     <Flag className="h-4 w-4 mr-2" />
                                     {isReplyReportedByUser ? 'Reported' : 'Report Reply'}
@@ -423,7 +423,7 @@ export function ReviewCard({
                           )}
                         </div>
 
-                        <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">{reply.comment}</p>
+                        <p className="text-sm text-zinc-700 dark:text-zinc-300 mt-1">{reply.comment}</p>
                       </div>
                     </div>
                   </div>
@@ -457,15 +457,15 @@ export function ReviewCard({
       {/* Login Popup */}
       {showLoginPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-xl font-semibold mb-4">Sign In Required</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
+            <p className="text-zinc-600 dark:text-zinc-300 mb-6">
               Please sign in to perform this action
             </p>
             <div className="flex justify-end gap-4">
               <button
                 onClick={() => setShowLoginPopup(false)}
-                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+                className="px-4 py-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-md"
               >
                 Cancel
               </button>

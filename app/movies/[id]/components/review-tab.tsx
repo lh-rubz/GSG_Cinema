@@ -62,8 +62,8 @@ export function ReviewsTab({ reviews, movieId, userId }: ReviewsTabProps) {
 function NoReviewsMessage() {
   return (
     <div className="text-center py-12">
-      <h3 className="text-xl font-medium text-gray-600 dark:text-gray-400">No reviews yet</h3>
-      <p className="text-gray-500 dark:text-gray-500">Be the first to review this movie</p>
+      <h3 className="text-xl font-medium text-zinc-600 dark:text-zinc-400">No reviews yet</h3>
+      <p className="text-zinc-500 dark:text-zinc-500">Be the first to review this movie</p>
     </div>
   )
 }

@@ -23,7 +23,7 @@ export function ReviewForm({ movieId, onReviewSubmitted }: ReviewFormProps) {
     return (
       <div className="p-6 bg-white dark:bg-zinc-800 rounded-lg shadow text-center">
         <h3 className="text-xl font-semibold mb-2">Sign In Required</h3>
-        <p className="text-gray-600 dark:text-gray-300 mb-4">
+        <p className="text-zinc-600 dark:text-zinc-300 mb-4">
           Please sign in to write a review
         </p>
         <Link
@@ -95,9 +95,9 @@ export function ReviewForm({ movieId, onReviewSubmitted }: ReviewFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
+    <form onSubmit={handleSubmit} className="space-y-4 p-6 bg-white dark:bg-zinc-800 rounded-lg shadow">
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Rating (out of 10)</label>
+        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-2">Rating (out of 10)</label>
         <div className="flex items-center gap-1">
           {[...Array(10)].map((_, index) => {
             const starValue = index + 1
@@ -113,14 +113,14 @@ export function ReviewForm({ movieId, onReviewSubmitted }: ReviewFormProps) {
                 className="focus:outline-none transition-colors"
               >
                 <Star 
-                  className={`h-6 w-6 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300 dark:text-gray-600'}`}
+                  className={`h-6 w-6 ${isFilled ? 'text-yellow-400 fill-current' : 'text-zinc-300 dark:text-zinc-600'}`}
                   strokeWidth={1}
                 />
               </button>
             )
           })}
           {(hoveredRating || rating) > 0 && (
-            <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
+            <span className="ml-2 text-sm text-zinc-600 dark:text-zinc-300">
               ({hoveredRating || rating}/10)
             </span>
           )}
@@ -128,7 +128,7 @@ export function ReviewForm({ movieId, onReviewSubmitted }: ReviewFormProps) {
       </div>
 
       <div>
-        <label htmlFor="comment" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+        <label htmlFor="comment" className="block text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-2">
           Your Review
         </label>
         <textarea
@@ -136,7 +136,7 @@ export function ReviewForm({ movieId, onReviewSubmitted }: ReviewFormProps) {
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           rows={4}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+          className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100"
           placeholder="Write your review here..."
           required
         />

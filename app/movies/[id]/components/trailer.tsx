@@ -75,7 +75,7 @@ export function TrailerModal({ show, onClose, trailerUrl, title }: TrailerModalP
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={onClose}
-              className="absolute -top-12 right-0 z-20 p-2 text-white hover:text-gray-200 transition-colors"
+              className="absolute -top-12 right-0 z-20 p-2 text-white hover:text-zinc-200 transition-colors"
               aria-label="Close trailer"
             >
               <CloseIcon className="w-8 h-8" />

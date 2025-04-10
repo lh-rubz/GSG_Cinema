@@ -28,19 +28,19 @@ export function MovieInfoTab({ movie, director, cast }: MovieInfoTabProps) {
   return (
     <div className="space-y-6">
       {/* Synopsis Section */}
-      <div className="p-6 rounded-xl bg-white dark:bg-gray-800 shadow-md border border-gray-100 dark:border-gray-700">
-        <div className="flex items-center mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-6 rounded-xl bg-white dark:bg-zinc-800 shadow-md border border-zinc-100 dark:border-zinc-700">
+        <div className="flex items-center mb-4 pb-2 border-b border-zinc-200 dark:border-zinc-700">
           <InfoIcon className="w-6 h-6 mr-2 text-red-600" />
           <h2 className="text-2xl font-bold">Synopsis</h2>
         </div>
-        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+        <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
           {movie.description}
         </p>
         
         {movie.releaseDate && (
-          <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Release Date</h3>
-            <p className="text-gray-600 dark:text-gray-400">
+          <div className="mt-6 p-4 bg-zinc-50 dark:bg-zinc-700 rounded-lg">
+            <h3 className="font-semibold text-zinc-800 dark:text-zinc-200 mb-1">Release Date</h3>
+            <p className="text-zinc-600 dark:text-zinc-400">
               {new Date(movie.releaseDate).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
@@ -53,8 +53,8 @@ export function MovieInfoTab({ movie, director, cast }: MovieInfoTabProps) {
 
   {/* Director Section */}
 {director && (
-  <div className="p-6 rounded-xl bg-white dark:bg-gray-800 shadow-md border border-gray-100 dark:border-gray-700">
-    <div className="flex items-center mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
+  <div className="p-6 rounded-xl bg-white dark:bg-zinc-800 shadow-md border border-zinc-100 dark:border-zinc-700">
+    <div className="flex items-center mb-4 pb-2 border-b border-zinc-200 dark:border-zinc-700">
       <DirectorIcon className="w-6 h-6 mr-2 text-red-600" />
       <h2 className="text-2xl font-bold">Director</h2>
     </div>
@@ -63,17 +63,17 @@ export function MovieInfoTab({ movie, director, cast }: MovieInfoTabProps) {
         <img 
           src={director.image}
           alt={director.name}
-          className="w-24 h-24 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-all shadow-md"
+          className="w-24 h-24 rounded-full object-cover border-2 border-zinc-200 dark:border-zinc-700 group-hover:border-red-500 transition-all shadow-md"
         />
         <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition-all">
           <EyeIcon className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       </div>
       <div className="flex-1">
-        <h3 className="text-xl font-bold mb-2 text-gray-800 dark:text-white group-hover:text-red-500 transition-colors">
+        <h3 className="text-xl font-bold mb-2 text-zinc-800 dark:text-white group-hover:text-red-500 transition-colors">
           {director.name}
         </h3>
-        <p className="text-gray-600 dark:text-gray-300 line-clamp-3">
+        <p className="text-zinc-600 dark:text-zinc-300 line-clamp-3">
           {director.bio}
         </p>
         <span className="inline-block mt-2 text-sm text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -85,8 +85,8 @@ export function MovieInfoTab({ movie, director, cast }: MovieInfoTabProps) {
 )}
 
       {/* Cast Section with Carousel */}
-      <div className="p-6 rounded-xl bg-white dark:bg-gray-800 shadow-md border border-gray-100 dark:border-gray-700">
-        <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-6 rounded-xl bg-white dark:bg-zinc-800 shadow-md border border-zinc-100 dark:border-zinc-700">
+        <div className="flex items-center justify-between mb-4 pb-2 border-b border-zinc-200 dark:border-zinc-700">
           <div className="flex items-center">
             <CastIcon className="w-6 h-6 mr-2 text-red-600" />
             <h2 className="text-2xl font-bold">Cast</h2>
@@ -97,14 +97,14 @@ export function MovieInfoTab({ movie, director, cast }: MovieInfoTabProps) {
               <button 
                 onClick={prevCast}
                 disabled={currentCastIndex === 0}
-                className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 disabled:opacity-50 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                className="p-2 rounded-full bg-zinc-100 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 disabled:opacity-50 hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button 
                 onClick={nextCast}
                 disabled={currentCastIndex >= Math.ceil(cast.length / castPerPage) - 1}
-                className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 disabled:opacity-50 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                className="p-2 rounded-full bg-zinc-100 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 disabled:opacity-50 hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
