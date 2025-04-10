@@ -104,7 +104,7 @@ const mockShowtimes: Record<string, Showtime> = {
     screenId: "sc1",
     date: "15-04-2025", // Future date (dd-mm-yyyy)
     time: "19:30",
-    format: "2D",
+    format: "TwoD",
     availableSeats: 120,
     price: 15.99,
   },
@@ -114,7 +114,7 @@ const mockShowtimes: Record<string, Showtime> = {
     screenId: "sc2",
     date: "10-02-2024", // Past date (dd-mm-yyyy)
     time: "20:15",
-    format: "3D",
+    format: "ThreeD",
     availableSeats: 80,
     price: 12.99,
   },
@@ -134,7 +134,7 @@ const mockShowtimes: Record<string, Showtime> = {
     screenId: "sc1",
     date: "07-01-2024", // Past date (dd-mm-yyyy)
     time: "16:45",
-    format: "2D",
+    format: "TwoD",
     availableSeats: 120,
     price: 14.99,
   },

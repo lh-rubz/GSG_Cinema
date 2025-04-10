@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcrypt"
+import { Role } from "@prisma/client"
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
         email: true,
         gender: true,
         profileImage: true,
+        // Include counts of related entities
         _count: {
           select: {
             reviews: true,
@@ -57,24 +59,43 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
-    // Check if username or email already exists
-    const existingUser = await prisma.user.findFirst({
+    // Check if username already exists
+    const existingUsername = await prisma.user.findFirst({
       where: {
-        OR: [{ username: body.username }, { email: body.email }],
+        username: body.username,
       },
     })
 
-    if (existingUser) {
-      if (existingUser.username === body.username) {
+    if (existingUsername) {
+      return NextResponse.json({ error: "Username already exists" }, { status: 400 })
+    }
+
+    // Check if email already exists
+    const existingEmail = await prisma.user.findFirst({
+      where: {
+        email: body.email,
+      },
+    })
+
+    if (existingEmail) {
+      if (existingUsername === body.username) {
         return NextResponse.json({ error: "Username already exists" }, { status: 400 })
       }
-      if (existingUser.email === body.email) {
+      if (existingEmail.email === body.email) {
         return NextResponse.json({ error: "Email already exists" }, { status: 400 })
       }
     }
 
     // Hash the password before storing it
     const hashedPassword = await bcrypt.hash(body.password, 10)
+
+    // Determine the role based on the request
+    let role: Role = Role.User // Default role
+    if (body.role === "Staff" || body.role === "staff") {
+      role = Role.Staff
+    } else if (body.role === "Admin" || body.role === "admin") {
+      role = Role.Admin
+    }
 
     const user = await prisma.user.create({
       data: {
@@ -86,7 +107,7 @@ export async function POST(request: NextRequest) {
         gender: body.gender,
         bio: body.bio || null,
         profileImage: body.profileImage || null,
-        
+       
       },
     })
 

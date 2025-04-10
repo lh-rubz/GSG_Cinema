@@ -1,7 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import {CastMemberInput} from '@/types/types';
+import type { CastMember } from '@/types/types'
+import { MovieGenre } from '@prisma/client'
 
+type CastMemberInput = {
+  castMemberId: string;
+  character?: string;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,9 +30,8 @@ export async function GET(request: NextRequest) {
       whereClause.status = status
     }
 
-    if (!hidden) {
-      whereClause.hidden = false
-    } else {
+    // Only filter by hidden if explicitly requested
+    if (searchParams.has("hidden")) {
       whereClause.hidden = hidden
     }
 
@@ -87,11 +91,11 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    // 1. Get cast data in proper format
-    const { cast = [] as CastMemberInput[], ...movieData } = body;
+    // 1. Extract cast data and remove it from movieData
+    const { cast = [], castIds, ...movieData } = body;
 
-     // Add default character name for missing entries
-     const processedCast = cast.map((member: CastMemberInput) => ({
+    // Add default character name for missing entries
+    const processedCast = cast.map((member: CastMemberInput) => ({
       castMemberId: member.castMemberId,
       character: member.character || "Unknown Character" 
     }));
@@ -105,7 +109,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Verify cast members exist
-    const castMemberIds = processedCast.map((m : CastMemberInput) => m.castMemberId);
+    const castMemberIds = processedCast.map((m: CastMemberInput) => m.castMemberId);
     const existingCast = await prisma.castMember.findMany({
       where: { id: { in: castMemberIds } }
     });
@@ -117,14 +121,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(castMemberIds);
+    // 4. Process genre to ensure it's a valid MovieGenre enum array
+    let processedGenre: MovieGenre[] = [];
+    if (Array.isArray(movieData.genre)) {
+      processedGenre = movieData.genre.map((g: string) => {
+        // Convert "Sci-Fi" to "SciFi" to match the enum
+        if (g === "Sci-Fi") return MovieGenre.SciFi;
+        // Try to match the genre to the enum
+        return g as MovieGenre;
+      });
+    }
 
-    // 4. Create movie with proper cast relation
+    // 5. Create movie with proper cast relation
     const movie = await prisma.movie.create({
       data: {
         ...movieData,
+        genre: processedGenre,
         cast: {
-          create: processedCast.map((member: CastMemberInput)  => ({
+          create: processedCast.map((member: CastMemberInput) => ({
             castMemberId: member.castMemberId,
             character: member.character
           }))

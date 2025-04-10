@@ -57,18 +57,34 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const body = await request.json()
-    const { castIds, ...movieData } = body
+    const { castIds, director, cast, ...movieData } = body
 
+    // First update the movie without relations
     const updatedMovie = await prisma.movie.update({
       where: { id: params.id },
-      data: movieData,
+      data: {
+        title: movieData.title,
+        year: movieData.year,
+        genre: movieData.genre,
+        rating: movieData.rating,
+        description: movieData.description,
+        image: movieData.image,
+        duration: movieData.duration || "",
+        releaseDate: movieData.releaseDate,
+        trailer: movieData.trailer,
+        status: movieData.status,
+        hidden: movieData.hidden,
+      },
     })
 
+    // Then handle cast updates if provided
     if (castIds && castIds.length > 0) {
+      // Delete existing cast relations
       await prisma.castMovie.deleteMany({
         where: { movieId: params.id },
       })
 
+      // Create new cast relations
       await Promise.all(
         castIds.map(async (castId: string) => {
           await prisma.castMovie.create({
@@ -82,6 +98,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       )
     }
 
+    // Fetch the updated movie with all relations
     const movie = await prisma.movie.findUnique({
       where: { id: params.id },
       include: {
