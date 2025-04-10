@@ -86,6 +86,33 @@ enum Role {
   Staff
 }
 
+enum TimeFormat {
+  TWELVE_HOUR
+  TWENTY_FOUR_HOUR
+}
+
+enum DurationFormat {
+  MINUTES_ONLY
+  HOURS_AND_MINUTES
+}
+
+enum CurrencyType {
+  USD
+  NIS
+}
+
+model UserPreferences {
+  id            String        @id @default(uuid())
+  userId        String        @unique
+  user          User          @relation(fields: [userId], references: [id])
+  timeFormat    TimeFormat    @default(TWENTY_FOUR_HOUR)
+  durationFormat DurationFormat @default(MINUTES_ONLY)
+  currency      CurrencyType  @default(NIS)
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+}
+
 model Movie {
   id          String       @id @default(uuid())
   title       String
@@ -219,6 +246,7 @@ model User {
   gender            Gender
   password          String 
   profileImage      String?
+  preferences    UserPreferences?
   reviews           Review[]
   replies           Reply[]
   tickets           Ticket[]

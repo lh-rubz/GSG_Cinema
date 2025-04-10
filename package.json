@@ -7,7 +7,7 @@
     "lib": "lib"
   },
   "dependencies": {
-    "@prisma/client": "^6.5.0",
+    "@prisma/client": "^6.6.0",
     "@radix-ui/react-toast": "^1.2.6",
     "@tailwindcss/postcss": "^4.0.15",
     "@types/uuid": "^10.0.0",
@@ -21,7 +21,6 @@
     "lucide-react": "^0.483.0",
     "next": "^15.2.3",
     "next-themes": "^0.4.6",
-    "prisma": "^6.5.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.2",
@@ -43,6 +42,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.2.3",
     "postcss": "^8.5.3",
+    "prisma": "^6.6.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
