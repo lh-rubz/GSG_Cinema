@@ -18,7 +18,7 @@ export default function BookingSummary({ showtime, selectedSeats, onBooking, onR
   const [discount, setDiscount] = useState(0)
 
   const getSeatPrice = (seat: Seat) => {
-    return seat.row === 0 ? 50 : 30
+    return seat.row === 0 ? 50 : showtime.price
   }
 
   const getRowLetter = (rowIndex: number) => {
@@ -26,7 +26,7 @@ export default function BookingSummary({ showtime, selectedSeats, onBooking, onR
   }
 
   const getSeatLabel = (seat: Seat) => {
-    return `${getRowLetter(seat.row)}${seat.col}`
+    return `${getRowLetter(seat.row)}${seat.col + 1}`
   }
 
   const handleBookNow = async () => {

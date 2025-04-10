@@ -55,9 +55,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { id, userId, showtimeId, seatId, price } = body
+    console.log("Received ticket creation request with body:", body)
+    const { id, userId, showtimeId, seatId, price, status } = body
 
     if (!userId || !showtimeId || !seatId || price === undefined) {
+      console.log("Missing required fields:", { userId, showtimeId, seatId, price })
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
@@ -66,6 +68,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!user) {
+      console.log("User not found:", userId)
       return NextResponse.json({ error: "User not found" }, { status: 400 })
     }
 
@@ -77,6 +80,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!showtime) {
+      console.log("Showtime not found:", showtimeId)
       return NextResponse.json({ error: "Showtime not found" }, { status: 400 })
     }
 
@@ -86,6 +90,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!seat) {
+      console.log("Seat not found:", seatId)
       return NextResponse.json({ error: "Seat not found" }, { status: 400 })
     }
 
@@ -101,6 +106,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingTicket) {
+      console.log("Seat already booked:", { showtimeId, seatId })
       return NextResponse.json({ error: "Seat is already booked for this showtime" }, { status: 400 })
     }
 
@@ -112,7 +118,7 @@ export async function POST(request: NextRequest) {
         seatId,
         price,
         purchaseDate: new Date().toISOString(),
-        status: "reserved",
+        status: status || "reserved",
       },
       include: {
         user: {
@@ -132,6 +138,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    console.log("Successfully created ticket:", ticket)
     return NextResponse.json(ticket, { status: 201 })
   } catch (error) {
     console.error("Error creating ticket:", error)

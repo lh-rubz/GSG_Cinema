@@ -6,7 +6,6 @@ import { receiptsApi } from "@/lib/endpoints/receipts"
 import { ArrowLeft, CheckCircle, Home, Ticket } from 'lucide-react'
 import Link from "next/link"
 import { Loading } from "@/components/loading-inline"
-import { Ticket as ImportedTicket } from "@/types/types"
 import { formatCurrency } from "@/lib/utils"
 
 export default function ConfirmationPage() {
@@ -14,15 +13,28 @@ export default function ConfirmationPage() {
   const searchParams = useSearchParams()
   const receiptId = searchParams.get("receiptId")
   
-
-
   interface Receipt {
     id: string;
     movie: { title: string };
     receiptDate: string;
-    tickets: ImportedTicket[];
+    tickets: {
+      id: string;
+      showtime: {
+        date: string;
+        time: string;
+        screen: {
+          name: string;
+        };
+      };
+      seat: {
+        id: string;
+        row: number;
+        column: number;
+        number: number;
+      };
+    }[];
     paymentMethod: string;
-    totalPrice: string;
+    totalPrice: number;
   }
 
   const [receipt, setReceipt] = useState<Receipt | null>(null)
@@ -40,7 +52,11 @@ export default function ConfirmationPage() {
       try {
         setIsLoading(true)
         const response = await receiptsApi.getReceipt(receiptId)
-        setReceipt(response.data!)
+        if (!response.data) {
+          throw new Error("Failed to fetch receipt")
+        }
+        const receiptData = response.data as unknown as Receipt
+        setReceipt(receiptData)
       } catch (err) {
         console.error("Failed to fetch receipt:", err)
         setError("Failed to load receipt information. Please check your booking history.")
@@ -125,32 +141,36 @@ export default function ConfirmationPage() {
 
               <div className="space-y-4">
                 <div className="flex justify-between">
-                  <span className="text-zinc-600 dark:text-zinc-400">Booking ID</span>
-                    {receipt.tickets.map((ticket: ImportedTicket) => `${ticket.seatId}`).join(', ')}
-                </div>
-                <div className="flex justify-between">
                   <span className="text-zinc-600 dark:text-zinc-400">Movie</span>
                   <span className="text-zinc-800 dark:text-zinc-200 font-medium">{receipt.movie.title}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-600 dark:text-zinc-400">Date & Time</span>
-                  <span className="text-zinc-800 dark:text-zinc-200 font-medium">{formattedDate} • {formattedTime}</span>
+                  <span className="text-zinc-800 dark:text-zinc-200 font-medium">
+                    {receipt.tickets[0]?.showtime?.date} • {receipt.tickets[0]?.showtime?.time}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-zinc-600 dark:text-zinc-400">Screen</span>
+                  <span className="text-zinc-800 dark:text-zinc-200 font-medium">
+                    {receipt.tickets[0]?.showtime?.screen?.name}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-600 dark:text-zinc-400">Seats</span>
                   <span className="text-zinc-800 dark:text-zinc-200 font-medium">
-                    {receipt.tickets.map(ticket => `${ticket.seatId}`).join(', ')}
+                    {receipt.tickets.map(ticket => ticket.seat.number).join(', ')}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-600 dark:text-zinc-400">Payment Method</span>
                   <span className="text-zinc-800 dark:text-zinc-200 font-medium">
-                    Pending Payment
+                    {receipt.paymentMethod === "cash" ? "Cash" : "Credit Card"}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-600 dark:text-zinc-400">Total Amount</span>
-                  <span className="text-zinc-800 dark:text-zinc-200 font-medium">{formatCurrency(parseFloat(receipt.totalPrice))}</span>
+                  <span className="text-zinc-800 dark:text-zinc-200 font-medium">{formatCurrency(receipt.totalPrice)}</span>
                 </div>
               </div>
             </div>

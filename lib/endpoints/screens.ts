@@ -35,5 +35,9 @@ export const screensApi = {
   
   async deleteScreen(id: string) {
     return apiClient.delete<{ message: string }>(`/screens/${id}`);
+  },
+
+  async updateSeatStatus(seatId: string, status: string) {
+    return apiClient.put<Seat>(`/screens/seats/${seatId}`, { status });
   }
 };

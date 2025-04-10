@@ -5,6 +5,8 @@ import { useParams, useSearchParams, useRouter } from "next/navigation"
 import { showtimesApi } from "@/lib/endpoints/showtimes"
 import { screensApi } from "@/lib/endpoints/screens"
 import { receiptsApi } from "@/lib/endpoints/receipts"
+import { ticketsApi } from "@/lib/endpoints/tickets"
+import { seatsApi } from "@/lib/endpoints/seats"
 import { Loading } from "@/components/loading-inline"
 import { Seat } from "@/types/types"
 import SeatMap from "./seat-map"
@@ -93,33 +95,90 @@ export default function BookingPage({}: BookingPageProps) {
 
   const handleBooking = async () => {
     if (selectedSeats.length === 0) {
-      alert("Please select at least one seat")
+      setError("Please select at least one seat to proceed with your booking.")
       return
     }
 
     try {
-      // In a real app, you would create tickets first and then use their IDs
-      // For now, we'll simulate this process
-      const ticketIds = selectedSeats.map(seat => seat.id)
-      const totalPrice = selectedSeats.reduce((sum, seat) => sum + getSeatPrice(seat), 0)
+      setError(null)
+      // Get the current user from session storage
+      const storedUser = sessionStorage.getItem('user')
+      if (!storedUser) {
+        setError("Please log in to complete your booking.")
+        return
+      }
+      const currentUser = JSON.parse(storedUser)
+
+      // Create tickets for each selected seat
+      const ticketPromises = selectedSeats.map(async (seat) => {
+        const ticketData = {
+          userId: currentUser.id,
+          showtimeId: showtime.id,
+          seatId: seat.id,
+          price: seat.type === 'premium' ? 50 : 30,
+          status: "reserved" as const
+        }
+        
+        console.log("Creating ticket with data:", ticketData)
+        const response = await ticketsApi.createTicket(ticketData)
+        if (!response.data) {
+          if (response.error?.includes("already booked")) {
+            setError(`Seat ${seat.number} is no longer available. Please select different seats.`)
+            throw new Error("Seat already booked")
+          }
+          throw new Error(`Failed to create ticket for seat ${seat.number}`)
+        }
+
+        // Update seat availability to false
+        await seatsApi.updateSeat(seat.id, { available: false })
+        
+        return response.data
+      })
+
+      const tickets = await Promise.all(ticketPromises)
+      const ticketIds = tickets.map(ticket => ticket.id)
+      const totalPrice = tickets.reduce((sum, ticket) => sum + ticket.price, 0)
       
       // Create a receipt
       const receiptData = {
-        userId: "current-user-id", // In a real app, get this from authentication
+        userId: currentUser.id,
         movieId: showtime.movie.id,
         ticketIds: ticketIds,
-        totalPrice: Number(totalPrice.toFixed(2)),
-        paymentMethod: "credit_card",
+        totalPrice: totalPrice,
+        paymentMethod: "cash" as const,
         receiptDate: new Date().toISOString()
       }
       
-      const response = await receiptsApi.createReceipt(receiptData)
+      const receiptResponse = await receiptsApi.createReceipt(receiptData)
+      if (!receiptResponse.data) {
+        setError("We couldn't process your payment. Please try again.")
+        throw new Error("Failed to create receipt")
+      }
+      
+      const receiptId = receiptResponse.data.id
+      if (!receiptId) {
+        setError("We couldn't generate your receipt. Please try again.")
+        throw new Error("Invalid receipt ID received")
+      }
+      
+      // Update tickets with receipt ID but keep status as reserved
+      const updatePromises = tickets.map(ticket => 
+        ticketsApi.updateTicket(ticket.id, { 
+          status: "reserved" as const,
+          receiptId: receiptId
+        })
+      )
+      
+      await Promise.all(updatePromises)
       
       // Navigate to confirmation page with receipt ID
-      router.push(`/booking/confirmation?receiptId=${response.data!.id}`)
+      router.push(`/booking/confirmation?receiptId=${receiptId}`)
     } catch (error) {
       console.error("Booking failed:", error)
-      alert("Failed to complete booking. Please try again.")
+      // Don't set error if it's already set (like for seat already booked)
+      if (!error) {
+        setError("Something went wrong. Please try again or contact support if the problem persists.")
+      }
     }
   }
 
@@ -218,7 +277,7 @@ export default function BookingPage({}: BookingPageProps) {
                     <span className="text-sm text-zinc-600 dark:text-zinc-400">Selected</span>
                   </div>
                   <div className="flex items-center">
-                    <div className="w-6 h-6 rounded bg-blue-300 dark:bg-blue-900 mr-2"></div>
+                    <div className="w-6 h-6 rounded bg-blue-500 dark:bg-blue-600 mr-2"></div>
                     <span className="text-sm text-zinc-600 dark:text-zinc-400">Reserved</span>
                   </div>
                   <div className="flex items-center">
