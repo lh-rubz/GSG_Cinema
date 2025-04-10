@@ -20,6 +20,14 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
                 user: true,
               },
             },
+            likedBy: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                profileImage: true,
+              },
+            },
           },
         },
         showtimes: {
