@@ -133,37 +133,37 @@ The seeding process must follow this specific order due to foreign key constrain
 
 ```bash
 # 1. Seed Directors
-npx ts-node scripts/seeds/directors.seed.ts
+npx ts-node scripts/seeds/directorSeed.ts
 
 # 2. Seed Cast Members
-npx ts-node scripts/seeds/cast-members.seed.ts
+npx ts-node scripts/seeds/castMemberSeed.ts
 
 # 3. Seed Movies
-npx ts-node scripts/seeds/movies.seed.ts
+npx ts-node scripts/seeds/movieSeed.ts
 
 # 4. Seed Users
-npx ts-node scripts/seeds/users.seed.ts
+npx ts-node scripts/seeds/userSeed.ts
 
 # 5. Seed Screens
-npx ts-node scripts/seeds/screens.seed.ts
+npx ts-node scripts/seeds/screenSeed.ts
 
 # 6. Seed Showtimes
-npx ts-node scripts/seeds/showtimes.seed.ts
+npx ts-node scripts/seeds/showtimeSeed.ts
 
 # 7. Seed Tickets
-npx ts-node scripts/seeds/tickets.seed.ts
+npx ts-node scripts/seeds/ticketSeed.ts
 
 # 8. Seed Receipts
-npx ts-node scripts/seeds/receipts.seed.ts
+npx ts-node scripts/seeds/recipts.ts
 
 # 9. Seed Reviews
-npx ts-node scripts/seeds/reviews.seed.ts
+npx ts-node scripts/seeds/reviewSeed.ts
 
 # 10. Seed Review Replies
-npx ts-node scripts/seeds/review-replies.seed.ts
+npx ts-node scripts/seeds/replySeed.ts
 
 # 11. Seed Review Likes
-npx ts-node scripts/seeds/review-likes.seed.ts
+npx ts-node scripts/seeds/likeSeed.ts
 ```
 
 Or use the combined seed script:
