@@ -61,14 +61,14 @@ const TabSwitcher = ({ activeTab, onChange }: {
   activeTab: ActiveTab; 
   onChange: (tab: ActiveTab) => void 
 }) => (
-  <div className="flex h-10 p-1 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm">
+  <div className="flex h-10 p-1 border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 rounded-lg overflow-hidden shadow-sm">
     {Object.values(ActiveTab).map(tab => (
       <button
         key={tab}
         className={`flex-1 cursor-pointer rounded-md text-center px-4 py-2 transition-all duration-200 text-sm whitespace-nowrap ${
           activeTab === tab 
-            ? "bg-white dark:bg-gray-700 shadow-sm font-medium text-blue-600 dark:text-blue-400" 
-            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50"
+            ? "bg-white dark:bg-zinc-700 shadow-sm font-medium text-red-600 dark:text-red-400" 
+            : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700/50"
         }`}
         onClick={() => onChange(tab)}
       >
@@ -88,10 +88,10 @@ const SearchInput = ({ value, onChange }: {
       placeholder="Search movies..."
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full p-2 h-10 pl-10 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 shadow-sm hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+      className="w-full p-2 h-10 pl-10 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:focus:ring-red-600 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 shadow-sm hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors"
     />
     <svg
-      className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 dark:text-gray-500"
+      className="absolute left-3 top-2.5 h-5 w-5 text-zinc-400 dark:text-zinc-500"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -115,7 +115,7 @@ const GenreFilter = ({ value, options, onChange }: {
   <select
     onChange={(e) => onChange(e.target.value)}
     value={value}
-    className="p-2 h-10 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 min-w-[150px] shadow-sm hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+    className="p-2 h-10 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:focus:ring-red-600 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 min-w-[150px] shadow-sm hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors"
   >
     <option value="">All Genres</option>
     {options.map(genre => (
@@ -134,7 +134,7 @@ const YearFilter = ({ value, options, onChange }: {
   <select
     onChange={(e) => onChange(e.target.value)}
     value={value}
-    className="p-2 h-10 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 min-w-[120px] shadow-sm hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+    className="p-2 h-10 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:focus:ring-red-600 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 min-w-[120px] shadow-sm hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors"
   >
     <option value="">All Years</option>
     {options.map(year => (
@@ -148,10 +148,10 @@ const YearFilter = ({ value, options, onChange }: {
 const ResetButton = ({ onClick }: { onClick: () => void }) => (
   <button
     onClick={onClick}
-    className="ml-2 px-4 h-10 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg"
+    className="ml-2 px-4 h-10 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg"
   >
     Reset Filters
   </button>
 );
 
-export { MovieGenre };
+export type { MovieGenre };

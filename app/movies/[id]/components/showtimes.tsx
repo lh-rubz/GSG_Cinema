@@ -121,8 +121,8 @@ function DateButton({
         selected 
           ? 'bg-red-600 text-white' 
           : hasShowtimes
-            ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
-            : 'bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 '
+            ? 'bg-zinc-100 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-600'
+            : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 '
       }`}
     >
       <span>{formattedDate}</span>
@@ -147,12 +147,12 @@ function NoShowtimesMessage({ date }: { date: string }) {
   return (
     <div className="text-center py-12">
       <div className="flex justify-center mb-4">
-        <Frown className="w-12 h-12 text-gray-400 dark:text-gray-500" />
+        <Frown className="w-12 h-12 text-zinc-400 dark:text-zinc-500" />
       </div>
-      <h3 className="text-xl font-medium text-gray-600 dark:text-gray-400">
+      <h3 className="text-xl font-medium text-zinc-600 dark:text-zinc-400">
         No showtimes available for {formattedDate}
       </h3>
-      <p className="text-gray-500 dark:text-gray-500 mt-2">
+      <p className="text-zinc-500 dark:text-zinc-500 mt-2">
         Please check other dates or come back later
       </p>
     </div>

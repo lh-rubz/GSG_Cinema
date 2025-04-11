@@ -8,9 +8,9 @@ export default function MovieNotFound() {
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-900 flex flex-col items-center justify-center p-4">
       {/* Simple film strip effect */}
-      <div className="absolute top-0 left-0 w-full h-2 bg-gray-200 dark:bg-zinc-700 flex">
+      <div className="absolute top-0 left-0 w-full h-2 bg-zinc-200 dark:bg-zinc-700 flex">
         {[...Array(20)].map((_, i) => (
-          <div key={i} className="h-full w-6 border-r border-gray-300 dark:border-zinc-600"></div>
+          <div key={i} className="h-full w-6 border-r border-zinc-300 dark:border-zinc-600"></div>
         ))}
       </div>
 
@@ -23,7 +23,7 @@ export default function MovieNotFound() {
         </div>
 
         <h1 className="text-3xl font-bold mb-4 text-red-600 dark:text-red-500">Film Missing</h1>
-        <p className="text-gray-600 dark:text-zinc-300 mb-8">
+        <p className="text-zinc-600 dark:text-zinc-300 mb-8">
           This movie reel can't be located in our archives.
         </p>
 

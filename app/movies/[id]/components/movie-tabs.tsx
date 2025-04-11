@@ -10,7 +10,7 @@ export function MovieTabs({ activeTab, setActiveTab, movieStatus }: MovieTabsPro
     : ["info"]
 
   return (
-    <div className="sticky top-0 z-10 bg-white shadow-md dark:bg-gray-800">
+    <div className="sticky top-0 z-10 bg-white shadow-md dark:bg-zinc-800">
       <div className="container mx-auto px-4">
         <div className="flex overflow-x-auto">
           {tabs.map((tab) => (
@@ -20,7 +20,7 @@ export function MovieTabs({ activeTab, setActiveTab, movieStatus }: MovieTabsPro
               className={`px-6 py-4 font-medium border-b-2 transition-colors ${
                 activeTab === tab
                   ? "border-red-600 text-red-600 dark:text-red-400"
-                  : "border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                  : "border-transparent text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
               }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}

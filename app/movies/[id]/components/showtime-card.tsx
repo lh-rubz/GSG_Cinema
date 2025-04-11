@@ -47,12 +47,12 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
   }
 
   return (
-    <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+    <div className="relative bg-white dark:bg-zinc-800 rounded-lg shadow-lg overflow-hidden">
       {/* Ticket perforation top */}
       <div className="absolute top-0 left-0 w-full h-3 flex">
         {Array.from({ length: 20 }).map((_, i) => (
           <div key={i} className="flex-1 h-full">
-            <div className="h-3 w-3 rounded-full bg-gray-100 dark:bg-gray-900 mx-auto"></div>
+            <div className="h-3 w-3 rounded-full bg-zinc-100 dark:bg-zinc-900 mx-auto"></div>
           </div>
         ))}
       </div>
@@ -73,11 +73,11 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
             <div className="ml-4">
               <button 
                 onClick={() => setUse24HourFormat(!use24HourFormat)}
-                className="text-2xl font-bold text-gray-900 dark:text-white hover:text-red-600 transition-colors"
+                className="text-2xl font-bold text-zinc-900 dark:text-white hover:text-red-600 transition-colors"
               >
                 {formatTime(showtime.time)}
               </button>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="text-sm text-zinc-500 dark:text-zinc-400">
                 {screen?.name || "Screen"}
               </div>
             </div>
@@ -97,7 +97,7 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
         </div>
 
         <div className="flex justify-between items-center">
-          <div className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="text-sm text-zinc-500 dark:text-zinc-400">
             {showtime.screen.seats?.filter((seat: Seat) => seat.available == true).length} seats available
           </div>
           <Link href={`/booking/${showtime.id}`}>
@@ -114,7 +114,7 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
       <div className="absolute bottom-0 left-0 w-full h-3 flex">
         {Array.from({ length: 20 }).map((_, i) => (
           <div key={i} className="flex-1 h-full">
-            <div className="h-3 w-3 rounded-full bg-gray-100 dark:bg-gray-900 mx-auto"></div>
+            <div className="h-3 w-3 rounded-full bg-zinc-100 dark:bg-zinc-900 mx-auto"></div>
           </div>
         ))}
       </div>

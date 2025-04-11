@@ -77,7 +77,7 @@ export default function MovieDetailsPage() {
 
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white dark:bg-zinc-900">
       <MovieHeader 
         movie={movie!} 
         onTrailerClick={() => setShowTrailer(true)} 

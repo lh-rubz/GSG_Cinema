@@ -23,10 +23,34 @@ export default function ContactPage() {
     setFormState((prev) => ({ ...prev, subject: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-
+      try {
+        const response = await fetch('/api/sendEmail', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...formState,
+            type:"contact",
+            recipient:"habuelrub@gmail.com"
+          }),
+        })
+  
+        if (!response.ok) {
+          throw new Error('Failed to send message')
+        }
+  
+        setIsSubmitted(true)
+        setFormState({ name: "", email: "", subject: "", message: "" })
+      } catch (err) {
+       } finally {
+        setIsSubmitting(false)
+      }
+    
+  
     // Simulate form submission
     setTimeout(() => {
       setIsSubmitting(false)
@@ -41,25 +65,25 @@ export default function ContactPage() {
   }
 
   return (
-    <main className="min-w-full mx-auto py-12 md:py-16 lg:py-20 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
-      <div className="mx-auto max-w-5xl bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 md:p-8 transition-colors duration-200">
+    <main className="min-w-full mx-auto py-12 md:py-16 lg:py-20 bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 transition-colors duration-200">
+      <div className="mx-auto max-w-5xl bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6 md:p-8 transition-colors duration-200">
         <h1 className="text-4xl font-bold mb-6 text-center text-red-600 dark:text-red-400">Contact Us</h1>
-        <p className="mb-8 text-center text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+        <p className="mb-8 text-center text-zinc-600 dark:text-zinc-300 max-w-2xl mx-auto">
           Have questions or feedback? We'd love to hear from you. Fill out the form below or use our contact
           information.
         </p>
 
         <div className="grid gap-8 md:grid-cols-3">
           <div className="md:col-span-1 space-y-6">
-            <div className="bg-gray-100 dark:bg-gray-700 rounded-xl p-6 transition-colors duration-200">
+            <div className="bg-zinc-100 dark:bg-zinc-700 rounded-xl p-6 transition-colors duration-200">
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
                   <div className="bg-red-100 dark:bg-red-900/30 p-2 rounded-lg">
                     <MapPin className="h-5 w-5 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-lg text-gray-900 dark:text-white">Visit Us</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                    <h3 className="font-medium text-lg text-zinc-900 dark:text-white">Visit Us</h3>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-300 mt-1">
                       Icon Mall, Ramallah
                       <br />
                       Palestine
@@ -72,11 +96,11 @@ export default function ContactPage() {
                     <Mail className="h-5 w-5 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-lg text-gray-900 dark:text-white">Email Us</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                      info@cineHub.com
+                    <h3 className="font-medium text-lg text-zinc-900 dark:text-white">Email Us</h3>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-300 mt-1">
+                      info@cinemaHub.com
                       <br />
-                      support@cineHub.com
+                      support@cinemaHub.com
                     </p>
                   </div>
                 </div>
@@ -86,8 +110,8 @@ export default function ContactPage() {
                     <Phone className="h-5 w-5 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-lg text-gray-900 dark:text-white">Call Us</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                    <h3 className="font-medium text-lg text-zinc-900 dark:text-white">Call Us</h3>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-300 mt-1">
                       Main: (970) 123-4567-510
                       <br />
                       Support: (970) 987-6543-510
@@ -97,21 +121,21 @@ export default function ContactPage() {
               </div>
             </div>
 
-            <div className="bg-gray-100 dark:bg-gray-700 p-6 rounded-xl transition-colors duration-200">
+            <div className="bg-zinc-100 dark:bg-zinc-700 p-6 rounded-xl transition-colors duration-200">
               <div className="flex items-center gap-3 mb-4">
                 <Clock className="h-5 w-5 text-red-600 dark:text-red-400" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Business Hours</h3>
+                <h3 className="text-lg font-medium text-zinc-900 dark:text-white">Business Hours</h3>
               </div>
               <ul className="space-y-3 text-sm">
-                <li className="flex justify-between text-gray-600 dark:text-gray-300">
+                <li className="flex justify-between text-zinc-600 dark:text-zinc-300">
                   <span>Monday - Thursday</span>
                   <span className="font-medium">10:00 AM - 10:00 PM</span>
                 </li>
-                <li className="flex justify-between text-gray-600 dark:text-gray-300">
+                <li className="flex justify-between text-zinc-600 dark:text-zinc-300">
                   <span>Friday - Saturday</span>
                   <span className="font-medium">10:00 AM - 12:00 AM</span>
                 </li>
-                <li className="flex justify-between text-gray-600 dark:text-gray-300">
+                <li className="flex justify-between text-zinc-600 dark:text-zinc-300">
                   <span>Sunday</span>
                   <span className="font-medium">11:00 AM - 10:00 PM</span>
                 </li>
@@ -121,12 +145,12 @@ export default function ContactPage() {
 
           <div className="md:col-span-2">
             {isSubmitted ? (
-              <div className="bg-gray-100 dark:bg-gray-700 rounded-xl p-8 text-center transition-colors duration-200">
+              <div className="bg-zinc-100 dark:bg-zinc-700 rounded-xl p-8 text-center transition-colors duration-200">
                 <div className="bg-red-500 rounded-full p-3 mb-4 inline-block">
                   <Send className="h-6 w-6 text-white" />
                 </div>
-                <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Message Sent!</h2>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                <h2 className="text-2xl font-bold mb-2 text-zinc-900 dark:text-white">Message Sent!</h2>
+                <p className="text-zinc-600 dark:text-zinc-300 mb-6">
                   Thank you for contacting us. We'll get back to you as soon as possible.
                 </p>
                 <button
@@ -140,12 +164,12 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label htmlFor="name" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
                       Name
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <User className="h-5 w-5 text-gray-400" />
+                        <User className="h-5 w-5 text-zinc-400" />
                       </div>
                       <input
                         id="name"
@@ -154,18 +178,18 @@ export default function ContactPage() {
                         required
                         value={formState.name}
                         onChange={handleChange}
-                        className="w-full pl-10 px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                        className="w-full pl-10 px-4 py-2 bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label htmlFor="email" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
                       Email
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Mail className="h-5 w-5 text-gray-400" />
+                        <Mail className="h-5 w-5 text-zinc-400" />
                       </div>
                       <input
                         id="email"
@@ -175,20 +199,20 @@ export default function ContactPage() {
                         required
                         value={formState.email}
                         onChange={handleChange}
-                        className="w-full pl-10 px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                        className="w-full pl-10 px-4 py-2 bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
                       />
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label htmlFor="subject" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     Subject
                   </label>
                   <select
                     onChange={(e) => handleSelectChange(e.target.value)}
                     value={formState.subject}
-                    className="w-full px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all appearance-none"
+                    className="w-full px-4 py-2 bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all appearance-none"
                   >
                     <option value="">Select a subject</option>
                     <option value="general">General Inquiry</option>
@@ -200,12 +224,12 @@ export default function ContactPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label htmlFor="message" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     Message
                   </label>
                   <div className="relative">
                     <div className="absolute top-3 left-3">
-                      <MessageSquare className="h-5 w-5 text-gray-400" />
+                      <MessageSquare className="h-5 w-5 text-zinc-400" />
                     </div>
                     <textarea
                       id="message"
@@ -215,7 +239,7 @@ export default function ContactPage() {
                       required
                       value={formState.message}
                       onChange={handleChange}
-                      className="resize:none! w-full pl-10 px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                      className="resize:none! w-full pl-10 px-4 py-2 bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
                     />
                   </div>
                 </div>
@@ -252,7 +276,7 @@ export default function ContactPage() {
     <MapPin className="h-5 w-5" />
     Find Us on the Map
   </h3>
-  <div className="rounded-xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700">
+  <div className="rounded-xl overflow-hidden shadow-lg border border-zinc-200 dark:border-zinc-700">
     <iframe
       src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3382.242783596073!2d35.19261302883546!3d31.936502387698987!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzHCsDU2JzExLjQiTiAzNcKwMTEnMzMuNCJF!5e0!3m2!1sen!2s!4v1621920594152!5m2!1sen!2s&markers=color:red%7C31.936502,35.192613`}
       width="100%"
@@ -261,10 +285,10 @@ export default function ContactPage() {
       allowFullScreen
       loading="lazy"
       referrerPolicy="no-referrer-when-downgrade"
-      className="dark:grayscale-[20%] dark:opacity-90"
+      className="dark:zincscale-[20%] dark:opacity-90"
     />
   </div>
-  <p className="text-center mt-3 text-sm text-gray-600 dark:text-gray-400">
+  <p className="text-center mt-3 text-sm text-zinc-600 dark:text-zinc-400">
    Icon Mall, Surda ,Ramallah, Palestine 🍉
   </p>
 </div>

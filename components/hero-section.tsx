@@ -1,6 +1,21 @@
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export function HeroSection() {
+  const [stars, setStars] = useState<Array<React.CSSProperties>>([])
+
+  useEffect(() => {
+    // Generate stars only on client side
+    const generatedStars = Array(20).fill(0).map(() => ({
+      width: `${2 + Math.random() * 2}px`,
+      height: `${2 + Math.random() * 2}px`,
+      top: `${Math.random() * 100}%`,
+      left: `${Math.random() * 100}%`,
+      opacity: Math.random(),
+      animationDelay: `${Math.random() * 5}s`
+    }))
+    setStars(generatedStars)
+  }, [])
   return (
     <section className="relative h-screen min-h-[800px] flex items-center overflow-hidden">
       {/* Background with parallax effect */}
@@ -79,19 +94,12 @@ export function HeroSection() {
       </div>
 
       {/* Animated stars */}
-      {[...Array(20)].map((_, i) => (
+      {stars.length > 0 && stars.map((style, i) => (
         <div 
           key={i}
           className="absolute rounded-full bg-white animate-twinkle"
-          style={{
-            width: `${Math.random() * 3 + 1}px`,
-            height: `${Math.random() * 3 + 1}px`,
-            top: `${Math.random() * 100}%`,
-            left: `${Math.random() * 100}%`,
-            opacity: Math.random(),
-            animationDelay: `${Math.random() * 5}s`
-          }}
-        ></div>
+          style={style}
+        />
       ))}
     </section>
   );
