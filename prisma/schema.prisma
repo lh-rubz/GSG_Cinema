@@ -101,6 +101,12 @@ enum CurrencyType {
   NIS
 }
 
+enum PromotionType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  BUY_ONE_GET_ONE
+}
+
 model UserPreferences {
   id            String        @id @default(uuid())
   userId        String        @unique
@@ -258,6 +264,23 @@ model User {
   @@index([username])
 }
 
+model Promotion {
+  id          String        @id @default(uuid())
+  code        String        @unique
+  description String        @db.Text
+  type        PromotionType
+  value       Float
+  startDate   String
+  expiryDate  String
+  isActive    Boolean       @default(true)
+  image       String?       // Optional image URL
+  tickets     Ticket[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([code])
+}
+
 model Ticket {
   id            String       @id @default(uuid())
   userId        String
@@ -272,11 +295,15 @@ model Ticket {
   deleteReason  String?
   receipt       Receipt?     @relation(fields: [receiptId], references: [id])
   receiptId     String?
+  promotion     Promotion?   @relation(fields: [promotionId], references: [id])
+  promotionId   String?
+  discountAmount Float?      @default(0)
 
   @@index([userId])
   @@index([showtimeId])
   @@index([seatId])
   @@index([receiptId])
+  @@index([promotionId])
 }
 
 model Receipt {
