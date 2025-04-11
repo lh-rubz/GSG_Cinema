@@ -141,7 +141,7 @@ const MoviePage = () => {
 
   return (
     <div className="container mx-auto px-4 py-12 h-full">
-      <h2 className="text-3xl font-bold mt-16 mb-8 text-gray-900 dark:text-white">
+      <h2 className="text-3xl font-bold mt-16 mb-8 text-zinc-900 dark:text-white">
         {filters.activeTab === ActiveTab.NOW ? 'Now Showing' : 'Coming Soon'}
       </h2>
       

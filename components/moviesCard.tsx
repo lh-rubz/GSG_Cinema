@@ -1,98 +1,100 @@
-import Link from "next/link";
-import type { Movie } from "@/types/types";
-import { Star } from "lucide-react";
+import Link from "next/link"
+import type { Movie } from "@/types/types"
+import { Star, Clock, Tag } from "lucide-react"
 
 interface MovieCardProps {
-  movie: Movie;
+  movie: Movie
 }
 
 export default function MovieCard({ movie }: MovieCardProps) {
-  const isComingSoon = movie.status === "coming_soon";
+  const isComingSoon = movie.status === "coming_soon"
 
   return (
-    <div className="bg-white dark:bg-zinc-800 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 ease-in-out border border-gray-100 dark:border-zinc-700 hover:translate-y-[-4px] h-full flex flex-col">
-      <div className="relative aspect-[3/4]">
+    <div className="group relative bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out border border-gray-100 dark:border-zinc-800 h-full flex flex-col">
+      {/* Image with gradient overlay */}
+      <div className="relative aspect-[3/4] overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent z-10 opacity-60 group-hover:opacity-80 transition-opacity" />
         <img
           src={
             movie.image ||
-            `/placeholder.svg?height=450&width=300&text=${encodeURIComponent(
-              movie.title
-            )}`
+            `/placeholder.svg?height=450&width=300&text=${encodeURIComponent(movie.title) || "/placeholder.svg"}`
           }
           alt={movie.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-in-out"
         />
-        
-        <div className={`absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
-          isComingSoon 
-            ? "bg-red-500/90 text-white" 
-            : "bg-white/90 dark:bg-gray-700/90 dark:text-white backdrop-blur-sm"
-        }`}>
+
+        {/* Badge */}
+        <div
+          className={`absolute top-4 right-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-md ${
+            isComingSoon
+              ? "bg-red-500/90 text-white ring-2 ring-red-500/20"
+              : "bg-white/90 dark:bg-zinc-800/90 text-zinc-900 dark:text-white ring-2 ring-white/20"
+          }`}
+        >
           {isComingSoon ? (
             "COMING SOON"
           ) : (
             <>
-              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-              <span>{movie.rating}</span>
+              <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+              <span className="tracking-wide">{movie.rating}</span>
             </>
           )}
         </div>
       </div>
 
-      <div className="p-4 flex flex-col flex-grow">
-        <div className="mb-3">
-          <h3 className="font-bold text-lg text-gray-900 dark:text-white truncate">
-            {movie.title}
-          </h3>
-          
-        
-          <div className="flex flex-wrap items-center gap-1 text-sm text-gray-500 dark:text-gray-400 mt-1">
-            <div className="flex flex-wrap items-center gap-x-1">
+      {/* Content */}
+      <div className="p-5 flex flex-col flex-grow">
+        <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2 line-clamp-1 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+          {movie.title}
+        </h3>
+
+        {/* Metadata with icons */}
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
+            <Tag className="w-3.5 h-3.5" />
+            <div className="flex flex-wrap items-center">
               {movie.genre.map((genre, index) => (
                 <span key={genre} className="flex items-center">
                   {genre}
-                  {index < movie.genre.length - 1 && (
-                    <span className="mx-1 text-gray-300 dark:text-gray-600">/</span>
-                  )}
+                  {index < movie.genre.length - 1 && <span className="mx-1 text-gray-300 dark:text-gray-600">•</span>}
                 </span>
               ))}
             </div>
-            {movie.duration && (
-              <>
-                <span className="mx-1 text-gray-300 dark:text-gray-600">•</span>
-                <span>{movie.duration} min</span>
-              </>
-            )}
           </div>
+
+          {movie.duration && (
+            <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
+              <Clock className="w-3.5 h-3.5" />
+              <span>{movie.duration} min</span>
+            </div>
+          )}
         </div>
 
-        {/* Buttons container with mt-auto to push to bottom */}
-        <div className="mt-auto grid grid-cols-2 gap-3">
-          {!isComingSoon ? (
-            <>
-              <Link
-                href={`/movies/${movie.id}/book`}
-                className="py-2.5 text-center bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-1"
-              >
-                Book Now
-              </Link>
-              <Link
-                href={`/movies/${movie.id}`}
-                className="py-2.5 text-center border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-medium rounded-lg transition-colors duration-200 flex items-center justify-center"
-              >
-                Details
-              </Link>
-            </>
-          ) : (
-            <Link
-              href={`/movies/${movie.id}`}
-              className="py-2.5 col-span-2 text-center bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium rounded-lg transition-colors duration-200 flex items-center justify-center"
+        {/* Details button - now full width since Book Now is removed */}
+        <div className="mt-auto">
+          <Link
+            href={`/movies/${movie.id}`}
+            className="w-full py-3 text-center font-medium rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group-hover:gap-3 bg-gradient-to-r from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-700 text-zinc-800 dark:text-zinc-200 hover:shadow-md"
+          >
+            View Details
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="transition-transform duration-300 group-hover:translate-x-1"
             >
-              View Details
-            </Link>
-          )}
+              <path d="M5 12h14"></path>
+              <path d="m12 5 7 7-7 7"></path>
+            </svg>
+          </Link>
         </div>
       </div>
     </div>
-  );
+  )
 }
