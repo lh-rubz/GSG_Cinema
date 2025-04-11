@@ -21,6 +21,7 @@ export default function ShowtimesPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [currentShowtime, setCurrentShowtime] = useState<Showtime | null>(null)
+  const [timeFormat, setTimeFormat] = useState<'12' | '24'>('24')
   const [formData, setFormData] = useState<Partial<Showtime>>({
     movieId: "",
     screenId: "",
@@ -148,6 +149,18 @@ export default function ShowtimesPage() {
         return
       }
 
+      // Format the time to ensure it's in 24-hour format
+      const time = formData.time || ""
+      const [hours, minutes] = time.split(':')
+      const formattedTime = `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`
+
+      // Format the date from yyyy-mm-dd to dd-mm-yyyy
+      const date = new Date(formData.date || "")
+      const day = date.getDate().toString().padStart(2, '0')
+      const month = (date.getMonth() + 1).toString().padStart(2, '0')
+      const year = date.getFullYear()
+      const formattedDate = `${day}-${month}-${year}`
+
       // Additional client-side validations
       const selectedDate = new Date(formData.date || "")
       const today = new Date()
@@ -175,14 +188,21 @@ export default function ShowtimesPage() {
       
       if (isAddModalOpen) {
         const showtimeId = `sh${Date.now()}`
-        
+         console.log({ id: showtimeId,
+          movieId: formData.movieId!,
+          screenId: formData.screenId!,
+          date: formattedDate,
+          time: formattedTime,
+          format: formData.format!,
+          price: Number(formData.price) || 0,
+      })
         const response = await showtimesApi.createShowtime({
           id: showtimeId,
-          movieId: formData.movieId || "",
-          screenId: formData.screenId || "",
-          date: formData.date || "",
-          time: formData.time || "",
-          format: formData.format || "TwoD",
+          movieId: formData.movieId!,
+          screenId: formData.screenId!,
+          date: formattedDate,
+          time: formattedTime,
+          format: formData.format!,
           price: Number(formData.price) || 0,
         })
         
@@ -226,8 +246,8 @@ export default function ShowtimesPage() {
         const response = await showtimesApi.updateShowtime(currentShowtime.id, {
           movieId: formData.movieId,
           screenId: formData.screenId,
-          date: formData.date,
-          time: formData.time,
+          date: formattedDate,
+          time: formattedTime,
           format: formData.format,
           price: Number(formData.price),
         })
@@ -344,6 +364,19 @@ export default function ShowtimesPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
+    
+    // Special handling for time input to ensure 24-hour format
+    if (name === 'time') {
+      // Allow typing but validate the format
+      const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/
+      if (value && !timeRegex.test(value)) {
+        setFormErrors({ ...formErrors, time: "Please enter time in 24-hour format (HH:MM)" })
+      } else {
+        // Clear the error if the format is correct
+        setFormErrors({ ...formErrors, time: "" })
+      }
+    }
+    
     setFormData({ ...formData, [name]: value })
     
     // Clear error for this field when user changes it
@@ -392,6 +425,29 @@ export default function ShowtimesPage() {
     },
   ]
 
+  // Add this new function to convert time to 24-hour format
+  const convertTo24HourFormat = (time: string): string => {
+    // If time is already in 24-hour format (contains no AM/PM), return as is
+    if (!time.toLowerCase().includes('am') && !time.toLowerCase().includes('pm')) {
+      return time
+    }
+
+    // Split the time string into hours, minutes, and period
+    const [timePart, period] = time.split(' ')
+    const [hours, minutes] = timePart.split(':').map(Number)
+
+    // Convert to 24-hour format
+    let hours24 = hours
+    if (period.toLowerCase() === 'pm' && hours !== 12) {
+      hours24 = hours + 12
+    } else if (period.toLowerCase() === 'am' && hours === 12) {
+      hours24 = 0
+    }
+
+    // Format the time with leading zeros
+    return `${hours24.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -434,7 +490,9 @@ export default function ShowtimesPage() {
               name="movieId"
               value={formData.movieId || ""}
               onChange={handleInputChange}
-              className={`w-full px-3 py-2 rounded-md border ${formErrors.movieId ? 'border-red-500' : 'border-input'} bg-background`}
+              className={`w-full px-3 py-2 rounded-md border ${
+                formErrors.movieId ? 'border-red-500' : 'border-zinc-300 dark:border-zinc-700'
+              } bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100`}
               required
             >
               <option value="">Select a movie</option>
@@ -445,7 +503,7 @@ export default function ShowtimesPage() {
               ))}
             </select>
             {formErrors.movieId && (
-              <p className="mt-1 text-xs text-red-500">{formErrors.movieId}</p>
+              <p className="mt-1 text-xs text-red-500 dark:text-red-400">{formErrors.movieId}</p>
             )}
           </FormField>
 
@@ -455,7 +513,9 @@ export default function ShowtimesPage() {
               name="screenId"
               value={formData.screenId || ""}
               onChange={handleInputChange}
-              className={`w-full px-3 py-2 rounded-md border ${formErrors.screenId ? 'border-red-500' : 'border-input'} bg-background`}
+              className={`w-full px-3 py-2 rounded-md border ${
+                formErrors.screenId ? 'border-red-500' : 'border-zinc-300 dark:border-zinc-700'
+              } bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100`}
               required
             >
               <option value="">Select a screen</option>
@@ -466,7 +526,7 @@ export default function ShowtimesPage() {
               ))}
             </select>
             {formErrors.screenId && (
-              <p className="mt-1 text-xs text-red-500">{formErrors.screenId}</p>
+              <p className="mt-1 text-xs text-red-500 dark:text-red-400">{formErrors.screenId}</p>
             )}
           </FormField>
 
@@ -478,26 +538,35 @@ export default function ShowtimesPage() {
                 name="date"
                 value={formData.date || ""}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 rounded-md border ${formErrors.date ? 'border-red-500' : 'border-input'} bg-background`}
+                className={`w-full px-3 py-2 rounded-md border ${
+                  formErrors.date ? 'border-red-500' : 'border-zinc-300 dark:border-zinc-700'
+                } bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100`}
                 required
               />
-              {formErrors.date && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.date}</p>
+              {formErrors.date ? (
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">{formErrors.date}</p>
+              ) : (
+                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Select a date for the showtime</p>
               )}
             </FormField>
 
-            <FormField label="Time" id="time" required>
+            <FormField label="Time (24-hour format)" id="time" required>
               <input
-                type="time"
+                type="text"
                 id="time"
                 name="time"
                 value={formData.time || ""}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 rounded-md border ${formErrors.time ? 'border-red-500' : 'border-input'} bg-background`}
+                placeholder="HH:MM (e.g., 14:30)"
+                className={`w-full px-3 py-2 rounded-md border ${
+                  formErrors.time ? 'border-red-500' : 'border-zinc-300 dark:border-zinc-700'
+                } bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100`}
                 required
               />
-              {formErrors.time && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.time}</p>
+              {formErrors.time ? (
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">{formErrors.time}</p>
+              ) : (
+                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Enter time in 24-hour format (e.g., 14:30 for 2:30 PM)</p>
               )}
             </FormField>
           </div>
@@ -509,7 +578,9 @@ export default function ShowtimesPage() {
                 name="format"
                 value={formData.format || "TwoD"}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 rounded-md border ${formErrors.format ? 'border-red-500' : 'border-input'} bg-background`}
+                className={`w-full px-3 py-2 rounded-md border ${
+                  formErrors.format ? 'border-red-500' : 'border-zinc-300 dark:border-zinc-700'
+                } bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100`}
                 required
               >
                 {movieFormats.map((format) => (
@@ -519,7 +590,7 @@ export default function ShowtimesPage() {
                 ))}
               </select>
               {formErrors.format && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.format}</p>
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">{formErrors.format}</p>
               )}
             </FormField>
 
@@ -532,11 +603,13 @@ export default function ShowtimesPage() {
                 onChange={handleInputChange}
                 min="0"
                 step="0.01"
-                className={`w-full px-3 py-2 rounded-md border ${formErrors.price ? 'border-red-500' : 'border-input'} bg-background`}
+                className={`w-full px-3 py-2 rounded-md border ${
+                  formErrors.price ? 'border-red-500' : 'border-zinc-300 dark:border-zinc-700'
+                } bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100`}
                 required
               />
               {formErrors.price && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.price}</p>
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">{formErrors.price}</p>
               )}
             </FormField>
           </div>
@@ -544,13 +617,13 @@ export default function ShowtimesPage() {
           <div className="flex justify-end gap-3 pt-4">
             <button
               onClick={() => setIsAddModalOpen(false)}
-              className="px-4 py-2 rounded-md border border-input bg-background hover:bg-secondary transition-colors"
+              className="px-4 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSaveShowtime}
-              className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="px-4 py-2 rounded-md bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
             >
               Add Showtime
             </button>
@@ -611,26 +684,35 @@ export default function ShowtimesPage() {
                 name="date"
                 value={formData.date || ""}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 rounded-md border ${formErrors.date ? 'border-red-500' : 'border-input'} bg-background`}
+                className={`w-full px-3 py-2 rounded-md border ${
+                  formErrors.date ? 'border-red-500' : 'border-zinc-300 dark:border-zinc-700'
+                } bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100`}
                 required
               />
-              {formErrors.date && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.date}</p>
+              {formErrors.date ? (
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">{formErrors.date}</p>
+              ) : (
+                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Select a date for the showtime</p>
               )}
             </FormField>
 
-            <FormField label="Time" id="edit-time" required>
+            <FormField label="Time (24-hour format)" id="edit-time" required>
               <input
-                type="time"
+                type="text"
                 id="edit-time"
                 name="time"
                 value={formData.time || ""}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 rounded-md border ${formErrors.time ? 'border-red-500' : 'border-input'} bg-background`}
+                placeholder="HH:MM (e.g., 14:30)"
+                className={`w-full px-3 py-2 rounded-md border ${
+                  formErrors.time ? 'border-red-500' : 'border-zinc-300 dark:border-zinc-700'
+                } bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100`}
                 required
               />
-              {formErrors.time && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.time}</p>
+              {formErrors.time ? (
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">{formErrors.time}</p>
+              ) : (
+                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Enter time in 24-hour format (e.g., 14:30 for 2:30 PM)</p>
               )}
             </FormField>
           </div>

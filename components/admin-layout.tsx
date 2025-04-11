@@ -7,17 +7,20 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Film, Users, User, Video, Cast, MonitorPlay, Ticket, LayoutDashboard, Menu, X, LogOut, Calendar } from "lucide-react"
 import ThemeToggle from "./theme-toggle"
+import { useAuth } from "@/hooks/use-auth"
 
 
 interface NavItem {
   label: string
   href: string
   icon: React.ReactNode
+  adminOnly?: boolean
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
+  const { user, logout } = useAuth()
 
   const navItems: NavItem[] = [
     {
@@ -39,6 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       label: "Staff",
       href: "/admin/staff",
       icon: <Users className="h-5 w-5" />,
+      adminOnly: true,
     },
     {
       label: "Customers",
@@ -67,6 +71,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     },
   ]
 
+  const filteredNavItems = navItems.filter(item => !item.adminOnly || user?.role === 'Admin')
+
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Mobile sidebar backdrop */}
@@ -90,7 +96,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
         </div>
         <nav className="p-4 space-y-1">
-          {navItems.map((item) => (
+          {filteredNavItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -109,16 +115,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-full bg-red-600 flex items-center justify-center text-white">
-                A
+                {user?.displayName?.[0]?.toUpperCase() || 'A'}
               </div>
               <div>
-                <p className="text-sm font-medium text-zinc-900 dark:text-white">Admin User</p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">admin@cinema.com</p>
+                <p className="text-sm font-medium text-zinc-900 dark:text-white">{user?.displayName || 'Admin User'}</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">{user?.email || 'admin@cinema.com'}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              <button className="rounded-md p-2 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-white transition-colors">
+              <button 
+                onClick={() => logout()} 
+                className="rounded-md p-2 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-white transition-colors"
+              >
                 <LogOut className="h-5 w-5" />
               </button>
             </div>

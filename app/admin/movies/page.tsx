@@ -27,7 +27,7 @@ const ALL_GENRES: MovieGenre[] = [
   "Horror",
   "Mystery",
   "Romance",
-  "Sci-Fi",
+  "SciFi",
   "Thriller",
   "Crime",
   "Animation",
@@ -174,7 +174,10 @@ export default function MoviesPage() {
 
   const handleEditMovie = (movie: MovieWithCast) => {
     setCurrentMovie(movie)
-    setFormData({ ...movie })
+    setFormData({ 
+      ...movie,
+      genre: movie.genre || [], // Ensure genre is properly set
+    })
 
     const initialCast =
       movie.cast?.map((c) => ({
@@ -287,9 +290,13 @@ export default function MoviesPage() {
 
   const handleGenreChange = (genre: MovieGenre) => {
     const currentGenres = formData.genre || []
+    const newGenres = currentGenres.includes(genre)
+      ? currentGenres.filter((g) => g !== genre)
+      : [...currentGenres, genre]
+    
     setFormData({
       ...formData,
-      genre: currentGenres.includes(genre) ? currentGenres.filter((g) => g !== genre) : [...currentGenres, genre],
+      genre: newGenres
     })
   }
 
@@ -312,8 +319,64 @@ export default function MoviesPage() {
     setSelectedCast((prev) => prev.filter((c) => c.castMemberId !== castMemberId))
   }
 
-  const handleCastCharacterChange = (castMemberId: string, character: string) => {
-    setSelectedCast((prev) => prev.map((c) => (c.castMemberId === castMemberId ? { ...c, character } : c)))
+  const handleCastCharacterChange = async (castMemberId: string, character: string) => {
+    try {
+      if (!currentMovie?.id) {
+        console.error("No movie selected")
+        return
+      }
+
+      // Update the local state first for immediate UI feedback
+      setSelectedCast(prev =>
+        prev.map(c =>
+          c.castMemberId === castMemberId ? { ...c, character } : c
+        )
+      )
+
+      // Update the cast member in the database
+      const response = await castMembersApi.updateCastMember(castMemberId, { 
+        character,
+        movieId: currentMovie.id
+      })
+      
+      if (response.error) {
+        console.error("Error updating cast member:", response.error)
+        // Revert the local state if the update failed
+        setSelectedCast(prev =>
+          prev.map(c =>
+            c.castMemberId === castMemberId 
+              ? { ...c, character: c.character } // Revert to previous character
+              : c
+          )
+        )
+        return
+      }
+
+      // Update the movies state to reflect the change
+      setMovies(prev =>
+        prev.map(movie => {
+          if (movie.id === currentMovie.id && movie.cast) {
+            return {
+              ...movie,
+              cast: movie.cast.map(c =>
+                c.castMemberId === castMemberId ? { ...c, character } : c
+              )
+            }
+          }
+          return movie
+        })
+      )
+    } catch (error) {
+      console.error("Error updating cast member:", error)
+      // Revert the local state if there was an error
+      setSelectedCast(prev =>
+        prev.map(c =>
+          c.castMemberId === castMemberId 
+            ? { ...c, character: c.character } // Revert to previous character
+            : c
+        )
+      )
+    }
   }
 
   return (
@@ -633,7 +696,7 @@ export default function MoviesPage() {
                       <label key={genre} className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
                         <input
                           type="checkbox"
-                          checked={(formData.genre || []).includes(genre)}
+                          checked={formData.genre?.some(g => g === genre) || false}
                           onChange={() => handleGenreChange(genre)}
                           className="rounded border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-500"
                         />

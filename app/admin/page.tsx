@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Film, Users, User, Video, Cast, MonitorPlay, Ticket, TrendingUp, AlertCircle, Calendar } from "lucide-react"
+import { Film, Users, User, Video, Cast, MonitorPlay, Ticket, TrendingUp, AlertCircle, Calendar } from 'lucide-react'
 import { moviesApi } from "@/lib/endpoints/movies"
 import { statsApi } from "@/lib/endpoints/stats"
 
 import type { Movie, Director } from "@/types/types"
 import type { Stats } from "@/lib/endpoints/stats"
 import { useAuth } from "@/hooks/use-auth"
+import Link from "next/link"
+import LoadingFull from "@/components/loading-full"
 
 // Define a type for the movie with director information
 interface MovieWithDirector extends Movie {
@@ -81,17 +82,13 @@ export default function AdminDashboard() {
 
   if (authLoading || (!isAuthenticated || user?.role !== 'Admin')) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading...</div>
-      </div>
+      <LoadingFull />
     )
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading dashboard data...</div>
-      </div>
+      <LoadingFull text="Loading Admin Dashboard" />
     )
   }
 
@@ -146,22 +143,6 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden bg-white dark:bg-zinc-800">
           <div className="bg-zinc-50 dark:bg-zinc-800/50 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-            <h2 className="font-medium text-zinc-900 dark:text-white">Quick Access</h2>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4">
-            <QuickAccessCard title="Movies" icon={<Film className="h-6 w-6" />} href="/admin/movies" />
-            <QuickAccessCard title="Showtimes" icon={<Calendar className="h-6 w-6" />} href="/admin/showtimes" />
-            <QuickAccessCard title="Staff" icon={<Users className="h-6 w-6" />} href="/admin/staff" />
-            <QuickAccessCard title="Customers" icon={<User className="h-6 w-6" />} href="/admin/customers" />
-            <QuickAccessCard title="Directors" icon={<Video className="h-6 w-6" />} href="/admin/directors" />
-            <QuickAccessCard title="Cast" icon={<Cast className="h-6 w-6" />} href="/admin/cast" />
-            <QuickAccessCard title="Screens" icon={<MonitorPlay className="h-6 w-6" />} href="/admin/screens" />
-            <QuickAccessCard title="Tickets" icon={<Ticket className="h-6 w-6" />} href="/admin/tickets" />
-          </div>
-        </div>
-
-        <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden bg-white dark:bg-zinc-800">
-          <div className="bg-zinc-50 dark:bg-zinc-800/50 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
             <h2 className="font-medium text-zinc-900 dark:text-white">Recent Activity</h2>
           </div>
           <div className="divide-y divide-zinc-200 dark:divide-zinc-700">
@@ -191,46 +172,43 @@ export default function AdminDashboard() {
             />
           </div>
         </div>
-      </div>
 
-      {/* Upcoming releases */}
-      <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden bg-white dark:bg-zinc-800">
-        <div className="bg-zinc-50 dark:bg-zinc-800/50 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-          <h2 className="font-medium text-zinc-900 dark:text-white">Upcoming Movie Releases</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                <th className="px-4 py-3 text-left text-sm font-medium text-zinc-600 dark:text-zinc-400">Movie</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-zinc-600 dark:text-zinc-400">Release Date</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-zinc-600 dark:text-zinc-400">Director</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-zinc-600 dark:text-zinc-400">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
-              {upcomingMovies.length > 0 ? (
-                upcomingMovies.map((movie: MovieWithDirector) => (
-                  <tr key={movie.id} className="border-b border-zinc-200 dark:border-zinc-800">
-                    <td className="px-4 py-3 text-sm text-zinc-900 dark:text-white">{movie.title}</td>
-                    <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">{movie.releaseDate || 'TBA'}</td>
-                    <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">{movie.director?.name || 'Unknown'}</td>
-                    <td className="px-4 py-3 text-sm">
-                      <span className="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500">
-                        Coming Soon
-                      </span>
+        <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden bg-white dark:bg-zinc-800">
+          <div className="bg-zinc-50 dark:bg-zinc-800/50 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+            <h2 className="font-medium text-zinc-900 dark:text-white">Upcoming Movie Releases</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-zinc-200 dark:border-zinc-800">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-600 dark:text-zinc-400">Movie</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-600 dark:text-zinc-400">Release Date</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-zinc-600 dark:text-zinc-400">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
+                {upcomingMovies.length > 0 ? (
+                  upcomingMovies.slice(0, 5).map((movie: MovieWithDirector) => (
+                    <tr key={movie.id} className="border-b border-zinc-200 dark:border-zinc-800">
+                      <td className="px-4 py-3 text-sm text-zinc-900 dark:text-white">{movie.title}</td>
+                      <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">{movie.releaseDate || 'TBA'}</td>
+                      <td className="px-4 py-3 text-sm">
+                        <span className="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500">
+                          Coming Soon
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={3} className="px-4 py-3 text-sm text-center text-zinc-600 dark:text-zinc-400">
+                      No upcoming movies found
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={4} className="px-4 py-3 text-sm text-center text-zinc-600 dark:text-zinc-400">
-                    No upcoming movies found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -266,26 +244,6 @@ function StatCard({
         {trend}
       </div>
     </div>
-  )
-}
-
-function QuickAccessCard({
-  title,
-  icon,
-  href,
-}: {
-  title: string
-  icon: React.ReactNode
-  href: string
-}) {
-  return (
-    <Link
-      href={href}
-      className="flex flex-col items-center justify-center p-4 border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors"
-    >
-      <div className="p-3 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">{icon}</div>
-      <div className="mt-2 text-sm font-medium text-zinc-900 dark:text-white">{title}</div>
-    </Link>
   )
 }
 
