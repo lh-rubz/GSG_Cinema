@@ -384,7 +384,7 @@ export default function ShowtimesPage() {
           screens={screens}
           onSubmit={handleSaveShowtime}
           onCancel={() => setIsModalOpen(false)}
-          onChange={handleInputChange}
+              onChange={handleInputChange}
           mode={mode}
         />
       </Modal>
@@ -402,4 +402,4 @@ export default function ShowtimesPage() {
       />
     </div>
   )
-}
+} 
