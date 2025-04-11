@@ -199,7 +199,7 @@ export default function StaffTicketsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading tickets...</div>
+        <div className="text-lg text-gray-900 dark:text-white">Loading tickets...</div>
       </div>
     )
   }
@@ -207,7 +207,7 @@ export default function StaffTicketsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Ticket Management</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Ticket Management</h1>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4">
@@ -217,15 +217,15 @@ export default function StaffTicketsPage() {
             placeholder="Search tickets..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-md border border-input bg-background"
+            className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
           />
-          <Ticket className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+          <Ticket className="absolute left-3 top-2.5 h-5 w-5 text-gray-500 dark:text-gray-400" />
         </div>
 
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 rounded-md border border-input bg-background"
+          className="px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
         >
           <option value="all">All Tickets</option>
           <option value="reserved">Reserved</option>
@@ -235,62 +235,58 @@ export default function StaffTicketsPage() {
         </select>
       </div>
 
-      <div className="border border-border rounded-lg overflow-hidden">
+      <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-muted">
-                <th className="px-4 py-3 text-left text-sm font-medium">Screen</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Customer</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Movie</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Showtime</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Seat</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Price</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Actions</th>
+              <tr className="bg-gray-50 dark:bg-gray-700">
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Screen</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Customer</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Movie</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Showtime</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Seat</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Price</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Status</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredTickets.length > 0 ? (
-                filteredTickets.map((ticket) => {
-                  const statusClasses = {
-                    reserved: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500",
-                    paid: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-500",
-                    used: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-500",
-                    deleted: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-500",
-                  }
-
-                  const statusLabels = {
-                    reserved: "Reserved",
-                    paid: "Paid",
-                    used: "Used",
-                    deleted: "Deleted",
-                  }
-
-                  return (
-                    <tr key={ticket.id} className="border-t border-border">
-                      <td className="px-4 py-3 text-sm">{getScreenName(ticket)}</td>
-                      <td className="px-4 py-3 text-sm">{getUserName(ticket)}</td>
-                      <td className="px-4 py-3 text-sm">{getMovieTitle(ticket)}</td>
-                      <td className="px-4 py-3 text-sm">{getShowtimeDetails(ticket)}</td>
-                      <td className="px-4 py-3 text-sm">{ticket.seatId}</td>
-                      <td className="px-4 py-3 text-sm">${ticket.price.toFixed(2)}</td>
-                      <td className="px-4 py-3 text-sm">
-                        <span className={`px-2 py-1 text-xs rounded-full ${statusClasses[ticket.status]}`}>
-                          {statusLabels[ticket.status]}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        <button onClick={() => handleUpdateTicket(ticket)} className="text-primary hover:underline">
-                          Update Status
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                })
-              ) : (
+              {filteredTickets.map((ticket) => (
+                <tr key={ticket.id} className="border-b border-gray-200 dark:border-gray-700">
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{getScreenName(ticket)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{getUserName(ticket)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{getMovieTitle(ticket)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{getShowtimeDetails(ticket)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{ticket.seatId}</td>
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">${ticket.showtime?.price || 0}</td>
+                  <td className="px-4 py-3 text-sm">
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${
+                        ticket.status === "paid"
+                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-500"
+                          : ticket.status === "reserved"
+                          ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500"
+                          : ticket.status === "used"
+                          ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-500"
+                          : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-500"
+                      }`}
+                    >
+                      {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    <button
+                      onClick={() => handleUpdateTicket(ticket)}
+                      className="text-primary hover:underline"
+                    >
+                      Update
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {filteredTickets.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                     No tickets found
                   </td>
                 </tr>
@@ -300,87 +296,47 @@ export default function StaffTicketsPage() {
         </div>
       </div>
 
-      {/* Update Ticket Modal */}
       <Modal
         isOpen={isUpdateModalOpen}
         onClose={() => setIsUpdateModalOpen(false)}
         title="Update Ticket Status"
-        size="md"
       >
         <div className="space-y-4">
-          {currentTicket && (
-            <div className="bg-muted p-4 rounded-md mb-4">
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>
-                  <p className="text-muted-foreground">Movie:</p>
-                  <p className="font-medium">{getMovieTitle(currentTicket)}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Customer:</p>
-                  <p className="font-medium">{getUserName(currentTicket)}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Showtime:</p>
-                  <p className="font-medium">{getShowtimeDetails(currentTicket)}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Seat:</p>
-                  <p className="font-medium">{currentTicket.seatId}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Price:</p>
-                  <p className="font-medium">${currentTicket.price.toFixed(2)}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Purchase Date:</p>
-                  <p className="font-medium">{currentTicket.purchaseDate}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <FormField label="Ticket Status" id="status" required>
-            <select
-              id="status"
-              name="status"
-              value={formData.status || "reserved"}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 rounded-md border border-input bg-background"
-              required
-            >
-              <option value="reserved">Reserved</option>
-              <option value="paid">Paid</option>
-              <option value="used">Used</option>
-              <option value="deleted">Deleted</option>
-            </select>
-          </FormField>
-
+          <FormField
+            label="Status"
+            name="status"
+            type="select"
+            value={formData.status}
+            onChange={handleInputChange}
+            options={[
+              { value: "reserved", label: "Reserved" },
+              { value: "paid", label: "Paid" },
+              { value: "used", label: "Used" },
+              { value: "deleted", label: "Deleted" },
+            ]}
+          />
           {formData.status === "deleted" && (
-            <FormField label="Reason for Deletion" id="deleteReason" required>
-              <textarea
-                id="deleteReason"
-                name="deleteReason"
-                value={formData.deleteReason || ""}
-                onChange={handleInputChange}
-                rows={3}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background resize-none"
-                required
-              />
-            </FormField>
+            <FormField
+              label="Delete Reason"
+              name="deleteReason"
+              type="textarea"
+              value={formData.deleteReason}
+              onChange={handleInputChange}
+              placeholder="Enter reason for deletion..."
+            />
           )}
-
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-end gap-2">
             <button
               onClick={() => setIsUpdateModalOpen(false)}
-              className="px-4 py-2 rounded-md border border-input bg-background hover:bg-secondary transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
             >
               Cancel
             </button>
             <button
               onClick={handleSaveTicket}
-              className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md"
             >
-              Update Ticket
+              Save Changes
             </button>
           </div>
         </div>
