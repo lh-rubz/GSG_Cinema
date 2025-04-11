@@ -1,10 +1,10 @@
 const API_BASE_URL = '/api';
 
-export type ApiResponse<T> = {
+interface ApiResponse<T> {
+  status: number;
   data?: T;
   error?: string;
-  status: number;
-};
+}
 
 // Error class for API errors
 export class ApiError extends Error {
@@ -54,9 +54,8 @@ export const apiClient = {
     }
   },
   
-  async post<T, D = any>(endpoint: string, data: D): Promise<ApiResponse<T>> {
+  async post<T>(endpoint: string, data: any): Promise<ApiResponse<T>> {
     try {
-      console.log('POST request to:', `${API_BASE_URL}${endpoint}`, data);  // Log the request details
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: {
@@ -64,22 +63,34 @@ export const apiClient = {
         },
         body: JSON.stringify(data),
       });
-      
+
       const responseData = await response.json();
+      
       if (!response.ok) {
-        console.error(`Failed to POST to ${endpoint}`, responseData);  // Log error details
+        // Check if it's a conflict error
+        if (response.status === 400 && responseData.error?.toLowerCase().includes('time conflict')) {
+          return {
+            status: response.status,
+            error: responseData.error,
+          };
+        }
+        
+        console.error(`Failed to POST to ${endpoint}`, responseData);
+        return {
+          status: response.status,
+          error: responseData.error || 'An error occurred',
+        };
       }
       
       return {
-        data: response.ok ? responseData : undefined,
-        error: !response.ok ? responseData.error || 'An error occurred' : undefined,
         status: response.status,
+        data: responseData,
       };
     } catch (error) {
-      console.error('API request failed:', error);
+      console.error(`Error in POST to ${endpoint}:`, error);
       return {
-        error: error instanceof Error ? error.message : 'Network error',
         status: 500,
+        error: 'Network error occurred',
       };
     }
   },
