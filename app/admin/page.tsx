@@ -12,7 +12,6 @@ import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 import LoadingFull from "@/components/loading-full"
 
-// Define a type for the movie with director information
 interface MovieWithDirector extends Movie {
   director?: Director;
 }
@@ -33,7 +32,6 @@ export default function AdminDashboard() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Redirect if not authenticated or not admin
     if (!authLoading && (!isAuthenticated || user?.role !== 'Admin')) {
       router.push('/403')
       return
@@ -141,6 +139,22 @@ export default function AdminDashboard() {
 
       {/* Quick access */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden bg-white dark:bg-zinc-800">
+          <div className="bg-zinc-50 dark:bg-zinc-800/50 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+            <h2 className="font-medium text-zinc-900 dark:text-white">Quick Access</h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4">
+            <QuickAccessCard title="Movies" icon={<Film className="h-6 w-6" />} href="/admin/movies" />
+            <QuickAccessCard title="Showtimes" icon={<Calendar className="h-6 w-6" />} href="/admin/showtimes" />
+            <QuickAccessCard title="Staff" icon={<Users className="h-6 w-6" />} href="/admin/staff" />
+            <QuickAccessCard title="Customers" icon={<User className="h-6 w-6" />} href="/admin/customers" />
+            <QuickAccessCard title="Directors" icon={<Video className="h-6 w-6" />} href="/admin/directors" />
+            <QuickAccessCard title="Cast" icon={<Cast className="h-6 w-6" />} href="/admin/cast" />
+            <QuickAccessCard title="Screens" icon={<MonitorPlay className="h-6 w-6" />} href="/admin/screens" />
+            <QuickAccessCard title="Tickets" icon={<Ticket className="h-6 w-6" />} href="/admin/tickets" />
+          </div>
+        </div>
+
         <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden bg-white dark:bg-zinc-800">
           <div className="bg-zinc-50 dark:bg-zinc-800/50 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
             <h2 className="font-medium text-zinc-900 dark:text-white">Recent Activity</h2>

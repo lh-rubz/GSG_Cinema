@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Film, Users, User, Video, Cast, MonitorPlay, Ticket, LayoutDashboard, Menu, X, LogOut, Calendar } from "lucide-react"
+import { Film, Users, User, Video, Cast, MonitorPlay, Ticket, LayoutDashboard, Menu, X, LogOut, Calendar, Tag } from "lucide-react"
 import ThemeToggle from "./theme-toggle"
 import { useAuth } from "@/hooks/use-auth"
 
@@ -68,6 +68,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       label: "Tickets",
       href: "/admin/tickets",
       icon: <Ticket className="h-5 w-5" />,
+    },
+    {
+      label: "Promotions",
+      href: "/admin/promotions",
+      icon: <Tag className="h-5 w-5" />,
     },
   ]
 

@@ -35,6 +35,19 @@ export default function ShowtimesPage() {
 
   const movieFormats = ["TwoD", "ThreeD", "imax", "fourDx"]
 
+  // Add date format conversion functions
+  const formatDateToDDMMYYYY = (dateStr: string) => {
+    if (!dateStr) return "";
+    const [year, month, day] = dateStr.split("-");
+    return `${day}-${month}-${year}`;
+  };
+
+  const formatDateToYYYYMMDD = (dateStr: string) => {
+    if (!dateStr) return "";
+    const [day, month, year] = dateStr.split("-");
+    return `${year}-${month}-${day}`;
+  };
+
   useEffect(() => {
     fetchShowtimes()
     fetchMovies()
@@ -363,25 +376,20 @@ export default function ShowtimesPage() {
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     
-    // Special handling for time input to ensure 24-hour format
-    if (name === 'time') {
-      // Allow typing but validate the format
-      const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/
-      if (value && !timeRegex.test(value)) {
-        setFormErrors({ ...formErrors, time: "Please enter time in 24-hour format (HH:MM)" })
-      } else {
-        // Clear the error if the format is correct
-        setFormErrors({ ...formErrors, time: "" })
-      }
+    // Handle date format conversion
+    if (name === "date") {
+      // Convert from yyyy-mm-dd to dd-mm-yyyy for storage
+      const formattedDate = formatDateToDDMMYYYY(value);
+      setFormData({ ...formData, [name]: formattedDate });
+    } else {
+      setFormData({ ...formData, [name]: value });
     }
-    
-    setFormData({ ...formData, [name]: value })
     
     // Clear error for this field when user changes it
     if (formErrors[name]) {
-      setFormErrors({ ...formErrors, [name]: "" })
+      setFormErrors({ ...formErrors, [name]: "" });
     }
   }
 
@@ -536,7 +544,7 @@ export default function ShowtimesPage() {
                 type="date"
                 id="date"
                 name="date"
-                value={formData.date || ""}
+                value={formData.date ? formatDateToYYYYMMDD(formData.date) : ""}
                 onChange={handleInputChange}
                 className={`w-full px-3 py-2 rounded-md border ${
                   formErrors.date ? 'border-red-500' : 'border-zinc-300 dark:border-zinc-700'
@@ -682,7 +690,7 @@ export default function ShowtimesPage() {
                 type="date"
                 id="edit-date"
                 name="date"
-                value={formData.date || ""}
+                value={formData.date ? formatDateToYYYYMMDD(formData.date) : ""}
                 onChange={handleInputChange}
                 className={`w-full px-3 py-2 rounded-md border ${
                   formErrors.date ? 'border-red-500' : 'border-zinc-300 dark:border-zinc-700'
