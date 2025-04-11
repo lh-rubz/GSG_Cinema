@@ -1,12 +1,15 @@
 'use client'
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Film, Users, User, Video, Cast, MonitorPlay, Ticket, TrendingUp, AlertCircle, Calendar } from "lucide-react"
 import { moviesApi } from "@/lib/endpoints/movies"
 import { statsApi } from "@/lib/endpoints/stats"
+
 import type { Movie, Director } from "@/types/types"
 import type { Stats } from "@/lib/endpoints/stats"
+import { useAuth } from "@/hooks/use-auth"
 
 // Define a type for the movie with director information
 interface MovieWithDirector extends Movie {
@@ -14,6 +17,8 @@ interface MovieWithDirector extends Movie {
 }
 
 export default function AdminDashboard() {
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
+  const router = useRouter()
   const [stats, setStats] = useState<Stats>({
     totalMovies: 0,
     activeCustomers: 0,
@@ -25,6 +30,14 @@ export default function AdminDashboard() {
   const [upcomingMovies, setUpcomingMovies] = useState<MovieWithDirector[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Redirect if not authenticated or not admin
+    if (!authLoading && (!isAuthenticated || user?.role !== 'Admin')) {
+      router.push('/403')
+      return
+    }
+  }, [isAuthenticated, user, authLoading, router])
 
   useEffect(() => {
     async function fetchData() {
@@ -61,8 +74,18 @@ export default function AdminDashboard() {
       }
     }
     
-    fetchData()
-  }, [])
+    if (isAuthenticated && user?.role === 'Admin') {
+      fetchData()
+    }
+  }, [isAuthenticated, user])
+
+  if (authLoading || (!isAuthenticated || user?.role !== 'Admin')) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Loading...</div>
+      </div>
+    )
+  }
 
   if (loading) {
     return (
@@ -288,4 +311,3 @@ function ActivityItem({
     </div>
   )
 }
-

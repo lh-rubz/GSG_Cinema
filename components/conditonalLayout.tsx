@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation"
 import { Footer } from "./landing-footer"
 import Header from "./landing-header"
+import { UserFAB } from "./user-fab"
 
 // Client component that handles the conditional rendering
 export function ConditionalLayout({ children }: { children: React.ReactNode }) {
@@ -13,6 +14,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   
     return (
       <>
+      {!isAdminOrStaffRoute && <UserFAB/>}
         {!isAdminOrStaffRoute && <Header />}
         {children}
         {!isAdminOrStaffRoute && <Footer />}
