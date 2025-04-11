@@ -17,19 +17,18 @@ const PromotionCard = ({ promotion }: Iprops) => {
   // Prevent hydration mismatch with dark mode
   useEffect(() => {
     setMounted(true)
-  }, [])
+    console.log('Promotion image URL:', promotion.image)
+  }, [promotion.image])
 
   const handleCopyCode = () => {
-    navigator.clipboard.writeText(promotion.discount_code)
+    navigator.clipboard.writeText(promotion.code)
     setIsCopied(true)
     setTimeout(() => setIsCopied(false), 2000)
   }
 
-
-
   // Format date for display
   const formatDate = (dateString: string) => {
-    const date = parseDDMMYYYY(dateString)
+    const date = new Date(dateString)
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -51,35 +50,48 @@ const PromotionCard = ({ promotion }: Iprops) => {
       {/* Discount badge */}
       <div className="absolute right-0 top-6 z-10 flex items-center gap-1 rounded-l-full bg-red-600 px-4 py-1.5 text-sm font-bold text-white shadow-lg transition-transform duration-300 group-hover:translate-x-[-3px] dark:bg-red-700">
         <Ticket className="mr-1 h-3.5 w-3.5" />
-        <span>{promotion.discount_percentage}% OFF</span>
+        <span>
+          {promotion.type === "PERCENTAGE" 
+            ? `${promotion.value}% OFF`
+            : promotion.type === "FIXED_AMOUNT"
+            ? `$${promotion.value} OFF`
+            : "BUY 1 GET 1"}
+        </span>
       </div>
 
       {/* Image container */}
-      <div className="relative mt-3 h-56 w-full overflow-hidden sm:h-64">
-        <Image
-          src={promotion.image_url || "/placeholder.svg"}
-          alt={promotion.title}
-          fill
-          className="object-cover transition-all duration-700 ease-out group-hover:scale-105"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
+      <div className="relative h-48 w-full">
+        {promotion.image ? (
+          <Image
+            src={promotion.image}
+            alt={promotion.description}
+            fill
+            className="object-cover transition-all duration-700 ease-out group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            priority
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+            <span className="text-gray-400 dark:text-gray-600 text-sm">No image available</span>
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-70 transition-opacity duration-300 group-hover:opacity-60"></div>
 
         {/* Cinema-style title overlay */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4 pt-8">
-          <h2 className="text-xl font-bold text-white sm:text-2xl">{promotion.title}</h2>
+          <h2 className="text-xl font-bold text-white sm:text-2xl">{promotion.code}</h2>
         </div>
       </div>
 
       {/* Content */}
-      <div className="relative p-6">
+      <div className="p-6">
         <p className="mb-4 text-zinc-700 line-clamp-2 dark:text-zinc-300">{promotion.description}</p>
 
-        {/* Expiry date - now using the formatDate function */}
+        {/* Expiry date */}
         <div className="mb-5 flex items-center text-zinc-600 dark:text-zinc-400">
           <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0 text-red-600 dark:text-red-500" />
           <span className="text-sm">
-            Valid until {formatDate(promotion.expiry_date)}
+            Valid until {formatDate(promotion.expiryDate)}
           </span>
         </div>
 
@@ -97,39 +109,22 @@ const PromotionCard = ({ promotion }: Iprops) => {
             ))}
           </div>
 
-          <div className="flex items-center justify-between mr-5">
-            <div className="w-full px-6 py-3">
-              <div className="text-xs uppercase tracking-wider text-red-600 dark:text-red-500">Cinema Promo</div>
-              <div className="font-mono text-lg font-bold text-zinc-900 dark:text-white">{promotion.discount_code}</div>
-            </div>
-            <button
-              onClick={handleCopyCode}
-              className="rounded-lg relative h-full overflow-hidden bg-red-600 px-5 py-5 text-white transition-all duration-300 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
-              aria-label="Copy discount code"
-            >
-              <span
-                className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${isCopied ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}
-              >
-                <Check className="h-5 w-5" />
-              </span>
-              <span
-                className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${isCopied ? "translate-y-[-10px] opacity-0" : "translate-y-0 opacity-100"}`}
-              >
-                <Copy className="h-5 w-5" />
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* Cinema film strip bottom border */}
-        <div className="absolute bottom-0 left-0 right-0 flex h-3 w-full">
-          {[...Array(20)].map((_, i) => (
-            <div key={i} className="h-full w-[5%] bg-red-600 dark:bg-red-700" style={{ marginRight: "5%" }} />
-          ))}
+          {/* Copy code button */}
+          <button
+            onClick={handleCopyCode}
+            className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+          >
+            <span className="font-mono tracking-wider">{promotion.code}</span>
+            {isCopied ? (
+              <Check className="h-4 w-4 text-green-500" />
+            ) : (
+              <Copy className="h-4 w-4" />
+            )}
+          </button>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PromotionCard
+export default PromotionCard;

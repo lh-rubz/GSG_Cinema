@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Film, Users, User, Video, Cast, MonitorPlay, Ticket, TrendingUp, AlertCircle, Calendar } from "lucide-react"
+import { Film, Users, User, Video, Cast, MonitorPlay, Ticket, TrendingUp, AlertCircle, Calendar, Tag } from "lucide-react"
 import { moviesApi } from "@/lib/endpoints/movies"
 import { statsApi } from "@/lib/endpoints/stats"
 
@@ -11,7 +11,6 @@ import type { Movie, Director } from "@/types/types"
 import type { Stats } from "@/lib/endpoints/stats"
 import { useAuth } from "@/hooks/use-auth"
 
-// Define a type for the movie with director information
 interface MovieWithDirector extends Movie {
   director?: Director;
 }
@@ -32,7 +31,6 @@ export default function AdminDashboard() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Redirect if not authenticated or not admin
     if (!authLoading && (!isAuthenticated || user?.role !== 'Admin')) {
       router.push('/403')
       return
@@ -157,6 +155,7 @@ export default function AdminDashboard() {
             <QuickAccessCard title="Cast" icon={<Cast className="h-6 w-6" />} href="/admin/cast" />
             <QuickAccessCard title="Screens" icon={<MonitorPlay className="h-6 w-6" />} href="/admin/screens" />
             <QuickAccessCard title="Tickets" icon={<Ticket className="h-6 w-6" />} href="/admin/tickets" />
+            <QuickAccessCard title="Promotions" icon={<Tag className="h-6 w-6" />} href="/admin/promotions" />
           </div>
         </div>
 

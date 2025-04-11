@@ -151,12 +151,16 @@ export interface Receipt {
 }
 
 export interface Promotion {
-  id: string
-  title: string
-  description: string
-  image_url: string
-  discount_percentage: number
-  discount_code: string
-  expiry_date: string
+  id: string;
+  code: string;
+  description: string;
+  type: "PERCENTAGE" | "FIXED_AMOUNT" | "BUY_ONE_GET_ONE";
+  value: number;
+  startDate: string;
+  expiryDate: string;
+  isActive: boolean;
+  image?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 

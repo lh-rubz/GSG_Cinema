@@ -25,6 +25,8 @@ export const ticketsApi = {
     showtimeId: string;
     seatId: string;
     price: number;
+    promotionId?: string;
+    discountAmount?: number;
   }) {
     return apiClient.post<Ticket>('/tickets', ticket);
   },

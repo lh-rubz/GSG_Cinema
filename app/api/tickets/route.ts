@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     console.log("Received ticket creation request with body:", body)
-    const { id, userId, showtimeId, seatId, price, status } = body
+    const { id, userId, showtimeId, seatId, price, status, promotionId, discountAmount } = body
 
     if (!userId || !showtimeId || !seatId || price === undefined) {
       console.log("Missing required fields:", { userId, showtimeId, seatId, price })
@@ -119,6 +119,8 @@ export async function POST(request: NextRequest) {
         price,
         purchaseDate: new Date().toISOString(),
         status: status || "reserved",
+        promotionId,
+        discountAmount,
       },
       include: {
         user: {
