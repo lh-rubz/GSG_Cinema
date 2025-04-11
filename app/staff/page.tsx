@@ -65,7 +65,7 @@ export default function StaffDashboard() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading dashboard data...</div>
+        <div className="text-lg text-gray-900 dark:text-white">Loading dashboard data...</div>
       </div>
     )
   }
@@ -73,8 +73,8 @@ export default function StaffDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Staff Dashboard</h1>
-        <div className="text-sm text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Staff Dashboard</h1>
+        <div className="text-sm text-gray-500 dark:text-gray-400">Last updated: {new Date().toLocaleDateString()}</div>
       </div>
 
       {/* Stats */}
@@ -86,9 +86,9 @@ export default function StaffDashboard() {
 
       {/* Quick access */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="border border-border rounded-lg overflow-hidden">
-          <div className="bg-muted px-4 py-3 border-b border-border">
-            <h2 className="font-medium">Quick Access</h2>
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
+          <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="font-medium text-gray-900 dark:text-white">Quick Access</h2>
           </div>
           <div className="grid grid-cols-2 gap-4 p-4">
             <QuickAccessCard title="Movies" icon={<Film className="h-6 w-6" />} href="/staff/movies" />
@@ -96,11 +96,11 @@ export default function StaffDashboard() {
           </div>
         </div>
 
-        <div className="border border-border rounded-lg overflow-hidden">
-          <div className="bg-muted px-4 py-3 border-b border-border">
-            <h2 className="font-medium">Today's Showtimes</h2>
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
+          <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="font-medium text-gray-900 dark:text-white">Today's Showtimes</h2>
           </div>
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {todayShowtimes.map((showtime) => {
               const screen = screens.find(s => s.id === showtime.screenId);
               return (
@@ -114,7 +114,7 @@ export default function StaffDashboard() {
               );
             })}
             {todayShowtimes.length === 0 && (
-              <div className="p-4 text-center text-muted-foreground">
+              <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                 No showtimes scheduled for today
               </div>
             )}
@@ -123,21 +123,21 @@ export default function StaffDashboard() {
       </div>
 
       {/* Pending tickets */}
-      <div className="border border-border rounded-lg overflow-hidden">
-        <div className="bg-muted px-4 py-3 border-b border-border">
-          <h2 className="font-medium">Pending Tickets</h2>
+      <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
+        <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="font-medium text-gray-900 dark:text-white">Pending Tickets</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-border">
-                <th className="px-4 py-3 text-left text-sm font-medium">Ticket ID</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Customer</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Movie</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Showtime</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Seat</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Actions</th>
+              <tr className="border-b border-gray-200 dark:border-gray-700">
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Ticket ID</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Customer</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Movie</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Showtime</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Seat</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Status</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -145,12 +145,12 @@ export default function StaffDashboard() {
                 const showtime = todayShowtimes.find(st => st.id === ticket.showtimeId)
                 const movie = moviesToday.find(m => m.id === showtime?.movieId)
                 return (
-                  <tr key={ticket.id} className="border-b border-border">
-                    <td className="px-4 py-3 text-sm">{ticket.id}</td>
-                    <td className="px-4 py-3 text-sm">{ticket.userId}</td>
-                    <td className="px-4 py-3 text-sm">{movie?.title || "Unknown Movie"}</td>
-                    <td className="px-4 py-3 text-sm">{showtime ? `${showtime.date} at ${showtime.time}` : "Unknown Time"}</td>
-                    <td className="px-4 py-3 text-sm">{ticket.seatId}</td>
+                  <tr key={ticket.id} className="border-b border-gray-200 dark:border-gray-700">
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{ticket.id}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{ticket.userId}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{movie?.title || "Unknown Movie"}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{showtime ? `${showtime.date} at ${showtime.time}` : "Unknown Time"}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{ticket.seatId}</td>
                     <td className="px-4 py-3 text-sm">
                       <span className="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500">
                         Reserved
@@ -166,7 +166,7 @@ export default function StaffDashboard() {
               })}
               {pendingTickets.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={7} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                     No pending tickets
                   </td>
                 </tr>
@@ -189,12 +189,12 @@ function StatCard({
   icon: React.ReactNode
 }) {
   return (
-    <div className="border border-border rounded-lg p-4 bg-card">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800">
       <div className="flex items-center justify-between">
-        <div className="text-muted-foreground">{title}</div>
+        <div className="text-gray-500 dark:text-gray-400">{title}</div>
         <div className="p-2 rounded-full bg-primary/10 text-primary">{icon}</div>
       </div>
-      <div className="mt-2 text-2xl font-bold">{value}</div>
+      <div className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">{value}</div>
     </div>
   )
 }
@@ -211,10 +211,10 @@ function QuickAccessCard({
   return (
     <Link
       href={href}
-      className="flex flex-col items-center justify-center p-4 border border-border rounded-lg hover:bg-secondary transition-colors"
+      className="flex flex-col items-center justify-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
     >
       <div className="p-3 rounded-full bg-primary/10 text-primary">{icon}</div>
-      <div className="mt-2 text-sm font-medium">{title}</div>
+      <div className="mt-2 text-sm font-medium text-gray-900 dark:text-white">{title}</div>
     </Link>
   )
 }
@@ -233,12 +233,12 @@ function ShowtimeItem({
   return (
     <div className="flex items-center justify-between p-4">
       <div>
-        <div className="font-medium">{title}</div>
-        <div className="text-sm text-muted-foreground">
+        <div className="font-medium text-gray-900 dark:text-white">{title}</div>
+        <div className="text-sm text-gray-500 dark:text-gray-400">
           {time} • {screen}
         </div>
       </div>
-      <div className="text-sm">
+      <div className="text-sm text-gray-900 dark:text-white">
         <span className="font-medium">{availableSeats}</span> seats available
       </div>
     </div>
