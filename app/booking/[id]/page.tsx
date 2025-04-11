@@ -36,7 +36,6 @@ export default function BookingPage({}: BookingPageProps) {
         setIsLoading(true)
         setError(null)
 
-        // Fetch showtime details
         const showtimeResponse = await showtimesApi.getShowtime(id)
         const showtimeData = showtimeResponse.data
 
@@ -48,7 +47,6 @@ export default function BookingPage({}: BookingPageProps) {
 
         setShowtime(showtimeData)
 
-        // Fetch screen details
         const screenResponse = await screensApi.getScreen(showtimeData.screenId)
         const screenData = screenResponse.data
 
@@ -72,14 +70,11 @@ export default function BookingPage({}: BookingPageProps) {
 
   const handleSeatSelect = (seat: Seat) => {
     setSelectedSeats((prev) => {
-      // Check if seat is already selected
       const isSelected = prev.some((s) => s.id === seat.id)
 
       if (isSelected) {
-        // Remove seat if already selected
         return prev.filter((s) => s.id !== seat.id)
       } else {
-        // Add seat if not selected
         return [...prev, seat]
       }
     })
@@ -93,7 +88,7 @@ export default function BookingPage({}: BookingPageProps) {
     return seat.row === 0 ? 50 : 30
   }
 
-  const handleBooking = async () => {
+  const handleBooking = async (promotionData: { promotion: any; discountAmount: number; finalPrice: number } | null) => {
     if (selectedSeats.length === 0) {
       setError("Please select at least one seat to proceed with your booking.")
       return
@@ -101,7 +96,6 @@ export default function BookingPage({}: BookingPageProps) {
 
     try {
       setError(null)
-      // Get the current user from session storage
       const storedUser = sessionStorage.getItem('user')
       if (!storedUser) {
         setError("Please log in to complete your booking.")
@@ -109,14 +103,23 @@ export default function BookingPage({}: BookingPageProps) {
       }
       const currentUser = JSON.parse(storedUser)
 
-      // Create tickets for each selected seat
+      const initialTotalPrice = selectedSeats.reduce((sum, seat) => 
+        sum + (seat.type === 'premium' ? 50 : showtime.price), 0
+      )
+
       const ticketPromises = selectedSeats.map(async (seat) => {
+        const basePrice = seat.type === 'premium' ? 50 : showtime.price
+        const seatDiscount = promotionData ? (promotionData.discountAmount * (basePrice / initialTotalPrice)) : 0
+        const finalSeatPrice = basePrice - seatDiscount
+
         const ticketData = {
           userId: currentUser.id,
           showtimeId: showtime.id,
           seatId: seat.id,
-          price: seat.type === 'premium' ? 50 : 30,
-          status: "reserved" as const
+          price: finalSeatPrice,
+          status: "reserved" as const,
+          promotionId: promotionData?.promotion?.id,
+          discountAmount: seatDiscount
         }
         
         console.log("Creating ticket with data:", ticketData)
@@ -129,7 +132,6 @@ export default function BookingPage({}: BookingPageProps) {
           throw new Error(`Failed to create ticket for seat ${seat.number}`)
         }
 
-        // Update seat availability to false
         await seatsApi.updateSeat(seat.id, { available: false })
         
         return response.data
@@ -137,14 +139,12 @@ export default function BookingPage({}: BookingPageProps) {
 
       const tickets = await Promise.all(ticketPromises)
       const ticketIds = tickets.map(ticket => ticket.id)
-      const totalPrice = tickets.reduce((sum, ticket) => sum + ticket.price, 0)
       
-      // Create a receipt
       const receiptData = {
         userId: currentUser.id,
         movieId: showtime.movie.id,
         ticketIds: ticketIds,
-        totalPrice: totalPrice,
+        totalPrice: promotionData ? promotionData.finalPrice : initialTotalPrice,
         paymentMethod: "cash" as const,
         receiptDate: new Date().toISOString()
       }
@@ -160,8 +160,7 @@ export default function BookingPage({}: BookingPageProps) {
         setError("We couldn't generate your receipt. Please try again.")
         throw new Error("Invalid receipt ID received")
       }
-      
-      // Update tickets with receipt ID but keep status as reserved
+
       const updatePromises = tickets.map(ticket => 
         ticketsApi.updateTicket(ticket.id, { 
           status: "reserved" as const,
@@ -171,11 +170,10 @@ export default function BookingPage({}: BookingPageProps) {
       
       await Promise.all(updatePromises)
       
-      // Navigate to confirmation page with receipt ID
+
       router.push(`/booking/confirmation?receiptId=${receiptId}`)
     } catch (error) {
       console.error("Booking failed:", error)
-      // Don't set error if it's already set (like for seat already booked)
       if (!error) {
         setError("Something went wrong. Please try again or contact support if the problem persists.")
       }
@@ -319,4 +317,3 @@ export default function BookingPage({}: BookingPageProps) {
     </div>
   )
 }
-
