@@ -8,9 +8,9 @@ import { FormField } from "@/components/form-field"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import type { User as UserType } from "@/types/types"
 import { usersApi } from "@/lib/endpoints/users"
-import { generatePassword } from "@/lib/utils"
 import { apiClient } from "@/lib/client"
 import toast from "react-hot-toast"
+import { generatePassword } from "@/lib/utils"
 
 export default function StaffPage() {
   const [staff, setStaff] = useState<UserType[]>([])
@@ -73,25 +73,47 @@ export default function StaffPage() {
     }
   }
 
-  const handleAddStaff = () => {
-    // Generate a strong password automatically
-    const generatedPassword = generatePassword(12)
-    setFormData({
-      username: "",
-      displayName: "",
-      email: "",
-      password: generatedPassword,
-      gender: "M",
-      bio: "",
-      profileImage: "",
-      role: "staff",
-      movieIdsPurchased: [],
-    })
-    setFormErrors({})
-    setErrorMessage(null)
-    setMode("add")
-    setIsModalOpen(true)
-  }
+  const handleAddStaff = async () => {
+    try {
+      // Add staff logic (e.g., saving to the database)
+      const newStaff = {
+        username: formData.username,
+        displayName: formData.displayName,
+        email: formData.email,
+        tempPassword: formData.password,
+        role: "Staff", // Example role
+      };
+
+      // Call the API to send the email
+      const response = await fetch("/api/sendEmail", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "newStaff",
+          recipient: newStaff.email,
+          subject: "Welcome to CinemaHub Staff",
+          textContent: `Welcome ${newStaff.displayName}! Your temporary password is: ${newStaff.tempPassword}`,
+          staffName: newStaff.displayName,
+          email: newStaff.email,
+          tempPassword: newStaff.tempPassword,
+          role: newStaff.role,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to send email");
+      }
+
+      // Show success message
+      console.log("Email sent successfully:", result);
+    } catch (error) {
+      console.error("Error adding staff or sending email:", error);
+    }
+  };
 
   const handleEditStaff = (staffMember: UserType) => {
     setCurrentStaff(staffMember)
@@ -113,23 +135,25 @@ export default function StaffPage() {
 
   const sendStaffWelcomeEmail = async (email: string, staffName: string, password: string) => {
     try {
-      const response = await apiClient.post('/api/sendemail', {
-        type: 'newStaff',
-        recipient: email,
-        subject: 'Welcome to CinemaHub Staff',
-        staffName: staffName,
-        role: 'Staff Member',
-        tempPassword: password,
-        textContent: `Welcome to CinemaHub! Your temporary password is: ${password}`
-      })
+      const response = await resend.emails.send({
+        from: "no-reply@cinemahub.com",
+        to: email,
+        subject: "Welcome to CinemaHub Staff",
+        html: `
+          <p>Dear ${staffName},</p>
+          <p>Welcome to CinemaHub! Your temporary password is: <strong>${password}</strong></p>
+          <p>Please log in and change your password as soon as possible.</p>
+          <p>Best regards,<br/>CinemaHub Team</p>
+        `,
+      });
 
       if (response.error) {
-        console.error("Failed to send welcome email:", response.error)
+        console.error("Failed to send welcome email:", response.error);
       }
     } catch (error) {
-      console.error("Error sending welcome email:", error)
+      console.error("Error sending welcome email:", error);
     }
-  }
+  };
 
   const sendStaffRemovalEmail = async (email: string, staffName: string) => {
     try {
@@ -152,25 +176,24 @@ export default function StaffPage() {
 
   const handleSaveStaff = async () => {
     try {
-      setErrorMessage(null)
-      setFormErrors({})
+      setErrorMessage(null);
+      setFormErrors({});
 
       // Validate required fields
-      const errors: Record<string, string> = {}
-      if (!formData.username) errors.username = "Username is required"
-      if (!formData.displayName) errors.displayName = "Display name is required"
-      if (!formData.email) errors.email = "Email is required"
-      if (mode === "add" && !formData.password) errors.password = "Password is required"
-      
+      const errors: Record<string, string> = {};
+      if (!formData.username) errors.username = "Username is required";
+      if (!formData.displayName) errors.displayName = "Display name is required";
+      if (!formData.email) errors.email = "Email is required";
+      if (mode === "add" && !formData.password) errors.password = "Password is required";
+
       if (Object.keys(errors).length > 0) {
-        setFormErrors(errors)
-        setErrorMessage("Please fill in all required fields")
-        return
+        Object.values(errors).forEach((error) => toast.error(error)); // Display errors in toast
+        return;
       }
 
       if (mode === "add") {
-        const newStaffId = `u${Date.now()}`
-        
+        const newStaffId = `u${Date.now()}`;
+
         const userData = {
           id: newStaffId,
           username: formData.username || "",
@@ -180,46 +203,65 @@ export default function StaffPage() {
           gender: formData.gender || "M",
           bio: formData.bio || "",
           profileImage: formData.profileImage || "",
-          role: "Staff" 
-        }
-        
-        const response = await usersApi.createUser(userData)
-        
+          role: "Staff",
+        };
+
+        const response = await usersApi.createUser(userData);
+
         if (response.error) {
-          console.error("Error creating staff member:", response.error)
-          
-          const errorMessage = response.error.toLowerCase()
-          
+          console.error("Error creating staff member:", response.error);
+
+          const errorMessage = response.error.toLowerCase();
+
           if (errorMessage.includes("username") || errorMessage.includes("email")) {
             if (errorMessage.includes("username")) {
-              setFormErrors({ ...formErrors, username: "Username already exists" })
+              toast.error("Username already exists");
             }
             if (errorMessage.includes("email")) {
-              setFormErrors({ ...formErrors, email: "Email already exists" })
+              toast.error("Email already exists");
             }
-            setErrorMessage("Username or email already exists. Please check the highlighted fields.")
+            toast.error("Username or email already exists. Please check the highlighted fields.");
           } else {
-            setErrorMessage(response.error)
+            toast.error(response.error);
           }
-          return
+          return;
         }
-        
+
         if (response.data) {
           const mappedStaff = {
             ...response.data,
-            role: "Staff"
-          } as UserType
-          
-          setStaff((prevStaff) => [...prevStaff, mappedStaff])
-          setIsModalOpen(false)
-          toast.success("Staff member added successfully!")
-          
+            role: "Staff",
+          } as UserType;
+
+          setStaff((prevStaff) => [...prevStaff, mappedStaff]);
+          setIsModalOpen(false);
+          toast.success("Staff member added successfully!");
+
           // Send welcome email with credentials
-          await sendStaffWelcomeEmail(
-            formData.email || "",
-            formData.displayName || "",
-            formData.password || ""
-          )
+          await fetch("/api/sendEmail", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              type: "staffWelcome",
+              recipient: formData.email || "",
+              name: formData.displayName || "",
+              tempPassword: formData.password || "",
+              role: "Staff",
+              email: formData.email || "",
+            }),
+          })
+            .then((res) => {
+              if (!res.ok) {
+                throw new Error("Failed to send email");
+              }
+              toast.success("Welcome email sent successfully!");
+            })
+            .catch((error) => {
+              console.error("Error sending email:", error);
+              toast.error("Failed to send welcome email.");
+            });
         }
       } else if (mode === "edit" && currentStaff) {
         const updateData: Partial<UserType> = {
@@ -229,52 +271,52 @@ export default function StaffPage() {
           gender: formData.gender,
           bio: formData.bio,
           profileImage: formData.profileImage,
-        }
-        
+        };
+
         // Only include password if it was changed
         if (formData.password && formData.password.trim() !== "") {
-          updateData.password = formData.password
+          updateData.password = formData.password;
         }
-        
-        const response = await usersApi.updateUser(currentStaff.id, updateData)
-        
+
+        const response = await usersApi.updateUser(currentStaff.id, updateData);
+
         if (response.error) {
-          console.error("Error updating staff member:", response.error)
-          
-          const errorMessage = response.error.toLowerCase()
-          
+          console.error("Error updating staff member:", response.error);
+
+          const errorMessage = response.error.toLowerCase();
+
           if (errorMessage.includes("username") || errorMessage.includes("email")) {
             if (errorMessage.includes("username")) {
-              setFormErrors({ ...formErrors, username: "Username already exists" })
+              toast.error("Username already exists");
             }
             if (errorMessage.includes("email")) {
-              setFormErrors({ ...formErrors, email: "Email already exists" })
+              toast.error("Email already exists");
             }
-            setErrorMessage("Username or email already exists. Please check the highlighted fields.")
+            toast.error("Username or email already exists. Please check the highlighted fields.");
           } else {
-            setErrorMessage(response.error)
+            toast.error(response.error);
           }
-          return
+          return;
         }
-        
+
         if (response.data) {
           const mappedStaff = {
             ...response.data,
-            role: "Staff" 
-          } as UserType
-          
+            role: "Staff",
+          } as UserType;
+
           setStaff((prevStaff) =>
             prevStaff.map((staffMember) => (staffMember.id === currentStaff.id ? mappedStaff : staffMember))
-          )
-          setIsModalOpen(false)
-          toast.success("Staff member updated successfully!")
+          );
+          setIsModalOpen(false);
+          toast.success("Staff member updated successfully!");
         }
       }
     } catch (error) {
-      console.error("Error saving staff member:", error)
-      setErrorMessage("An unexpected error occurred. Please try again.")
+      console.error("Error saving staff member:", error);
+      toast.error("An unexpected error occurred. Please try again.");
     }
-  }
+  };
 
   const handleConfirmDelete = async () => {
     if (currentStaff) {
@@ -377,7 +419,22 @@ export default function StaffPage() {
         <DataTable
           data={staff}
           columns={columns}
-          onAdd={handleAddStaff}
+          onAdd={() => {
+            setMode("add"); // Set mode to "add"
+            setFormData({
+              username: "",
+              displayName: "",
+              email: "",
+              password: generatePassword(12), // Generate a default password
+              gender: "M",
+              bio: "",
+              profileImage: "",
+              role: "Staff",
+            }); // Reset form data
+            setFormErrors({});
+            setErrorMessage(null);
+            setIsModalOpen(true); // Open the modal
+          }}
           onEdit={handleEditStaff}
           onDelete={handleDeleteStaff}
           searchPlaceholder="Search staff members..."

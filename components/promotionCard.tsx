@@ -20,6 +20,8 @@ const PromotionCard = ({ promotion }: Iprops) => {
     console.log('Promotion image URL:', promotion.image)
   }, [promotion.image])
 
+
+  
   const handleCopyCode = () => {
     navigator.clipboard.writeText(promotion.code)
     setIsCopied(true)
@@ -61,20 +63,16 @@ const PromotionCard = ({ promotion }: Iprops) => {
 
       {/* Image container */}
       <div className="relative h-48 w-full">
-        {promotion.image ? (
+       
           <Image
-            src={promotion.image}
+            src={promotion.image?promotion.image:"./assets/BigSalePoster.png"}
             alt={promotion.description}
             fill
             className="object-cover transition-all duration-700 ease-out group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             priority
           />
-        ) : (
-          <div className="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-            <span className="text-gray-400 dark:text-gray-600 text-sm">No image available</span>
-          </div>
-        )}
+        
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-70 transition-opacity duration-300 group-hover:opacity-60"></div>
 
         {/* Cinema-style title overlay */}

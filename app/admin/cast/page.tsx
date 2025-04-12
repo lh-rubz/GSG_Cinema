@@ -197,7 +197,7 @@ export default function CastPage() {
               name="name"
               value={formData.name || ""}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 rounded-md border border-input bg-background"
+              className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white!"
               required
             />
           </FormField>
@@ -209,7 +209,7 @@ export default function CastPage() {
               name="character"
               value={formData.character || ""}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 rounded-md border border-input bg-background"
+              className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white!"
               required
             />
           </FormField>
@@ -221,14 +221,14 @@ export default function CastPage() {
               name="image"
               value={formData.image || ""}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 rounded-md border border-input bg-background"
+              className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white!"
             />
           </FormField>
 
           <div className="flex justify-end gap-3 pt-4">
             <button
               onClick={() => setIsAddModalOpen(false)}
-              className="px-4 py-2 rounded-md border border-input bg-background hover:bg-secondary transition-colors"
+              className="px-4 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white! hover:bg-secondary transition-colors"
             >
               Cancel
             </button>
@@ -252,7 +252,7 @@ export default function CastPage() {
               name="name"
               value={formData.name || ""}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 rounded-md border border-input bg-background"
+              className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white!"
               required
             />
           </FormField>
@@ -264,7 +264,7 @@ export default function CastPage() {
               name="character"
               value={formData.character || ""}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 rounded-md border border-input bg-background"
+              className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white!"
               required
             />
           </FormField>
@@ -276,14 +276,14 @@ export default function CastPage() {
               name="image"
               value={formData.image || ""}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 rounded-md border border-input bg-background"
+              className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white!"
             />
           </FormField>
 
           <div className="flex justify-end gap-3 pt-4">
             <button
               onClick={() => setIsEditModalOpen(false)}
-              className="px-4 py-2 rounded-md border border-input bg-background hover:bg-secondary transition-colors"
+              className="px-4 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white! hover:bg-secondary transition-colors"
             >
               Cancel
             </button>

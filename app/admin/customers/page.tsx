@@ -324,7 +324,7 @@ export default function CustomersPage() {
                 name="username"
                 value={formData.username || ""}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                className="w-full px-3 py-2 rounded-md border border-input bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white!"
                 required
               />
             </FormField>
@@ -336,7 +336,7 @@ export default function CustomersPage() {
                 name="displayName"
                 value={formData.displayName || ""}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white!"
                 required
               />
             </FormField>
@@ -350,7 +350,7 @@ export default function CustomersPage() {
                 name="email"
                 value={formData.email || ""}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white!"
                 required
               />
             </FormField>
@@ -362,7 +362,7 @@ export default function CustomersPage() {
                 name="password"
                 value={formData.password || ""}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white!"
                 required
               />
             </FormField>
@@ -375,7 +375,7 @@ export default function CustomersPage() {
               value={formData.bio || ""}
               onChange={handleInputChange}
               rows={3}
-              className="w-full px-3 py-2 rounded-md border border-input bg-background resize-none"
+              className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white! resize-none"
             />
           </FormField>
 
@@ -386,7 +386,7 @@ export default function CustomersPage() {
                 name="gender"
                 value={formData.gender || "M"}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white!"
               >
                 <option value="M">Male</option>
                 <option value="F">Female</option>
@@ -400,7 +400,7 @@ export default function CustomersPage() {
                 name="profileImage"
                 value={formData.profileImage || ""}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white!"
                 placeholder="https://example.com/image.jpg"
               />
             </FormField>
@@ -409,7 +409,7 @@ export default function CustomersPage() {
           <div className="flex justify-end gap-3 pt-4">
             <button
               onClick={() => setIsAddModalOpen(false)}
-              className="px-4 py-2 rounded-md border border-input bg-background hover:bg-secondary transition-colors"
+              className="px-4 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white! hover:bg-secondary transition-colors"
             >
               Cancel
             </button>
@@ -434,7 +434,7 @@ export default function CustomersPage() {
                 name="username"
                 value={formData.username || ""}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white!"
                 required
               />
             </FormField>
@@ -446,7 +446,7 @@ export default function CustomersPage() {
                 name="displayName"
                 value={formData.displayName || ""}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white!"
                 required
               />
             </FormField>
@@ -460,7 +460,7 @@ export default function CustomersPage() {
                 name="email"
                 value={formData.email || ""}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white!"
                 required
               />
             </FormField>
@@ -475,7 +475,7 @@ export default function CustomersPage() {
               value={formData.bio || ""}
               onChange={handleInputChange}
               rows={3}
-              className="w-full px-3 py-2 rounded-md border border-input bg-background resize-none"
+              className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white! resize-none"
             />
           </FormField>
 
@@ -486,7 +486,7 @@ export default function CustomersPage() {
                 name="gender"
                 value={formData.gender || "M"}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white!"
               >
                 <option value="M">Male</option>
                 <option value="F">Female</option>
@@ -500,7 +500,7 @@ export default function CustomersPage() {
                 name="profileImage"
                 value={formData.profileImage || ""}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white!"
                 placeholder="https://example.com/image.jpg"
               />
             </FormField>
@@ -509,7 +509,7 @@ export default function CustomersPage() {
           <div className="flex justify-end gap-3 pt-4">
             <button
               onClick={() => setIsEditModalOpen(false)}
-              className="px-4 py-2 rounded-md border border-input bg-background hover:bg-secondary transition-colors"
+              className="px-4 py-2 rounded-md border border-input  bg-zinc-200 text-black! dark:bg-zinc-700 dark:text-white! hover:bg-secondary transition-colors"
             >
               Cancel
             </button>

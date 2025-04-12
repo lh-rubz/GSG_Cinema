@@ -8,13 +8,12 @@ import { FormField } from "@/components/form-field"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import type { Director } from "@/types/types"
 import { directorsApi } from "@/lib/endpoints/directors"
-import type { ApiResponse } from "@/lib/client"
+import { toast } from "react-hot-toast" 
 
 export default function DirectorsPage() {
   const [directors, setDirectors] = useState<Director[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [currentDirector, setCurrentDirector] = useState<Director | null>(null)
   const [formData, setFormData] = useState<Partial<Director>>({
@@ -22,7 +21,6 @@ export default function DirectorsPage() {
     bio: "",
     image: "",
   })
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
     fetchDirectors()
@@ -36,25 +34,26 @@ export default function DirectorsPage() {
         setDirectors(response.data)
       }
     } catch (error) {
+      toast.error("Error fetching directors.")
       console.error("Error fetching directors:", error)
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleAddDirector = () => {
-    setFormData({
-      name: "",
-      bio: "",
-      image: "",
-    })
-    setIsAddModalOpen(true)
-  }
-
-  const handleEditDirector = (director: Director) => {
-    setCurrentDirector(director)
-    setFormData({ ...director })
-    setIsEditModalOpen(true)
+  const handleOpenModal = (director?: Director) => {
+    if (director) {
+      setCurrentDirector(director)
+      setFormData({ ...director })
+    } else {
+      setCurrentDirector(null)
+      setFormData({
+        name: "",
+        bio: "",
+        image: "",
+      })
+    }
+    setIsModalOpen(true)
   }
 
   const handleDeleteDirector = (director: Director) => {
@@ -64,18 +63,8 @@ export default function DirectorsPage() {
 
   const handleSaveDirector = async () => {
     try {
-      if (isAddModalOpen) {
-        const response = await directorsApi.createDirector({
-          id: `d${Date.now()}`, // Generate a unique ID
-          name: formData.name || "",
-          bio: formData.bio || "",
-          image: formData.image || "",
-        })
-        if (response.data) {
-          setDirectors((prevDirectors) => [...prevDirectors, response.data as Director])
-          setIsAddModalOpen(false)
-        }
-      } else if (isEditModalOpen && currentDirector) {
+      if (currentDirector) {
+        // Edit existing director
         const response = await directorsApi.updateDirector(currentDirector.id, {
           name: formData.name,
           bio: formData.bio,
@@ -85,10 +74,24 @@ export default function DirectorsPage() {
           setDirectors((prevDirectors) =>
             prevDirectors.map((director) => (director.id === currentDirector.id ? response.data as Director : director))
           )
-          setIsEditModalOpen(false)
+          toast.success("Director updated successfully!")
+        }
+      } else {
+        // Add new director
+        const response = await directorsApi.createDirector({
+          id: `d${Date.now()}`, // Generate a unique ID
+          name: formData.name || "",
+          bio: formData.bio || "",
+          image: formData.image || "",
+        })
+        if (response.data) {
+          setDirectors((prevDirectors) => [...prevDirectors, response.data as Director])
+          toast.success("Director added successfully!")
         }
       }
+      setIsModalOpen(false)
     } catch (error) {
+      toast.error("Error saving director.")
       console.error("Error saving director:", error)
     }
   }
@@ -96,28 +99,18 @@ export default function DirectorsPage() {
   const handleConfirmDelete = async () => {
     if (currentDirector) {
       try {
-        setErrorMessage(null)
         const response = await directorsApi.deleteDirector(currentDirector.id)
         if (response.status === 200) {
           setDirectors((prevDirectors) => prevDirectors.filter((director) => director.id !== currentDirector.id))
+          toast.success("Director deleted successfully!")
           setIsDeleteModalOpen(false)
         } else if (response.error) {
-          // Handle error response from API
+          toast.error(`Cannot delete ${currentDirector.name}: ${response.error}`)
           console.error("Error deleting director:", response.error)
-          setErrorMessage(`Cannot delete ${currentDirector.name}: ${response.error}`)
         }
       } catch (error: any) {
+        toast.error("An unexpected error occurred while deleting the director.")
         console.error("Error deleting director:", error)
-        
-        // Log the full error object to see its structure
-        console.log("Full error object:", JSON.stringify(error, null, 2))
-        
-        // Handle different error scenarios
-        if (error instanceof Error) {
-          setErrorMessage(`Error: ${error.message || "Unknown error occurred"}`)
-        } else {
-          setErrorMessage("An unexpected error occurred while deleting the director.")
-        }
       }
     }
   }
@@ -162,18 +155,6 @@ export default function DirectorsPage() {
         <h1 className="text-2xl font-bold">Directors</h1>
       </div>
 
-      {errorMessage && (
-        <div className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-red-900/30 dark:text-red-500">
-          {errorMessage}
-          <button 
-            onClick={() => setErrorMessage(null)} 
-            className="ml-2 font-medium underline hover:text-red-900 dark:hover:text-red-400"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
-
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -182,15 +163,15 @@ export default function DirectorsPage() {
         <DataTable
           data={directors}
           columns={columns}
-          onAdd={handleAddDirector}
-          onEdit={handleEditDirector}
+          onAdd={() => handleOpenModal()}
+          onEdit={handleOpenModal}
           onDelete={handleDeleteDirector}
           searchPlaceholder="Search directors..."
         />
       )}
 
-      {/* Add Director Modal */}
-      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Add New Director" size="md">
+      {/* Add/Edit Director Modal */}
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={currentDirector ? "Edit Director" : "Add New Director"} size="md">
         <div className="space-y-4">
           <FormField label="Name" id="name" required>
             <input
@@ -229,7 +210,7 @@ export default function DirectorsPage() {
 
           <div className="flex justify-end gap-3 pt-4">
             <button
-              onClick={() => setIsAddModalOpen(false)}
+              onClick={() => setIsModalOpen(false)}
               className="px-4 py-2 rounded-md border border-input bg-background hover:bg-secondary transition-colors"
             >
               Cancel
@@ -238,62 +219,7 @@ export default function DirectorsPage() {
               onClick={handleSaveDirector}
               className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             >
-              Add Director
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Edit Director Modal */}
-      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Director" size="md">
-        <div className="space-y-4">
-          <FormField label="Name" id="edit-name" required>
-            <input
-              type="text"
-              id="edit-name"
-              name="name"
-              value={formData.name || ""}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 rounded-md border border-input bg-background"
-              required
-            />
-          </FormField>
-
-          <FormField label="Bio" id="edit-bio" required>
-            <textarea
-              id="edit-bio"
-              name="bio"
-              value={formData.bio || ""}
-              onChange={handleInputChange}
-              rows={4}
-              className="w-full px-3 py-2 rounded-md border border-input bg-background resize-none"
-              required
-            />
-          </FormField>
-
-          <FormField label="Image URL" id="edit-image">
-            <input
-              type="text"
-              id="edit-image"
-              name="image"
-              value={formData.image || ""}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 rounded-md border border-input bg-background"
-            />
-          </FormField>
-
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              onClick={() => setIsEditModalOpen(false)}
-              className="px-4 py-2 rounded-md border border-input bg-background hover:bg-secondary transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSaveDirector}
-              className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              Update Director
+              {currentDirector ? "Update Director" : "Add Director"}
             </button>
           </div>
         </div>
