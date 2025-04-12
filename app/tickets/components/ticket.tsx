@@ -1,5 +1,7 @@
 import { Calendar, Clock, Film, MapPin, User } from "lucide-react"
-import type { Movie, Showtime, Ticket, Screen } from "../../../types/types"
+import type { Movie, Showtime, Ticket, Screen, Seat } from "../../../types/types"
+import { useEffect, useState } from "react"
+import { seatsApi } from "@/lib/endpoints/seats"
 
 interface TicketProps {
   tickets: Ticket[]
@@ -10,22 +12,34 @@ interface TicketProps {
 }
 
 export default function TicketCard({ tickets, movie, showtime, screen, isPast }: TicketProps) {
-  const seatNumbers = tickets.map((t) => t.seatId).join(", ")
-  const totalPrice = (tickets[0].price * tickets.length).toFixed(2)
-  const ticketNumber = `${tickets[0].id.toUpperCase()}${Math.floor(Math.random() * 10000)
-    .toString()
-    .padStart(4, "0")}`
-
+  const [seatNumbers, setSeatNumbers] = useState<string[]>([])
+  const totalPrice = tickets.reduce((sum, ticket) => sum + ticket.price, 0).toFixed(2)
   const hasMultipleTickets = tickets.length > 1
+
+  useEffect(() => {
+    const fetchSeatNumbers = async () => {
+      const numbers = await Promise.all(
+        tickets.map(async (ticket) => {
+          try {
+            const response = await seatsApi.getSeat(ticket.seatId)
+            return response.data?.number || ticket.seatId
+          } catch (error) {
+            console.error("Error fetching seat:", error)
+            return ticket.seatId
+          }
+        })
+      )
+      setSeatNumbers(numbers)
+    }
+
+    fetchSeatNumbers()
+  }, [tickets])
 
   return (
     <div className={`w-full mb-8 ${isPast ? "opacity-90" : ""}`}>
-      {/* Group wrapper for hover effects */}
       <div className="relative group">
-        {/* Background layers for stacked effect */}
         {hasMultipleTickets && (
           <>
-            {/* Bottom layer (3rd ticket) */}
             <div className={`
               absolute -bottom-2 -right-2 left-2 top-2
               bg-gray-100 dark:bg-gray-700 rounded-xl
@@ -37,7 +51,6 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
               z-0
             `}></div>
 
-            {/* Middle layer (2nd ticket) */}
             <div className={`
               absolute -bottom-1 -right-1 left-1 top-1
               bg-gray-50 dark:bg-gray-800/40 rounded-xl
@@ -51,7 +64,6 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
           </>
         )}
 
-        {/* Main ticket (top layer) */}
         <div className={`
           relative z-20
           flex flex-col md:flex-row
@@ -76,7 +88,7 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
           </div>
 
           {/* Ticket details */}
-          <div className="flex-1 p-5 border-dashed border-2 dark:border-gray-600">
+          <div className="flex-1 p-6">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">{movie.title}</h3>
@@ -107,42 +119,31 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Seat{hasMultipleTickets ? "s" : ""}</p>
                 <p className="font-medium dark:text-gray-200 flex items-center">
                   <User className="w-4 h-4 mr-2 text-red-500 dark:text-red-400" />
-                  {seatNumbers}
+                  {seatNumbers.join(", ")}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Screen</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total</p>
                 <p className="font-medium dark:text-gray-200 flex items-center">
-                  <MapPin className="w-4 h-4 mr-2 text-red-500 dark:text-red-400" />
-                  {screen.type.join(", ")}
+                  <span className="text-lg font-bold text-gray-900 dark:text-white">${totalPrice}</span>
                 </p>
               </div>
             </div>
 
-            <div className="flex justify-between items-center">
+            <div className="flex justify-end">
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Ticket ID</p>
-                <p className="font-mono text-sm font-medium text-gray-800 dark:text-gray-200">{ticketNumber}</p>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total</p>
-                  <p className="text-lg font-bold text-gray-900 dark:text-white">${totalPrice}</p>
-                </div>
-                <div>
-                  <span
-                    className={`
-                      px-3 py-1 rounded-full text-xs font-medium
-                      ${
-                        isPast
-                          ? "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-                          : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200"
-                      }
-                    `}
-                  >
-                    {isPast ? "Used" : "Confirmed"}
-                  </span>
-                </div>
+                <span
+                  className={`
+                    px-3 py-1 rounded-full text-xs font-medium
+                    ${
+                      isPast
+                        ? "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                        : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200"
+                    }
+                  `}
+                >
+                  {isPast ? "Used" : "Confirmed"}
+                </span>
               </div>
             </div>
           </div>
