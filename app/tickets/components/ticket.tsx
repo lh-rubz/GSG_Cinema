@@ -13,23 +13,16 @@ interface TicketProps {
 }
 
 export default function TicketCard({ tickets, movie, showtime, screen, isPast }: TicketProps) {
-  const seatNumbers = tickets.map((t) => t.seatId).join(", ")
-  const totalPrice = (tickets[0].price * tickets.length).toFixed(2)
-  const ticketNumber = `${tickets[0].id.toUpperCase()}${Math.floor(Math.random() * 10000)
-    .toString()
-    .padStart(4, "0")}`
-
+  const [seatNumbers, setSeatNumbers] = useState<string[]>([])
+  const totalPrice = tickets.reduce((sum, ticket) => sum + ticket.price, 0).toFixed(2)
   const hasMultipleTickets = tickets.length > 1
   const { preferences } = usePreferences();
 
   return (
     <div className={`w-full mb-8 ${isPast ? "opacity-90" : ""}`}>
-      {/* Group wrapper for hover effects */}
       <div className="relative group">
-        {/* Background layers for stacked effect */}
         {hasMultipleTickets && (
           <>
-            {/* Bottom layer (3rd ticket) */}
             <div className={`
               absolute -bottom-2 -right-2 left-2 top-2
               bg-zinc-100 dark:bg-zinc-700 rounded-xl
@@ -41,7 +34,6 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
               z-0
             `}></div>
 
-            {/* Middle layer (2nd ticket) */}
             <div className={`
               absolute -bottom-1 -right-1 left-1 top-1
               bg-zinc-50 dark:bg-zinc-800/40 rounded-xl
@@ -55,7 +47,6 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
           </>
         )}
 
-        {/* Main ticket (top layer) */}
         <div className={`
           relative z-20
           flex flex-col md:flex-row
@@ -111,7 +102,7 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Seat{hasMultipleTickets ? "s" : ""}</p>
                 <p className="font-medium dark:text-zinc-200 flex items-center">
                   <User className="w-4 h-4 mr-2 text-red-500 dark:text-red-400" />
-                  {seatNumbers}
+                  {seatNumbers.join(", ")}
                 </p>
               </div>
               <div>

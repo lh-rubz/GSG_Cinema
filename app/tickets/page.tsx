@@ -3,30 +3,23 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Calendar, Clock, Film, MapPin, Scissors, Ticket as TicketIcon, User } from "lucide-react";
-import type { Movie, Showtime, Ticket ,Screen} from "../../types/types";
-
+import type { Movie, Showtime, Ticket, Screen } from "../../types/types";
+import { ticketsApi } from "@/lib/endpoints/tickets";
+import { showtimesApi } from "@/lib/endpoints/showtimes";
+import { moviesApi } from "@/lib/endpoints/movies";
+import { screensApi } from "@/lib/endpoints/screens";
 import TicketCard from "./components/ticket";
-// Helper function to check if a date is today or in the future
-const isDateActiveOrFuture = (dateString: string): boolean => {
-  // Parse the date string (dd-mm-yyyy)
-  const [day, month, year] = dateString.split("-").map(Number)
-  const ticketDate = new Date(year, month - 1, day) // month is 0-indexed in JS Date
 
-  // Get today's date with time set to beginning of day
+const isDateActiveOrFuture = (dateString: string): boolean => {
+  const [day, month, year] = dateString.split("-").map(Number)
+  const ticketDate = new Date(year, month - 1, day)
+
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
   return ticketDate >= today
 }
 
-// Function to generate a random ticket number
-const generateTicketNumber = (id: string): string => {
-  return `${id.toUpperCase()}${Math.floor(Math.random() * 10000)
-    .toString()
-    .padStart(4, "0")}`
-}
-
-// Group tickets by showtime to identify duplicates
 const groupTicketsByShowtime = (tickets: Ticket[]): Record<string, Ticket[]> => {
   return tickets.reduce(
     (acc, ticket) => {
@@ -40,225 +33,99 @@ const groupTicketsByShowtime = (tickets: Ticket[]): Record<string, Ticket[]> => 
   )
 }
 
-const mockTickets: Ticket[] = [
-  {
-    id: "t1",
-    userId: "u1",
-    showtimeId: "st1",
-    seatId: "A12",
-    price: 15.99,
-    purchaseDate: "2024-03-15T10:00:00Z",
-    status: "paid",
-  },{
-  id: "t7",
-  userId: "u1",
-  showtimeId: "st1",
-  seatId: "A12",
-  price: 15.99,
-  purchaseDate: "2024-03-15T10:00:00Z",
-  status: "paid",
-},
-  {
-    id: "t2",
-    userId: "u1",
-    showtimeId: "st1", // Same showtime as t1 (duplicate)
-    seatId: "A13",
-    price: 15.99,
-    purchaseDate: "2024-03-15T10:00:00Z",
-    status: "paid",
-  },
-  {
-    id: "t3",
-    userId: "u1",
-    showtimeId: "st2",
-    seatId: "B15",
-    price: 12.99,
-    purchaseDate: "2024-02-10T15:30:00Z",
-    status: "used",
-  },
-  {
-    id: "t4",
-    userId: "u1",
-    showtimeId: "st3",
-    seatId: "C8",
-    price: 18.5,
-    purchaseDate: "2024-03-20T09:15:00Z",
-    status: "paid",
-  },
-  {
-    id: "t5",
-    userId: "u1",
-    showtimeId: "st4",
-    seatId: "D4",
-    price: 14.99,
-    purchaseDate: "2024-01-05T14:20:00Z",
-    status: "used",
-  },
-]
-
-// Mock related data (would come from your API)
-const mockShowtimes: Record<string, Showtime> = {
-  st1: {
-    id: "st1",
-    movieId: "m1",
-    screenId: "sc1",
-    date: "15-04-2025", // Future date (dd-mm-yyyy)
-    time: "19:30",
-    format: "TwoD",
-    availableSeats: 120,
-    price: 15.99,
-  },
-  st2: {
-    id: "st2",
-    movieId: "m2",
-    screenId: "sc2",
-    date: "10-02-2024", // Past date (dd-mm-yyyy)
-    time: "20:15",
-    format: "ThreeD",
-    availableSeats: 80,
-    price: 12.99,
-  },
-  st3: {
-    id: "st3",
-    movieId: "m3",
-    screenId: "sc3",
-    date: "25-04-2025", // Future date (dd-mm-yyyy)
-    time: "18:00",
-    format: "imax",
-    availableSeats: 150,
-    price: 18.5,
-  },
-  st4: {
-    id: "st4",
-    movieId: "m4",
-    screenId: "sc1",
-    date: "07-01-2024", // Past date (dd-mm-yyyy)
-    time: "16:45",
-    format: "TwoD",
-    availableSeats: 120,
-    price: 14.99,
-  },
-}
-
-const mockMovies: Record<string, Movie> = {
-  m1: {
-    id: "m1",
-    title: "Dune: Part Two",
-    year: "2024",
-    genre: ["Sci-Fi", "Adventure"],
-    rating: "PG-13",
-    description:
-      "Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family.",
-    image: "https://upload.wikimedia.org/wikipedia/en/5/52/Dune_Part_Two_poster.jpeg",
-    directorId: "d1",
-    duration: "166 min",
-    trailer: "https://youtube.com/watch?v=dune-trailer",
-    releaseDate: "01-03-2024",
-    castIds: ["c1", "c2"],
-    status: "now_showing",
-    hidden: false,
-  },
-  m2: {
-    id: "m2",
-    title: "The Batman",
-    year: "2022",
-    genre: ["Action", "Crime", "Drama"],
-    rating: "PG-13",
-    description:
-      "When the Riddler, a sadistic serial killer, begins murdering key political figures in Gotham, Batman is forced to investigate.",
-    image: "https://i.redd.it/yl694lw87uy71.jpg",
-    directorId: "d2",
-    duration: "176 min",
-    trailer: "https://youtube.com/watch?v=batman-trailer",
-    releaseDate: "04-03-2022",
-    castIds: ["c3", "c4"],
-    status: "now_showing",
-    hidden: false,
-  },
-  m3: {
-    id: "m3",
-    title: "Godzilla x Kong",
-    year: "2024",
-    genre: ["Action", "Sci-Fi", "Thriller"],
-    rating: "PG-13",
-    description: "The epic clash between Godzilla and Kong continues as a new threat emerges.",
-    image: "https://m.media-amazon.com/images/M/MV5BODE2NTdmMmYtY2U1OS00MjExLWIwNjQtYjQ5NTA0ZDZmZjZiXkEyXkFqcGc@._V1_.jpg",
-    directorId: "d3",
-    duration: "132 min",
-    trailer: "https://youtube.com/watch?v=godzilla-kong-trailer",
-    releaseDate: "29-03-2024",
-    castIds: ["c5", "c6"],
-    status: "now_showing",
-    hidden: false,
-  },
-  m4: {
-    id: "m4",
-    title: "Oppenheimer",
-    year: "2023",
-    genre: [ "Drama", "Thriller"],
-    rating: "R",
-    description:
-      "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb.",
-    image: "https://m.media-amazon.com/images/M/MV5BN2JkMDc5MGQtZjg3YS00NmFiLWIyZmQtZTJmNTM5MjVmYTQ4XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
-    directorId: "d4",
-    duration: "180 min",
-    trailer: "https://youtube.com/watch?v=oppenheimer-trailer",
-    releaseDate: "21-07-2023",
-    castIds: ["c7", "c8"],
-    status: "now_showing",
-    hidden: false,
-  },
-}
-
-const mockScreens: Record<string, Screen> = {
-  sc1: {
-    id: "sc1",
-    name: "Grand Hall",
-    type: ["Standard"],
-    capacity: 200,
-    rows: 20,
-    cols: 10,
-  },
-  sc2: {
-    id: "sc2",
-    name: "Royal Screen",
-    type: ["Premium"],
-    capacity: 150,
-    rows: 15,
-    cols: 10,
-  },
-  sc3: {
-    id: "sc3",
-    name: "IMAX Experience",
-    type: ["IMAX"],
-    capacity: 180,
-    rows: 18,
-    cols: 10,
-  },
-}
 export default function TicketsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"active" | "past">("active");
   const [activeTickets, setActiveTickets] = useState<Record<string, Ticket[]>>({});
   const [pastTickets, setPastTickets] = useState<Record<string, Ticket[]>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [movies, setMovies] = useState<Record<string, Movie>>({});
+  const [showtimes, setShowtimes] = useState<Record<string, Showtime>>({});
+  const [screens, setScreens] = useState<Record<string, Screen>>({});
 
   useEffect(() => {
-    const active: Ticket[] = [];
-    const past: Ticket[] = [];
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-    mockTickets.forEach((ticket) => {
-      const showtime = mockShowtimes[ticket.showtimeId];
-      if (showtime) {
-        if (isDateActiveOrFuture(showtime.date)) {
-          active.push(ticket);
-        } else {
-          past.push(ticket);
+        const ticketsResponse = await ticketsApi.getTickets();
+        if (ticketsResponse.error) {
+          throw new Error(ticketsResponse.error);
         }
-      }
-    });
 
-    setActiveTickets(groupTicketsByShowtime(active));
-    setPastTickets(groupTicketsByShowtime(past));
+        const allTickets = ticketsResponse.data || [];
+        const active: Ticket[] = [];
+        const past: Ticket[] = [];
+
+        const showtimeIds = [...new Set(allTickets.map(t => t.showtimeId))];
+        const showtimesResponse = await Promise.all(
+          showtimeIds.map(id => showtimesApi.getShowtime(id))
+        );
+
+        const showtimesData: Record<string, Showtime> = {};
+        const movieIds = new Set<string>();
+        const screenIds = new Set<string>();
+
+        showtimesResponse.forEach(response => {
+          if (response.data) {
+            showtimesData[response.data.id] = response.data;
+            movieIds.add(response.data.movieId);
+            screenIds.add(response.data.screenId);
+          }
+        });
+
+        setShowtimes(showtimesData);
+
+        const moviesResponse = await Promise.all(
+          Array.from(movieIds).map(id => moviesApi.getMovie(id))
+        );
+
+        const moviesData: Record<string, Movie> = {};
+        moviesResponse.forEach(response => {
+          if (response.data) {
+            moviesData[response.data.id] = response.data;
+          }
+        });
+
+        setMovies(moviesData);
+
+        const screensResponse = await Promise.all(
+          Array.from(screenIds).map(id => screensApi.getScreen(id))
+        );
+
+        const screensData: Record<string, Screen> = {};
+        screensResponse.forEach(response => {
+          if (response.data) {
+            screensData[response.data.id] = response.data;
+          }
+        });
+
+        setScreens(screensData);
+
+        allTickets.forEach((ticket) => {
+          const showtime = showtimesData[ticket.showtimeId];
+          if (showtime) {
+            if (isDateActiveOrFuture(showtime.date)) {
+              active.push(ticket);
+            } else {
+              past.push(ticket);
+            }
+          }
+        });
+
+        setActiveTickets(groupTicketsByShowtime(active));
+        setPastTickets(groupTicketsByShowtime(past));
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError(err instanceof Error ? err.message : "Failed to load tickets");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const renderEmptyState = (type: "active" | "past") => (
@@ -305,9 +172,13 @@ export default function TicketsPage() {
       <div className="space-y-6">
         {showtimeIds.map((showtimeId) => {
           const ticketGroup = tickets[showtimeId];
-          const showtime = mockShowtimes[showtimeId];
-          const movie = mockMovies[showtime.movieId];
-          const screen = mockScreens[showtime.screenId];
+          const showtime = showtimes[showtimeId];
+          const movie = showtime ? movies[showtime.movieId] : undefined;
+          const screen = showtime ? screens[showtime.screenId] : undefined;
+
+          if (!showtime || !movie || !screen) {
+            return null;
+          }
 
           return (
             <TicketCard
@@ -323,6 +194,30 @@ export default function TicketsPage() {
       </div>
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-red-900/30 dark:text-red-500">
+          {error}
+        </div>
+        <button
+          onClick={() => router.push("/")}
+          className="px-4 py-2 bg-primary text-white rounded-lg"
+        >
+          Return Home
+        </button>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-950 px-4 py-8 sm:py-12 mt-16">
