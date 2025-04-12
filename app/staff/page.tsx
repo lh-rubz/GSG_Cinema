@@ -80,6 +80,7 @@ export default function StaffDashboard() {
   if (authLoading || !isAuthenticated || user?.role !== "Staff") {
     return (
       <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-gray-900 dark:text-white">Loading dashboard data...</div>
         <div className="text-lg">Loading...</div>
       </div>
     )
@@ -230,6 +231,26 @@ function StatCard({
       </div>
       <div className="mt-2 text-2xl font-bold text-zinc-900 dark:text-white">{value}</div>
     </div>
+  )
+}
+
+function QuickAccessCard({
+  title,
+  icon,
+  href,
+}: {
+  title: string
+  icon: React.ReactNode
+  href: string
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex flex-col items-center justify-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+    >
+      <div className="p-3 rounded-full bg-primary/10 text-primary">{icon}</div>
+      <div className="mt-2 text-sm font-medium text-gray-900 dark:text-white">{title}</div>
+    </Link>
   )
 }
 

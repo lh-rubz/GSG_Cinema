@@ -48,7 +48,7 @@ export default function StaffMoviesPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading movies...</div>
+        <div className="text-lg text-gray-900 dark:text-white">Loading movies...</div>
       </div>
     )
   }
@@ -56,7 +56,7 @@ export default function StaffMoviesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Movies</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Movies</h1>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4">
@@ -66,15 +66,15 @@ export default function StaffMoviesPage() {
             placeholder="Search movies..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-md border border-input bg-background"
+            className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
           />
-          <Film className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+          <Film className="absolute left-3 top-2.5 h-5 w-5 text-gray-500 dark:text-gray-400" />
         </div>
 
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 rounded-md border border-input bg-background"
+          className="px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
         >
           <option value="all">All Movies</option>
           <option value="now_showing">Now Showing</option>
@@ -84,13 +84,13 @@ export default function StaffMoviesPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredMovies.map((movie) => (
-          <div key={movie.id} className="border border-border rounded-lg overflow-hidden bg-card">
+          <div key={movie.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
             <div className="aspect-[2/3] relative">
               {movie.image ? (
                 <img src={movie.image || "/placeholder.svg"} alt={movie.title} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-muted">
-                  <Film className="h-12 w-12 text-muted-foreground" />
+                <div className="w-full h-full flex items-center justify-center bg-gray-50 dark:bg-gray-700">
+                  <Film className="h-12 w-12 text-gray-400 dark:text-gray-500" />
                 </div>
               )}
               <div className="absolute top-2 right-2">
@@ -106,19 +106,19 @@ export default function StaffMoviesPage() {
               </div>
             </div>
             <div className="p-4">
-              <h3 className="font-medium text-lg">{movie.title}</h3>
-              <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+              <h3 className="font-medium text-lg text-gray-900 dark:text-white">{movie.title}</h3>
+              <div className="flex items-center gap-2 mt-1 text-sm text-gray-500 dark:text-gray-400">
                 <span>{movie.year}</span>
                 <span>•</span>
                 <span>{movie.duration}</span>
               </div>
               <div className="flex items-center gap-1 mt-2">
                 <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
-                <span>{movie.rating}</span>
+                <span className="text-gray-900 dark:text-white">{movie.rating}</span>
               </div>
               <div className="mt-2 flex flex-wrap gap-1">
                 {movie.genre.slice(0, 3).map((genre) => (
-                  <span key={genre} className="px-2 py-1 text-xs rounded-full bg-secondary text-secondary-foreground">
+                  <span key={genre} className="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                     {genre}
                   </span>
                 ))}
@@ -130,9 +130,9 @@ export default function StaffMoviesPage() {
 
       {filteredMovies.length === 0 && (
         <div className="text-center py-12">
-          <Film className="h-12 w-12 mx-auto text-muted-foreground" />
-          <h3 className="mt-4 text-lg font-medium">No movies found</h3>
-          <p className="mt-2 text-muted-foreground">
+          <Film className="h-12 w-12 mx-auto text-gray-400 dark:text-gray-500" />
+          <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">No movies found</h3>
+          <p className="mt-2 text-gray-500 dark:text-gray-400">
             Try adjusting your search or filter to find what you're looking for.
           </p>
         </div>
