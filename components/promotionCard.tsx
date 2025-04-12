@@ -14,12 +14,6 @@ const PromotionCard = ({ promotion }: Iprops) => {
   const [isCopied, setIsCopied] = useState(false)
   const [mounted, setMounted] = useState(false)
 
-  // Prevent hydration mismatch with dark mode
-  useEffect(() => {
-    setMounted(true)
-    console.log('Promotion image URL:', promotion.image)
-  }, [promotion.image])
-
 
   
   const handleCopyCode = () => {
