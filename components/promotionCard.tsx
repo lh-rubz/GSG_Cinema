@@ -5,6 +5,8 @@ import Image from "next/image"
 import { CalendarIcon, Copy, Check, Ticket } from "lucide-react"
 import { useState, useEffect } from "react"
 import posterImage from "./assets/BigSalePoster.png"
+import { usePreferences } from "@/context/PreferencesContext"
+import { formatCurrency } from "@/utils/formatters"
 
 interface Iprops {
   promotion: Promotion
@@ -14,7 +16,7 @@ const PromotionCard = ({ promotion }: Iprops) => {
   const [isCopied, setIsCopied] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<string>("")
-
+const preferences = usePreferences();
   useEffect(() => {
     setMounted(true)
     
@@ -65,9 +67,9 @@ const PromotionCard = ({ promotion }: Iprops) => {
   const getPromotionValue = () => {
     switch (promotion.type) {
       case "PERCENTAGE":
-        return `${promotion.value}% OFF`
+        return `${formatCurrency(promotion.value,preferences.preferences.currency)}% OFF`
       case "FIXED_AMOUNT":
-        return `$${promotion.value} OFF`
+        return `${formatCurrency(promotion.value,preferences.preferences.currency)} OFF`
       case "BUY_X_GET_Y":
         return "BUY 1 GET 1"
       default:

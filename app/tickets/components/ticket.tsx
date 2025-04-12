@@ -1,22 +1,54 @@
-import { Calendar, Clock, Film, MapPin, User } from "lucide-react"
-import type { Movie, Showtime, Ticket, Screen } from "../../../types/types"
-import { usePreferences } from "@/context/PreferencesContext"
-import { formatTime } from "@/utils/formatters"
-import { formatCurrency } from "@/lib/utils"
-
+import { useEffect, useState } from "react";
+import { Calendar, Clock, Film, MapPin, User } from "lucide-react";
+import type { Movie, Showtime, Ticket, Screen } from "../../../types/types";
+import { usePreferences } from "@/context/PreferencesContext";
+import { useAuth } from "@/hooks/use-auth"; // Import useAuth to get the current user
+import { formatCurrency, formatTime } from "@/utils/formatters";
+import { seatsApi } from "@/lib/endpoints/seats"
 interface TicketProps {
-  tickets: Ticket[]
-  movie: Movie
-  showtime: Showtime
-  screen: Screen
-  isPast: boolean
+  tickets: Ticket[];
+  movie: Movie;
+  showtime: Showtime;
+  screen: Screen;
+  isPast: boolean;
 }
 
 export default function TicketCard({ tickets, movie, showtime, screen, isPast }: TicketProps) {
-  const [seatNumbers, setSeatNumbers] = useState<string[]>([])
-  const totalPrice = tickets.reduce((sum, ticket) => sum + ticket.price, 0).toFixed(2)
-  const hasMultipleTickets = tickets.length > 1
+  const { user } = useAuth(); // Get the current user
+  const [seatNumbers, setSeatNumbers] = useState<string[]>([]);
   const { preferences } = usePreferences();
+
+  // Filter tickets to show only those belonging to the current user
+  const userTickets = tickets.filter((ticket) => ticket.userId === user?.id); // Adjust `userId` based on your data structure
+
+  const totalPrice = userTickets.reduce((sum, ticket) => sum + ticket.price, 0).toFixed(2);
+  const hasMultipleTickets = userTickets.length > 1;
+
+  // Extract ticketNumber from the first ticket in the filtered array
+  const ticketNumber = userTickets[0]?.ticketNumber || "N/A";
+
+  if (userTickets.length === 0) {
+    return null; // If no tickets belong to the user, render nothing
+  }
+  useEffect(() => {
+    const fetchSeatNumbers = async () => {
+      const userTickets = tickets.filter((ticket) => ticket.userId === user?.id); // Filter tickets for the current user
+      const numbers = await Promise.all(
+        userTickets.map(async (ticket) => {
+          try {
+            const response = await seatsApi.getSeat(ticket.seatId);
+            return response.data?.number || ticket.seatId;
+          } catch (error) {
+            console.error("Error fetching seat:", error);
+            return ticket.seatId;
+          }
+        })
+      );
+      setSeatNumbers(numbers);
+    };
+
+    fetchSeatNumbers();
+  }, [tickets, user]);
 
   return (
     <div className={`w-full mb-8 ${isPast ? "opacity-90" : ""}`}>
@@ -95,51 +127,51 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Time</p>
                 <p className="font-medium dark:text-zinc-200 flex items-center">
                   <Clock className="w-4 h-4 mr-2 text-red-500 dark:text-red-400" />
-                  {formatTime(showtime.time,preferences.timeFormat) }
+                  {formatTime(showtime.time, preferences.timeFormat === "TWELVE_HOUR" ? "12-hour" : "24-hour")}
                 </p>
               </div>
               <div>
+
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Seat{hasMultipleTickets ? "s" : ""}</p>
-                <p className="font-medium dark:text-zinc-200 flex items-center">
+                
+                <p className="font-light  dark:text-zinc-200 flex items-center">
                   <User className="w-4 h-4 mr-2 text-red-500 dark:text-red-400" />
                   {seatNumbers.join(", ")}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Screen</p>
-                <p className="font-medium dark:text-zinc-200 flex items-center">
+                <p className="font-semibold dark:text-zinc-200 flex items-center">
                   <MapPin className="w-4 h-4 mr-2 text-red-500 dark:text-red-400" />
                   {screen.type.join(", ")}
                 </p>
               </div>
             </div>
 
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Ticket ID</p>
-                <p className="font-mono text-sm font-medium text-zinc-800 dark:text-zinc-200">{ticketNumber}</p>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Total</p>
-                  <p className="text-lg font-bold text-zinc-900 dark:text-white">{formatCurrency(totalPrice, preferences.currency, Number(totalPrice))}</p>
-                </div>
-                <div>
-                  <span
-                    className={`
-                      px-3 py-1 rounded-full text-xs font-medium
-                      ${
-                        isPast
-                          ? "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300"
-                          : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200"
-                      }
-                    `}
-                  >
-                    {isPast ? "Used" : "Confirmed"}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <div className="flex items-end justify-end mt-4">
+  <div className="flex items-center space-x-4">
+    <div>
+      <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Total</p>
+      <p className="text-lg font-bold text-zinc-900 dark:text-white">
+        {formatCurrency(Number(totalPrice), preferences.currency)}
+      </p>
+    </div>
+    <div>
+      <span
+        className={`
+          px-3 py-1 rounded-full text-xs font-medium
+          ${
+            isPast
+              ? "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300"
+              : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200"
+          }
+        `}
+      >
+        {isPast ? "Used" : "Confirmed"}
+      </span>
+    </div>
+  </div>
+</div>
           </div>
         </div>
 
@@ -154,10 +186,10 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
             transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
             group-hover:scale-110 group-hover:-translate-y-0.5
           `}>
-            x{tickets.length}
+            x{userTickets.length}
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }

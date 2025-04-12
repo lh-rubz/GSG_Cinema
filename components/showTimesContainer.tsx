@@ -114,7 +114,7 @@ const ShowTimesContainer: React.FC<ShowTimesContainerProps> = ({ moviesShowTimes
                   <div className="flex flex-wrap gap-2">
                     <span className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-700 rounded-full text-sm font-medium text-zinc-700 dark:text-zinc-300 flex items-center">
                       <Clock className="w-4 h-4 mr-1.5" />
-                      {formatDuration(movieDetails?.duration, preferences.durationFormat)}
+                      {formatDuration(Number(movieDetails?.duration), preferences.durationFormat)}
                        </span>
 
                     {movieDetails?.rating && (

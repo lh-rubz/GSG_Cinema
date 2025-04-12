@@ -1,11 +1,28 @@
 import { Preferences } from "@/context/PreferencesContext";
-export const formatCurrency = (amount: number, currency: Preferences['currency']) => {
-  const formatter = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-  });
-  return formatter.format(amount);
-};
+export const formatCurrency = (amount: number, currency: 'USD' | 'NIS'): string => {
+    // Fixed exchange rate (NIS to USD)
+    const EXCHANGE_RATE = 3.5;
+    
+    // Convert to USD if needed
+    const displayAmount = currency === 'USD' 
+      ? amount / EXCHANGE_RATE 
+      : amount;
+  
+    // Round to 2 decimal places
+    const roundedAmount = Math.round(displayAmount * 100) / 100;
+    
+    // Split into whole and decimal parts
+    const [wholePart, decimalPart = '00'] = roundedAmount.toString().split('.');
+    
+    // Format with thousands separators and ensure 2 decimal places
+    const formattedWhole = wholePart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const formattedDecimal = decimalPart.padEnd(2, '0').slice(0, 2);
+    
+    // Add currency symbol
+    return currency === 'USD' 
+      ? `$${formattedWhole}.${formattedDecimal}`
+      : `${formattedWhole}.${formattedDecimal}₪`;
+  };
 
 export const formatTime = (
     timeString: string,
@@ -41,11 +58,29 @@ export const formatTime = (
   
     return `${timePart}${secondsPart} ${period}`;
   };
-export const formatDuration = (duration: number, format: Preferences['durationFormat']) => {
-  if (format === "hours") {
-    const hours = Math.floor(duration / 60);
-    const minutes = duration % 60;
-    return `${hours}h ${minutes}m`;
-  }
-  return `${duration} minutes`;
-};
+  export const formatDuration = (duration: number, format: "MINUTES_ONLY" | "HOURS_AND_MINUTES"): string => {
+    // First validate the duration is a positive number
+    if (typeof duration !== 'number' || duration < 0) {
+      console.warn(`Invalid duration value: ${duration}`);
+      return 'Invalid duration';
+    }
+  
+    // Handle hours and minutes format
+    if (format === "HOURS_AND_MINUTES") {
+      const hours = Math.floor(duration / 60);
+      const minutes = duration % 60;
+      
+      // Only show hours if they exist
+      if (hours > 0) {
+        // Don't show minutes if they're 0
+        return minutes > 0 
+          ? `${hours}h ${minutes}m` 
+          : `${hours}h`;
+      }
+      // If no hours, just show minutes
+      return `${minutes}m`;
+    }
+  
+    // Default minutes-only format
+    return `${duration} min`;
+  };

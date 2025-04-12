@@ -10,7 +10,7 @@ interface MovieCardProps {
 
 export default function MovieCard({ movie }: MovieCardProps) {
   const isComingSoon = movie.status === "coming_soon"
-  const { preferences } = usePreferences();
+const { preferences } = usePreferences();
   return (
     <div className="group relative bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out border border-gray-100 dark:border-zinc-800 h-full flex flex-col">
       {/* Image with gradient overlay */}

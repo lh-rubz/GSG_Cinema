@@ -134,18 +134,18 @@ export default function TicketsPage() {
         <div className={`absolute inset-0 ${
           type === "active" 
             ? "bg-red-100 dark:bg-red-900/20 animate-pulse" 
-            : "bg-gray-100 dark:bg-gray-700/20"
+            : "bg-zinc-100 dark:bg-zinc-700/20"
         } rounded-full`}></div>
         <TicketIcon className={`absolute w-12 h-12 ${
           type === "active" 
             ? "text-red-600 dark:text-red-400" 
-            : "text-gray-400 dark:text-gray-500"
+            : "text-zinc-400 dark:text-zinc-500"
         } top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2`} />
       </div>
-      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+      <h3 className="text-xl font-semibold text-zinc-900 dark:text-white mb-2">
         {type === "active" ? "No upcoming tickets" : "No past tickets"}
       </h3>
-      <p className="text-gray-500 dark:text-gray-400 mb-6 text-center max-w-md">
+      <p className="text-zinc-500 dark:text-zinc-400 mb-6 text-center max-w-md">
         {type === "active" 
           ? "You don't have any active tickets. Browse our showtimes to book your next cinema experience."
           : "Your past movie tickets will appear here once you've attended a screening."}
@@ -220,22 +220,22 @@ export default function TicketsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-950 px-4 py-8 sm:py-12 mt-16">
+    <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950 px-4 py-8 sm:py-12 mt-16">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8 sm:mb-12">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">My Tickets</h1>
-          <p className="text-lg text-gray-500 dark:text-gray-400">Your cinema bookings and history</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white mb-2">My Tickets</h1>
+          <p className="text-lg text-zinc-500 dark:text-zinc-400">Your cinema bookings and history</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+        <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-lg overflow-hidden">
           <div className="px-6 pt-6">
-            <div className="flex border-b border-gray-200 dark:border-gray-700">
+            <div className="flex border-b border-zinc-200 dark:border-zinc-700">
               <button
                 onClick={() => setActiveTab("active")}
                 className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
                   activeTab === "active"
                     ? "border-red-600 text-red-600 dark:border-red-500 dark:text-red-400"
-                    : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                    : "border-transparent text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
                 }`}
               >
                 Active Tickets
@@ -245,7 +245,7 @@ export default function TicketsPage() {
                 className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
                   activeTab === "past"
                     ? "border-red-600 text-red-600 dark:border-red-500 dark:text-red-400"
-                    : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                    : "border-transparent text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
                 }`}
               >
                 Past Tickets
