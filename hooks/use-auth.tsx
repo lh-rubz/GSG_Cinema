@@ -34,7 +34,7 @@ interface AuthContextType {
     role: string;
   }) => Promise<void>;
   logout: () => void;
-  updateUser: (userData: Partial<User>) => Promise<void>;
+  updateUser: (userData: Partial<User> & { currentPassword?: string; password?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -117,22 +117,18 @@ console.log(password, foundUser.password);
     setError(null);
   
     try {
-      // Check if email already exists
       const existingUsers = await usersApi.getUsers({ email: userData.email });
       if (existingUsers.data && existingUsers.data.length > 0) {
         throw new Error('Email already in use');
       }
   
-      // Check if username already exists
       const existingUsernames = await usersApi.getUsers({ username: userData.username });
       if (existingUsernames.data && existingUsernames.data.length > 0) {
         throw new Error('Username already taken');
       }
   
-      // Generate unique ID for the new user
       const uniqueId = await generateUniqueId();
   
-      // Create new user
       if (!['Admin', 'Staff', 'User'].includes(userData.role)) {
         throw new Error('Invalid role provided');
       }
@@ -148,14 +144,12 @@ console.log(password, foundUser.password);
         throw new Error('Failed to create user');
       }
   
-      // Get full user data with relationships
       const userDataWithRelations = await usersApi.getUser(uniqueId);
       
       if (!userDataWithRelations.data) {
         throw new Error('Failed to fetch user data after creation');
       }
   
-      // Store user in session storage
       const { password: _, ...userToStore } = userDataWithRelations.data;
       sessionStorage.setItem('user', JSON.stringify(userToStore));
   
@@ -178,7 +172,7 @@ console.log(password, foundUser.password);
     setIsAuthenticated(false);
   };
 
-  const updateUser = async (userData: Partial<User>) => {
+  const updateUser = async (userData: Partial<User> & { currentPassword?: string; password?: string }) => {
     if (!user) {
       throw new Error('User not authenticated');
     }
@@ -187,19 +181,39 @@ console.log(password, foundUser.password);
     setError(null);
 
     try {
-      const updatedUser = await usersApi.updateUser(user.id, userData);
+      if (userData.password) {
+        if (!userData.currentPassword) {
+          throw new Error('Current password is required to change password');
+        }
 
-      // Get full updated user data with relationships
+        const users = await usersApi.getUsers({ email: user.email });
+        if (users.data!.length === 0) {
+          throw new Error('User not found');
+        }
+
+        const foundUser = users.data![0];
+        if (!await bcrypt.compare(userData.currentPassword, foundUser.password)) {
+          throw new Error('Current password is incorrect');
+        }
+
+        const hashedPassword = await bcrypt.hash(userData.password, 10);
+        userData.password = hashedPassword;
+      }
+
+      const { currentPassword, ...updateData } = userData;
+
+      const updatedUser = await usersApi.updateUser(user.id, updateData);
+
       const userDataWithRelations = await usersApi.getUser(updatedUser.data!.id);
 
-      // Update session storage (without password)
-      const { ...userToStore } = userDataWithRelations.data!;
+      const { password: _, ...userToStore } = userDataWithRelations.data!;
       sessionStorage.setItem('user', JSON.stringify(userToStore));
 
       setUser(userDataWithRelations.data!);
+      toast.success('Profile updated successfully');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Update failed');
-      toast.error(error || 'Update failed'); // Show error notification using react-hot-toast
+      toast.error(error || 'Update failed');
       throw err;
     } finally {
       setIsLoading(false);
