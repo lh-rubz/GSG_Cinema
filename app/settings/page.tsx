@@ -1,92 +1,42 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { toast } from "react-hot-toast"
-import { Loader2, Check, Clock, DollarSign, Hourglass } from "lucide-react"
-import { preferencesApi, type TimeFormat, type DurationFormat, type CurrencyType } from "@/lib/endpoints/preferences"
-import { useAuth } from "@/hooks/use-auth"
+import { useState } from "react";
+import { toast } from "react-hot-toast";
+import { Loader2, Check, Clock, DollarSign, Hourglass } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { usePreferences } from "@/context/PreferencesContext";
 
 export default function SettingsPage() {
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
-  const [isUpdating, setIsUpdating] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [preferences, setPreferences] = useState({
-    timeFormat: "TWENTY_FOUR_HOUR" as TimeFormat,
-    durationFormat: "MINUTES_ONLY" as DurationFormat,
-    currency: "NIS" as CurrencyType,
-  })
-
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      fetchUserPreferences(user.id)
-    } else if (!authLoading) {
-      setIsLoading(false)
-      toast.error("Please log in to view your settings")
-    }
-  }, [isAuthenticated, user, authLoading])
-
-  const fetchUserPreferences = async (id: string) => {
-    try {
-      setIsLoading(true)
-      const response = await preferencesApi.getUserPreferences(id)
-      if (response.data) {
-        setPreferences({
-          timeFormat: response.data.timeFormat,
-          durationFormat: response.data.durationFormat,
-          currency: response.data.currency,
-        })
-      }
-    } catch (error) {
-      console.error("Error fetching preferences:", error)
-      toast.error("Failed to load your preferences")
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const { user, isAuthenticated } = useAuth();
+  const { preferences, isLoading: prefsLoading, updatePreferences } = usePreferences();
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const handleSettingsUpdate = async () => {
-    if (!user) {
-      toast.error("You must be logged in to change settings")
-      return
-    }
-
     try {
-      setIsUpdating(true)
-      await preferencesApi.updateUserPreferences(user.id, preferences)
+      setIsUpdating(true);
+      await updatePreferences(preferences);
       toast.success("Settings saved successfully", {
         style: {
-          background: '#10b981',
-          color: '#fff',
-        }
-      })
+          background: "#10b981",
+          color: "#fff",
+        },
+      });
     } catch (error) {
-      console.error("Error updating preferences:", error)
+      console.error("Error updating preferences:", error);
       toast.error("Failed to update settings", {
         style: {
-          background: '#ef4444',
-          color: '#fff',
-        }
-      })
+          background: "#ef4444",
+          color: "#fff",
+        },
+      });
     } finally {
-      setIsUpdating(false)
+      setIsUpdating(false);
     }
-  }
+  };
 
   const handleSettingChange = (field: keyof typeof preferences, value: string) => {
-    setPreferences(prev => ({
-      ...prev,
-      [field]: value
-    }))
-  }
-
-  if (authLoading || isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
+    updatePreferences({ [field]: value });
+  };
 
   if (!isAuthenticated || !user) {
     return (
@@ -98,7 +48,15 @@ export default function SettingsPage() {
           </div>
         </div>
       </main>
-    )
+    );
+  }
+
+  if (prefsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   return (
@@ -130,16 +88,16 @@ export default function SettingsPage() {
                   </p>
                   <div className="mt-6 space-y-3">
                     {[
-                      { 
-                        id: "time-12h", 
-                        value: "TWELVE_HOUR", 
-                        label: "12-hour format (e.g., 2:30 PM)" 
+                      {
+                        id: "time-12h",
+                        value: "TWELVE_HOUR",
+                        label: "12-hour format (e.g., 2:30 PM)",
                       },
-                      { 
-                        id: "time-24h", 
-                        value: "TWENTY_FOUR_HOUR", 
-                        label: "24-hour format (e.g., 14:30)" 
-                      }
+                      {
+                        id: "time-24h",
+                        value: "TWENTY_FOUR_HOUR",
+                        label: "24-hour format (e.g., 14:30)",
+                      },
                     ].map((option) => (
                       <div key={option.id} className="flex items-center">
                         <input
@@ -147,7 +105,7 @@ export default function SettingsPage() {
                           name="timeFormat"
                           type="radio"
                           checked={preferences.timeFormat === option.value}
-                          onChange={() => handleSettingChange('timeFormat', option.value)}
+                          onChange={() => handleSettingChange("timeFormat", option.value)}
                           className="h-4 w-4 border-zinc-300 text-red-600 focus:ring-red-500 dark:border-zinc-600 dark:bg-zinc-800 dark:checked:bg-red-600 dark:focus:ring-red-500"
                         />
                         <label
@@ -180,16 +138,16 @@ export default function SettingsPage() {
                   </p>
                   <div className="mt-6 space-y-3">
                     {[
-                      { 
-                        id: "duration-minutes", 
-                        value: "MINUTES_ONLY", 
-                        label: "Minutes only (e.g., 120 min)" 
+                      {
+                        id: "duration-minutes",
+                        value: "MINUTES_ONLY",
+                        label: "Minutes only (e.g., 120 min)",
                       },
-                      { 
-                        id: "duration-hours", 
-                        value: "HOURS_AND_MINUTES", 
-                        label: "Hours and minutes (e.g., 2h 0m)" 
-                      }
+                      {
+                        id: "duration-hours",
+                        value: "HOURS_AND_MINUTES",
+                        label: "Hours and minutes (e.g., 2h 0m)",
+                      },
                     ].map((option) => (
                       <div key={option.id} className="flex items-center">
                         <input
@@ -197,7 +155,7 @@ export default function SettingsPage() {
                           name="durationFormat"
                           type="radio"
                           checked={preferences.durationFormat === option.value}
-                          onChange={() => handleSettingChange('durationFormat', option.value)}
+                          onChange={() => handleSettingChange("durationFormat", option.value)}
                           className="h-4 w-4 border-zinc-300 text-red-600 focus:ring-red-500 dark:border-zinc-600 dark:bg-zinc-800 dark:checked:bg-red-600 dark:focus:ring-red-500"
                         />
                         <label
@@ -231,7 +189,7 @@ export default function SettingsPage() {
                   <div className="mt-6 space-y-3">
                     {[
                       { id: "currency-1", value: "USD", label: "USD ($) - US Dollar" },
-                      { id: "currency-2", value: "NIS", label: "NIS (₪) - New Israeli Shekel" }
+                      { id: "currency-2", value: "NIS", label: "NIS (₪) - New Israeli Shekel" },
                     ].map((option) => (
                       <div key={option.id} className="flex items-center">
                         <input
@@ -239,7 +197,7 @@ export default function SettingsPage() {
                           name="currency"
                           type="radio"
                           checked={preferences.currency === option.value}
-                          onChange={() => handleSettingChange('currency', option.value)}
+                          onChange={() => handleSettingChange("currency", option.value)}
                           className="h-4 w-4 border-zinc-300 text-red-600 focus:ring-red-500 dark:border-zinc-600 dark:bg-zinc-800 dark:checked:bg-red-600 dark:focus:ring-red-500"
                         />
                         <label
@@ -279,5 +237,5 @@ export default function SettingsPage() {
         </div>
       </div>
     </main>
-  )
+  );
 }

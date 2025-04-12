@@ -27,7 +27,7 @@ const ALL_GENRES: MovieGenre[] = [
   "Horror",
   "Mystery",
   "Romance",
-  "Sci-Fi",
+  "SciFi",
   "Thriller",
   "Crime",
   "Animation",
@@ -174,7 +174,10 @@ export default function MoviesPage() {
 
   const handleEditMovie = (movie: MovieWithCast) => {
     setCurrentMovie(movie)
-    setFormData({ ...movie })
+    setFormData({ 
+      ...movie,
+      genre: movie.genre || [], // Ensure genre is properly set
+    })
 
     const initialCast =
       movie.cast?.map((c) => ({
@@ -195,10 +198,10 @@ export default function MoviesPage() {
   const handleSaveMovie = async () => {
     try {
       setErrorMessage(null)
-
+      
       const moviePayload = {
-        ...formData,
-        duration: formData.duration || "",
+          ...formData,
+          duration: formData.duration || "",
         cast: selectedCast.map((c) => ({
           castMemberId: c.castMemberId,
           character: c.character || "",
@@ -222,13 +225,13 @@ export default function MoviesPage() {
           })),
         } as any)
       }
-
-      if (response.error) {
+        
+        if (response.error) {
         console.error("Error saving movie:", response.error)
         setErrorMessage(`Failed to save movie: ${response.error}`)
-        return
-      }
-
+          return
+        }
+        
       if (response.data) {
         if (!currentMovie) {
           setMovies((prev) => [...prev, response.data as MovieWithCast])
@@ -257,13 +260,13 @@ export default function MoviesPage() {
       try {
         setErrorMessage(null)
         const response = await moviesApi.deleteMovie(currentMovie.id)
-
+        
         if (response.error) {
           console.error("Error deleting movie:", response.error)
           setErrorMessage(`Cannot delete ${currentMovie.title}: ${response.error}`)
           return
         }
-
+        
         if (response.status === 200) {
           setMovies((prev) => prev.filter((m) => m.id !== currentMovie.id))
           setIsDeleteModalOpen(false)
@@ -287,9 +290,13 @@ export default function MoviesPage() {
 
   const handleGenreChange = (genre: MovieGenre) => {
     const currentGenres = formData.genre || []
-    setFormData({
-      ...formData,
-      genre: currentGenres.includes(genre) ? currentGenres.filter((g) => g !== genre) : [...currentGenres, genre],
+    const newGenres = currentGenres.includes(genre)
+      ? currentGenres.filter((g) => g !== genre)
+      : [...currentGenres, genre]
+    
+      setFormData({
+        ...formData,
+      genre: newGenres
     })
   }
 
@@ -312,8 +319,64 @@ export default function MoviesPage() {
     setSelectedCast((prev) => prev.filter((c) => c.castMemberId !== castMemberId))
   }
 
-  const handleCastCharacterChange = (castMemberId: string, character: string) => {
-    setSelectedCast((prev) => prev.map((c) => (c.castMemberId === castMemberId ? { ...c, character } : c)))
+  const handleCastCharacterChange = async (castMemberId: string, character: string) => {
+    try {
+      if (!currentMovie?.id) {
+        console.error("No movie selected")
+        return
+      }
+
+      // Update the local state first for immediate UI feedback
+      setSelectedCast(prev =>
+        prev.map(c =>
+          c.castMemberId === castMemberId ? { ...c, character } : c
+        )
+      )
+
+      // Update the cast member in the database
+      const response = await castMembersApi.updateCastMember(castMemberId, { 
+        character,
+        movieId: currentMovie.id
+      })
+      
+      if (response.error) {
+        console.error("Error updating cast member:", response.error)
+        // Revert the local state if the update failed
+        setSelectedCast(prev =>
+          prev.map(c =>
+            c.castMemberId === castMemberId 
+              ? { ...c, character: c.character } // Revert to previous character
+              : c
+          )
+        )
+        return
+      }
+
+      // Update the movies state to reflect the change
+      setMovies(prev =>
+        prev.map(movie => {
+          if (movie.id === currentMovie.id && movie.cast) {
+            return {
+              ...movie,
+              cast: movie.cast.map(c =>
+                c.castMemberId === castMemberId ? { ...c, character } : c
+              )
+            }
+          }
+          return movie
+        })
+      )
+    } catch (error) {
+      console.error("Error updating cast member:", error)
+      // Revert the local state if there was an error
+      setSelectedCast(prev =>
+        prev.map(c =>
+          c.castMemberId === castMemberId 
+            ? { ...c, character: c.character } // Revert to previous character
+            : c
+        )
+      )
+    }
   }
 
   return (
@@ -464,7 +527,7 @@ export default function MoviesPage() {
                 {filteredMovies.map((movie) => (
                   <tr key={movie.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3">
                         {movie.image ? (
                           <div className="w-10 h-14 rounded overflow-hidden bg-zinc-100 dark:bg-zinc-800">
                             <img
@@ -472,60 +535,60 @@ export default function MoviesPage() {
                               alt={movie.title}
                               className="w-full h-full object-cover"
                             />
-                          </div>
-                        ) : (
+            </div>
+          ) : (
                           <div className="w-10 h-14 rounded flex items-center justify-center bg-zinc-100 dark:bg-zinc-800">
                             <Film className="h-5 w-5 text-zinc-500 dark:text-zinc-400" />
-                          </div>
-                        )}
-                        <div>
+            </div>
+          )}
+          <div>
                           <div className="font-medium text-zinc-900 dark:text-zinc-100">{movie.title}</div>
                           <div className="text-xs text-zinc-500 dark:text-zinc-400">{movie.year}</div>
-                        </div>
-                      </div>
+          </div>
+        </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-zinc-700 dark:text-zinc-300">
                       {movie.genre.join(", ")}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
+        <div className="flex items-center gap-1">
+          <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
                         <span className="text-zinc-700 dark:text-zinc-300">{movie.rating}</span>
-                      </div>
+        </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-zinc-700 dark:text-zinc-300">
                       {movie.duration}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${
+        <span
+          className={`px-2 py-1 text-xs rounded-full ${
                           movie.status === "now_showing"
-                            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-500"
-                            : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500"
-                        }`}
-                      >
+              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-500"
+              : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500"
+          }`}
+        >
                         {movie.status === "now_showing" ? "Now Showing" : "Coming Soon"}
-                      </span>
+        </span>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${
+        <span
+          className={`px-2 py-1 text-xs rounded-full ${
                           movie.hidden
-                            ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-500"
-                            : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-500"
-                        }`}
-                      >
+              ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-500"
+              : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-500"
+          }`}
+        >
                         {movie.hidden ? "Hidden" : "Visible"}
-                      </span>
+        </span>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
+          <button 
                         onClick={() => handleEditMovie(movie)}
                         className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-400 mr-3"
-                      >
+          >
                         <Edit className="h-4 w-4" />
                         <span className="sr-only">Edit</span>
-                      </button>
+          </button>
                       <button
                         onClick={() => handleDeleteMovie(movie)}
                         className="text-red-600 hover:text-red-900 dark:text-red-500 dark:hover:text-red-400"
@@ -545,8 +608,8 @@ export default function MoviesPage() {
                 )}
               </tbody>
             </table>
-          </div>
-        )}
+        </div>
+      )}
       </div>
 
       {/* Custom Modal for Movie Form */}
@@ -569,7 +632,7 @@ export default function MoviesPage() {
                   <X className="h-5 w-5" />
                   <span className="sr-only">Close</span>
                 </button>
-              </div>
+        </div>
 
               <div className="p-6 max-h-[70vh] overflow-y-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -578,31 +641,31 @@ export default function MoviesPage() {
                     <label htmlFor="title" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Title <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      id="title"
-                      name="title"
-                      value={formData.title || ""}
-                      onChange={handleInputChange}
+              <input
+                type="text"
+                id="title"
+                name="title"
+                value={formData.title || ""}
+                onChange={handleInputChange}
                       className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                      required
-                    />
+                required
+              />
                   </div>
                   <div>
                     <label htmlFor="year" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Year <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      id="year"
-                      name="year"
-                      value={formData.year || ""}
-                      onChange={handleInputChange}
+              <input
+                type="text"
+                id="year"
+                name="year"
+                value={formData.year || ""}
+                onChange={handleInputChange}
                       className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                      required
-                    />
+                required
+              />
                   </div>
-                </div>
+          </div>
 
                 {/* Description */}
                 <div className="mb-4">
@@ -612,15 +675,15 @@ export default function MoviesPage() {
                   >
                     Description <span className="text-red-500">*</span>
                   </label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    value={formData.description || ""}
-                    onChange={handleInputChange}
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description || ""}
+              onChange={handleInputChange}
                     rows={2}
                     className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 resize-none"
-                    required
-                  />
+              required
+            />
                 </div>
 
                 {/* Genres */}
@@ -628,19 +691,19 @@ export default function MoviesPage() {
                   <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                     Genres <span className="text-red-500">*</span>
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                    {ALL_GENRES.map((genre) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {ALL_GENRES.map((genre) => (
                       <label key={genre} className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                        <input
-                          type="checkbox"
-                          checked={(formData.genre || []).includes(genre)}
-                          onChange={() => handleGenreChange(genre)}
+                  <input
+                    type="checkbox"
+                          checked={formData.genre?.some(g => g === genre) || false}
+                    onChange={() => handleGenreChange(genre)}
                           className="rounded border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-500"
-                        />
-                        {genre}
-                      </label>
-                    ))}
-                  </div>
+                  />
+                  {genre}
+                </label>
+              ))}
+            </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -649,12 +712,12 @@ export default function MoviesPage() {
                     <label htmlFor="rating" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Rating
                     </label>
-                    <input
-                      type="text"
-                      id="rating"
-                      name="rating"
-                      value={formData.rating || ""}
-                      onChange={handleInputChange}
+              <input
+                type="text"
+                id="rating"
+                name="rating"
+                value={formData.rating || ""}
+                onChange={handleInputChange}
                       className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
                     />
                   </div>
@@ -665,17 +728,17 @@ export default function MoviesPage() {
                     >
                       Duration
                     </label>
-                    <input
-                      type="text"
-                      id="duration"
-                      name="duration"
-                      value={formData.duration || ""}
-                      onChange={handleInputChange}
-                      placeholder="e.g. 120 min"
+              <input
+                type="text"
+                id="duration"
+                name="duration"
+                value={formData.duration || ""}
+                onChange={handleInputChange}
+                placeholder="e.g. 120 min"
                       className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                    />
+              />
                   </div>
-                </div>
+          </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   {/* Image URL and Trailer URL */}
@@ -683,12 +746,12 @@ export default function MoviesPage() {
                     <label htmlFor="image" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Image URL
                     </label>
-                    <input
-                      type="text"
-                      id="image"
-                      name="image"
-                      value={formData.image || ""}
-                      onChange={handleInputChange}
+              <input
+                type="text"
+                id="image"
+                name="image"
+                value={formData.image || ""}
+                onChange={handleInputChange}
                       className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
                     />
                   </div>
@@ -699,16 +762,16 @@ export default function MoviesPage() {
                     >
                       Trailer URL
                     </label>
-                    <input
-                      type="text"
-                      id="trailer"
-                      name="trailer"
-                      value={formData.trailer || ""}
-                      onChange={handleInputChange}
+              <input
+                type="text"
+                id="trailer"
+                name="trailer"
+                value={formData.trailer || ""}
+                onChange={handleInputChange}
                       className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                    />
+              />
                   </div>
-                </div>
+          </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   {/* Release Date and Director */}
@@ -719,12 +782,12 @@ export default function MoviesPage() {
                     >
                       Release Date
                     </label>
-                    <input
+              <input
                       type="date"
-                      id="releaseDate"
-                      name="releaseDate"
-                      value={formData.releaseDate || ""}
-                      onChange={handleInputChange}
+                id="releaseDate"
+                name="releaseDate"
+                value={formData.releaseDate || ""}
+                onChange={handleInputChange}
                       className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
                     />
                   </div>
@@ -736,12 +799,12 @@ export default function MoviesPage() {
                       Director <span className="text-red-500">*</span>
                     </label>
                     <select
-                      id="directorId"
-                      name="directorId"
-                      value={formData.directorId || ""}
-                      onChange={handleInputChange}
+                id="directorId"
+                name="directorId"
+                value={formData.directorId || ""}
+                onChange={handleInputChange}
                       className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                      required
+                required
                       disabled={!!currentMovie}
                     >
                       <option value="">Select a director</option>
@@ -766,15 +829,15 @@ export default function MoviesPage() {
                       </div>
                     )}
                   </div>
-                </div>
+          </div>
 
-                {/* Cast Members Section */}
+          {/* Cast Members Section */}
                 <div className="mb-4">
                   <h3 className="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-2">Cast Members</h3>
-
+            
                   <div className="relative mb-2">
-                    <input
-                      type="text"
+                <input
+                  type="text"
                       placeholder="Search cast members..."
                       value={searchCastQuery}
                       onChange={(e) => setSearchCastQuery(e.target.value)}
@@ -802,8 +865,8 @@ export default function MoviesPage() {
                         ))}
                       </div>
                     )}
-                  </div>
-
+            </div>
+            
                   {/* Selected Cast Members */}
                   <div className="space-y-2 max-h-40 overflow-y-auto">
                     {selectedCast.map((cast) => (
@@ -829,21 +892,21 @@ export default function MoviesPage() {
                             onChange={(e) => handleCastCharacterChange(cast.castMemberId, e.target.value)}
                             className="w-full px-2 py-1 text-sm rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
                           />
-                        </div>
-                        <button
+                      </div>
+                      <button
                           onClick={() => handleRemoveCastMember(cast.castMemberId)}
                           className="text-red-600 hover:text-red-900 dark:text-red-500 dark:hover:text-red-400 p-1"
-                        >
+                      >
                           <X className="h-4 w-4" />
                           <span className="sr-only">Remove</span>
-                        </button>
-                      </div>
-                    ))}
+                      </button>
+                    </div>
+                  ))}
                     {selectedCast.length === 0 && (
                       <p className="text-sm text-zinc-500 dark:text-zinc-400 italic">No cast members selected</p>
-                    )}
+            )}
                   </div>
-                </div>
+          </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   {/* Status and Visibility */}
@@ -851,51 +914,51 @@ export default function MoviesPage() {
                     <label htmlFor="status" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       Status <span className="text-red-500">*</span>
                     </label>
-                    <select
-                      id="status"
-                      name="status"
-                      value={formData.status || "coming_soon"}
-                      onChange={handleInputChange}
+              <select
+                id="status"
+                name="status"
+                value={formData.status || "coming_soon"}
+                onChange={handleInputChange}
                       className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                      required
-                    >
-                      <option value="coming_soon">Coming Soon</option>
-                      <option value="now_showing">Now Showing</option>
-                    </select>
+                required
+              >
+                <option value="coming_soon">Coming Soon</option>
+                <option value="now_showing">Now Showing</option>
+              </select>
                   </div>
                   <div className="flex items-center">
                     <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                      <input
-                        type="checkbox"
-                        id="hidden"
-                        name="hidden"
-                        checked={formData.hidden || false}
-                        onChange={handleCheckboxChange}
+                <input
+                  type="checkbox"
+                  id="hidden"
+                  name="hidden"
+                  checked={formData.hidden || false}
+                  onChange={handleCheckboxChange}
                         className="rounded border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-500"
-                      />
-                      <span>Hide this movie</span>
-                    </label>
+                />
+                <span>Hide this movie</span>
+              </label>
                   </div>
                 </div>
-              </div>
+          </div>
 
               <div className="flex justify-end gap-3 p-4 border-t border-zinc-200 dark:border-zinc-700">
-                <button
+            <button
                   onClick={() => setIsModalOpen(false)}
                   className="px-4 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveMovie}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSaveMovie}
                   className="px-4 py-2 rounded-md bg-zinc-600 text-white hover:bg-zinc-700 transition-colors dark:bg-zinc-500 dark:hover:bg-zinc-600"
-                >
+            >
                   {currentMovie ? "Update Movie" : "Save Movie"}
-                </button>
-              </div>
-            </div>
+            </button>
           </div>
         </div>
+          </div>
+            </div>
       )}
 
       {/* Delete Confirmation Modal */}
@@ -913,20 +976,20 @@ export default function MoviesPage() {
                   Are you sure you want to delete "{currentMovie?.title}"? This action cannot be undone.
                 </p>
                 <div className="flex justify-end gap-3">
-                  <button
+            <button
                     onClick={() => setIsDeleteModalOpen(false)}
                     className="px-4 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
+            >
+              Cancel
+            </button>
+            <button
                     onClick={handleConfirmDelete}
                     className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors dark:bg-red-500 dark:hover:bg-red-600"
-                  >
+            >
                     Delete
-                  </button>
-                </div>
-              </div>
+            </button>
+          </div>
+        </div>
             </div>
           </div>
         </div>

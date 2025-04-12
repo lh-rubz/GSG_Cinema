@@ -1,25 +1,24 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation" // Import useRouter for navigation
 import { Film, Users, User, Video, Cast, MonitorPlay, Ticket, LayoutDashboard, Menu, X, LogOut, Calendar, Tag } from "lucide-react"
 import ThemeToggle from "./theme-toggle"
-
-
-interface NavItem {
-  label: string
-  href: string
-  icon: React.ReactNode
-}
+import { useAuth } from "@/hooks/use-auth"
+import { ConfirmDialog } from "./confirm-dialog"
+import { usePreferences } from "@/context/PreferencesContext"
+import { formatCurrency } from "@/utils/formatters"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false) // State for confirmation dialog
   const pathname = usePathname()
+  const router = useRouter() // Initialize router
+  const { user, logout } = useAuth()
+  const { preferences } = usePreferences()
 
-  const navItems: NavItem[] = [
+  const navItems = [
     {
       label: "Dashboard",
       href: "/admin",
@@ -39,6 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       label: "Staff",
       href: "/admin/staff",
       icon: <Users className="h-5 w-5" />,
+      adminOnly: true,
     },
     {
       label: "Customers",
@@ -72,6 +72,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     },
   ]
 
+  const filteredNavItems = navItems.filter(item => !item.adminOnly || user?.role === 'Admin')
+
+  const handleLogout = () => {
+    logout() // Call the logout function
+    router.push("/signin") // Redirect to the signin page
+  }
+
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Mobile sidebar backdrop */}
@@ -95,7 +102,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
         </div>
         <nav className="p-4 space-y-1">
-          {navItems.map((item) => (
+          {filteredNavItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -110,20 +117,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </Link>
           ))}
         </nav>
+        <div className="p-4">
+          <p>Total Revenue: {formatCurrency(10000, preferences.currency)}</p>
+        </div>
         <div className="absolute bottom-0 w-full p-4 border-t border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-full bg-red-600 flex items-center justify-center text-white">
-                A
+                {user?.displayName?.[0]?.toUpperCase() || 'A'}
               </div>
               <div>
-                <p className="text-sm font-medium text-zinc-900 dark:text-white">Admin User</p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">admin@cinema.com</p>
+                <p className="text-sm font-medium text-zinc-900 dark:text-white">{user?.displayName || 'Admin User'}</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">{user?.email || 'admin@cinema.com'}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              <button className="rounded-md p-2 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-white transition-colors">
+              <button 
+                onClick={() => setIsConfirmDialogOpen(true)} // Open confirmation dialog
+                className="rounded-md p-2 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-white transition-colors"
+              >
                 <LogOut className="h-5 w-5" />
               </button>
             </div>
@@ -148,6 +161,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Main content area */}
         <main className="flex-1 overflow-auto p-4 lg:p-6">{children}</main>
       </div>
+
+      {/* Confirm Logout Dialog */}
+      <ConfirmDialog
+        isOpen={isConfirmDialogOpen}
+        onClose={() => setIsConfirmDialogOpen(false)} // Close dialog
+        onConfirm={handleLogout} // Handle logout on confirm
+        title="Confirm Logout"
+        message="Are you sure you want to log out?"
+        confirmText="Logout"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
   )
 }

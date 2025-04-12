@@ -9,7 +9,7 @@ import { AuthProvider } from "@/hooks/use-auth"
 import { Suspense } from "react"
 import Loading from "./loading"
 import { ConditionalLayout } from "@/components/conditonalLayout"
-
+import { PreferencesProvider } from "@/context/PreferencesContext";
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -35,7 +35,9 @@ export default function RootLayout({
           <AuthProvider>
             <Toaster position="bottom-right" reverseOrder={false} />
             <Providers>
-              <ConditionalLayout>{children}</ConditionalLayout>
+              <PreferencesProvider>
+                <ConditionalLayout>{children}</ConditionalLayout>
+              </PreferencesProvider>
             </Providers>
           </AuthProvider>
         </body>

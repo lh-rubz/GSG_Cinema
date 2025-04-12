@@ -8,13 +8,14 @@ import { FormField } from "@/components/form-field"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import type { User as UserType } from "@/types/types"
 import { usersApi } from "@/lib/endpoints/users"
-import type { ApiResponse } from "@/lib/client"
+import { apiClient } from "@/lib/client"
+import toast from "react-hot-toast"
+import { generatePassword } from "@/lib/utils"
 
 export default function StaffPage() {
   const [staff, setStaff] = useState<UserType[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [currentStaff, setCurrentStaff] = useState<UserType | null>(null)
   const [formData, setFormData] = useState<Partial<UserType>>({
@@ -25,11 +26,12 @@ export default function StaffPage() {
     gender: "M",
     bio: "",
     profileImage: "",
-    role: "staff", 
+    role: "Staff",
     movieIdsPurchased: [],
   })
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+  const [mode, setMode] = useState<"add" | "edit">("add")
 
   useEffect(() => {
     fetchStaff()
@@ -40,7 +42,6 @@ export default function StaffPage() {
       setIsLoading(true)
       const response = await usersApi.getUsers()
       if (response.data) {
-
         const mappedUsers = response.data.map(user => {
           const apiRole = user.role as string;
           let frontendRole: "admin" | "staff" | "customer";
@@ -72,33 +73,59 @@ export default function StaffPage() {
     }
   }
 
-  const handleAddStaff = () => {
-    setFormData({
-      username: "",
-      displayName: "",
-      email: "",
-      password: "",
-      gender: "M",
-      bio: "",
-      profileImage: "",
-      role: "staff", 
-      movieIdsPurchased: [],
-    })
-    setFormErrors({})
-    setErrorMessage(null)
-    setIsAddModalOpen(true)
-  }
+  const handleAddStaff = async () => {
+    try {
+      // Add staff logic (e.g., saving to the database)
+      const newStaff = {
+        username: formData.username,
+        displayName: formData.displayName,
+        email: formData.email,
+        tempPassword: formData.password,
+        role: "Staff", // Example role
+      };
+
+      // Call the API to send the email
+      const response = await fetch("/api/sendEmail", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "newStaff",
+          recipient: newStaff.email,
+          subject: "Welcome to CinemaHub Staff",
+          textContent: `Welcome ${newStaff.displayName}! Your temporary password is: ${newStaff.tempPassword}`,
+          staffName: newStaff.displayName,
+          email: newStaff.email,
+          tempPassword: newStaff.tempPassword,
+          role: newStaff.role,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to send email");
+      }
+
+      // Show success message
+      console.log("Email sent successfully:", result);
+    } catch (error) {
+      console.error("Error adding staff or sending email:", error);
+    }
+  };
 
   const handleEditStaff = (staffMember: UserType) => {
     setCurrentStaff(staffMember)
     const { password, ...staffWithoutPassword } = staffMember
     setFormData({ 
       ...staffWithoutPassword,
-      password: "" 
+      password: "" // Clear password field for security
     })
     setFormErrors({})
     setErrorMessage(null)
-    setIsEditModalOpen(true)
+    setMode("edit")
+    setIsModalOpen(true)
   }
 
   const handleDeleteStaff = (staffMember: UserType) => {
@@ -106,26 +133,67 @@ export default function StaffPage() {
     setIsDeleteModalOpen(true)
   }
 
+  const sendStaffWelcomeEmail = async (email: string, staffName: string, password: string) => {
+    try {
+      const response = await resend.emails.send({
+        from: "no-reply@cinemahub.com",
+        to: email,
+        subject: "Welcome to CinemaHub Staff",
+        html: `
+          <p>Dear ${staffName},</p>
+          <p>Welcome to CinemaHub! Your temporary password is: <strong>${password}</strong></p>
+          <p>Please log in and change your password as soon as possible.</p>
+          <p>Best regards,<br/>CinemaHub Team</p>
+        `,
+      });
+
+      if (response.error) {
+        console.error("Failed to send welcome email:", response.error);
+      }
+    } catch (error) {
+      console.error("Error sending welcome email:", error);
+    }
+  };
+
+  const sendStaffRemovalEmail = async (email: string, staffName: string) => {
+    try {
+      const response = await apiClient.post('/api/sendemail', {
+        type: 'deleteStaff',
+        recipient: email,
+        subject: 'CinemaHub Staff Access Removed',
+        staffName: staffName,
+        effectiveDate: new Date().toLocaleDateString(),
+        textContent: `Your staff access to CinemaHub has been removed.`
+      })
+
+      if (response.error) {
+        console.error("Failed to send removal email:", response.error)
+      }
+    } catch (error) {
+      console.error("Error sending removal email:", error)
+    }
+  }
+
   const handleSaveStaff = async () => {
     try {
-      setErrorMessage(null)
-      setFormErrors({})
+      setErrorMessage(null);
+      setFormErrors({});
 
-      if (!formData.username || !formData.displayName || !formData.email || (isAddModalOpen && !formData.password)) {
-        const errors: Record<string, string> = {}
-        if (!formData.username) errors.username = "Username is required"
-        if (!formData.displayName) errors.displayName = "Display name is required"
-        if (!formData.email) errors.email = "Email is required"
-        if (isAddModalOpen && !formData.password) errors.password = "Password is required"
-        
-        setFormErrors(errors)
-        setErrorMessage("Please fill in all required fields")
-        return
+      // Validate required fields
+      const errors: Record<string, string> = {};
+      if (!formData.username) errors.username = "Username is required";
+      if (!formData.displayName) errors.displayName = "Display name is required";
+      if (!formData.email) errors.email = "Email is required";
+      if (mode === "add" && !formData.password) errors.password = "Password is required";
+
+      if (Object.keys(errors).length > 0) {
+        Object.values(errors).forEach((error) => toast.error(error)); // Display errors in toast
+        return;
       }
 
-      if (isAddModalOpen) {
-        const newStaffId = `u${Date.now()}`
-        
+      if (mode === "add") {
+        const newStaffId = `u${Date.now()}`;
+
         const userData = {
           id: newStaffId,
           username: formData.username || "",
@@ -135,40 +203,67 @@ export default function StaffPage() {
           gender: formData.gender || "M",
           bio: formData.bio || "",
           profileImage: formData.profileImage || "",
-          role: "Staff" 
-        }
-        
-        const response = await usersApi.createUser(userData)
-        
+          role: "Staff",
+        };
+
+        const response = await usersApi.createUser(userData);
+
         if (response.error) {
-          console.error("Error creating staff member:", response.error)
-          
-          const errorMessage = response.error.toLowerCase()
-          
+          console.error("Error creating staff member:", response.error);
+
+          const errorMessage = response.error.toLowerCase();
+
           if (errorMessage.includes("username") || errorMessage.includes("email")) {
             if (errorMessage.includes("username")) {
-              setFormErrors({ ...formErrors, username: "Username already exists" })
+              toast.error("Username already exists");
             }
             if (errorMessage.includes("email")) {
-              setFormErrors({ ...formErrors, email: "Email already exists" })
+              toast.error("Email already exists");
             }
-            setErrorMessage("Username or email already exists. Please check the highlighted fields.")
+            toast.error("Username or email already exists. Please check the highlighted fields.");
           } else {
-            setErrorMessage(response.error)
+            toast.error(response.error);
           }
-          return
+          return;
         }
-        
+
         if (response.data) {
           const mappedStaff = {
             ...response.data,
-            role: "staff"
-          } as UserType
-          
-          setStaff((prevStaff) => [...prevStaff, mappedStaff])
-          setIsAddModalOpen(false)
+            role: "Staff",
+          } as UserType;
+
+          setStaff((prevStaff) => [...prevStaff, mappedStaff]);
+          setIsModalOpen(false);
+          toast.success("Staff member added successfully!");
+
+          // Send welcome email with credentials
+          await fetch("/api/sendEmail", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              type: "staffWelcome",
+              recipient: formData.email || "",
+              name: formData.displayName || "",
+              tempPassword: formData.password || "",
+              role: "Staff",
+              email: formData.email || "",
+            }),
+          })
+            .then((res) => {
+              if (!res.ok) {
+                throw new Error("Failed to send email");
+              }
+              toast.success("Welcome email sent successfully!");
+            })
+            .catch((error) => {
+              console.error("Error sending email:", error);
+              toast.error("Failed to send welcome email.");
+            });
         }
-      } else if (isEditModalOpen && currentStaff) {
+      } else if (mode === "edit" && currentStaff) {
         const updateData: Partial<UserType> = {
           username: formData.username,
           displayName: formData.displayName,
@@ -176,54 +271,59 @@ export default function StaffPage() {
           gender: formData.gender,
           bio: formData.bio,
           profileImage: formData.profileImage,
-        }
-        
+        };
+
+        // Only include password if it was changed
         if (formData.password && formData.password.trim() !== "") {
-          updateData.password = formData.password
+          updateData.password = formData.password;
         }
-        
-        const response = await usersApi.updateUser(currentStaff.id, updateData)
-        
+
+        const response = await usersApi.updateUser(currentStaff.id, updateData);
+
         if (response.error) {
-          console.error("Error updating staff member:", response.error)
-          
-          const errorMessage = response.error.toLowerCase()
-          
+          console.error("Error updating staff member:", response.error);
+
+          const errorMessage = response.error.toLowerCase();
+
           if (errorMessage.includes("username") || errorMessage.includes("email")) {
             if (errorMessage.includes("username")) {
-              setFormErrors({ ...formErrors, username: "Username already exists" })
+              toast.error("Username already exists");
             }
             if (errorMessage.includes("email")) {
-              setFormErrors({ ...formErrors, email: "Email already exists" })
+              toast.error("Email already exists");
             }
-            setErrorMessage("Username or email already exists. Please check the highlighted fields.")
+            toast.error("Username or email already exists. Please check the highlighted fields.");
           } else {
-            setErrorMessage(response.error)
+            toast.error(response.error);
           }
-          return
+          return;
         }
-        
+
         if (response.data) {
           const mappedStaff = {
             ...response.data,
-            role: "staff" 
-          } as UserType
-          
+            role: "Staff",
+          } as UserType;
+
           setStaff((prevStaff) =>
             prevStaff.map((staffMember) => (staffMember.id === currentStaff.id ? mappedStaff : staffMember))
-          )
-          setIsEditModalOpen(false)
+          );
+          setIsModalOpen(false);
+          toast.success("Staff member updated successfully!");
         }
       }
     } catch (error) {
-      console.error("Error saving staff member:", error)
-      setErrorMessage("An unexpected error occurred. Please try again.")
+      console.error("Error saving staff member:", error);
+      toast.error("An unexpected error occurred. Please try again.");
     }
-  }
+  };
 
   const handleConfirmDelete = async () => {
     if (currentStaff) {
       try {
+        // Send removal email before deleting
+        await sendStaffRemovalEmail(currentStaff.email, currentStaff.displayName)
+        
         const response = await usersApi.deleteUser(currentStaff.id)
         
         if (response.error) {
@@ -234,6 +334,7 @@ export default function StaffPage() {
         
         setStaff((prevStaff) => prevStaff.filter((staffMember) => staffMember.id !== currentStaff.id))
         setIsDeleteModalOpen(false)
+        toast.success("Staff member deleted successfully!")
       } catch (error) {
         console.error("Error deleting staff member:", error)
         setErrorMessage("An unexpected error occurred while deleting the staff member.")
@@ -318,15 +419,35 @@ export default function StaffPage() {
         <DataTable
           data={staff}
           columns={columns}
-          onAdd={handleAddStaff}
+          onAdd={() => {
+            setMode("add"); // Set mode to "add"
+            setFormData({
+              username: "",
+              displayName: "",
+              email: "",
+              password: generatePassword(12), // Generate a default password
+              gender: "M",
+              bio: "",
+              profileImage: "",
+              role: "Staff",
+            }); // Reset form data
+            setFormErrors({});
+            setErrorMessage(null);
+            setIsModalOpen(true); // Open the modal
+          }}
           onEdit={handleEditStaff}
           onDelete={handleDeleteStaff}
           searchPlaceholder="Search staff members..."
         />
       )}
 
-      {/* Add Staff Modal */}
-      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Add New Staff Member" size="lg">
+      {/* Combined Add/Edit Modal */}
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title={mode === "add" ? "Add New Staff Member" : "Edit Staff Member"} 
+        size="lg"
+      >
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField label="Username" id="username" required error={formErrors.username}>
@@ -336,7 +457,7 @@ export default function StaffPage() {
                 name="username"
                 value={formData.username || ""}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                className="w-full px-3 py-2 rounded-md border border-input bg-zinc-200 dark:bg-zinc-600 text-zinc-300  dark:text-white"
                 required
               />
             </FormField>
@@ -348,7 +469,7 @@ export default function StaffPage() {
                 name="displayName"
                 value={formData.displayName || ""}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 dark:bg-zinc-600 text-zinc-300 dark:bg-dark-background dark:text-dark-foreground"
                 required
               />
             </FormField>
@@ -358,26 +479,62 @@ export default function StaffPage() {
             <FormField label="Email" id="email" required error={formErrors.email}>
               <input
                 type="email"
+                
                 id="email"
                 name="email"
                 value={formData.email || ""}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 dark:bg-zinc-600 text-zinc-300 dark:bg-dark-background dark:text-dark-foreground"
                 required
               />
             </FormField>
 
-            <FormField label="Password" id="password" required error={formErrors.password}>
-              <input
-                type="password"
+            {mode === "add" ? (
+              <FormField 
+                label="Password (auto-generated)" 
+                id="password" 
+                required 
+                error={formErrors.password}
+              >
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    id="password"
+                    name="password"
+                    value={formData.password || ""}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 dark:bg-zinc-600 text-zinc-300 dark:bg-dark-background dark:text-dark-foreground"
+                    required
+                    readOnly
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, password: generatePassword(12)})}
+                    className="px-3 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  >
+                    Regenerate
+                  </button>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  This password will be emailed to the staff member
+                </p>
+              </FormField>
+            ) : (
+              <FormField 
+                label="New Password (leave blank to keep current)" 
                 id="password"
-                name="password"
-                value={formData.password || ""}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
-                required
-              />
-            </FormField>
+              >
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password || ""}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 dark:bg-zinc-600"
+                  placeholder="••••••••"
+                />
+              </FormField>
+            )}
           </div>
 
           <FormField label="Bio" id="bio">
@@ -387,7 +544,7 @@ export default function StaffPage() {
               value={formData.bio || ""}
               onChange={handleInputChange}
               rows={3}
-              className="w-full px-3 py-2 rounded-md border border-input bg-background resize-none"
+              className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 dark:bg-zinc-600 resize-none"
             />
           </FormField>
 
@@ -398,7 +555,7 @@ export default function StaffPage() {
                 name="gender"
                 value={formData.gender || "M"}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 dark:bg-zinc-600"
               >
                 <option value="M">Male</option>
                 <option value="F">Female</option>
@@ -412,7 +569,7 @@ export default function StaffPage() {
                 name="profileImage"
                 value={formData.profileImage || ""}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                className="w-full px-3 py-2 rounded-md border border-input  bg-zinc-200 dark:bg-zinc-600"
                 placeholder="https://example.com/image.jpg"
               />
             </FormField>
@@ -420,8 +577,8 @@ export default function StaffPage() {
 
           <div className="flex justify-end gap-3 pt-4">
             <button
-              onClick={() => setIsAddModalOpen(false)}
-              className="px-4 py-2 rounded-md border border-input bg-background hover:bg-secondary transition-colors"
+              onClick={() => setIsModalOpen(false)}
+              className="px-4 py-2 rounded-md border border-input  bg-zinc-200 dark:bg-zinc-600 hover:bg-secondary transition-colors"
             >
               Cancel
             </button>
@@ -429,107 +586,7 @@ export default function StaffPage() {
               onClick={handleSaveStaff}
               className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             >
-              Save Staff Member
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Edit Staff Modal */}
-      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Staff Member" size="lg">
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField label="Username" id="edit-username" required error={formErrors.username}>
-              <input
-                type="text"
-                id="edit-username"
-                name="username"
-                value={formData.username || ""}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
-                required
-              />
-            </FormField>
-
-            <FormField label="Display Name" id="edit-displayName" required error={formErrors.displayName}>
-              <input
-                type="text"
-                id="edit-displayName"
-                name="displayName"
-                value={formData.displayName || ""}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
-                required
-              />
-            </FormField>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField label="Email" id="edit-email" required error={formErrors.email}>
-              <input
-                type="email"
-                id="edit-email"
-                name="email"
-                value={formData.email || ""}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
-                required
-              />
-            </FormField>
-
-            {/* Password field is hidden in edit mode */}
-          </div>
-
-          <FormField label="Bio" id="edit-bio">
-            <textarea
-              id="edit-bio"
-              name="bio"
-              value={formData.bio || ""}
-              onChange={handleInputChange}
-              rows={3}
-              className="w-full px-3 py-2 rounded-md border border-input bg-background resize-none"
-            />
-          </FormField>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField label="Gender" id="edit-gender">
-              <select
-                id="edit-gender"
-                name="gender"
-                value={formData.gender || "M"}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
-              >
-                <option value="M">Male</option>
-                <option value="F">Female</option>
-              </select>
-            </FormField>
-
-            <FormField label="Profile Image URL" id="edit-profileImage">
-              <input
-                type="text"
-                id="edit-profileImage"
-                name="profileImage"
-                value={formData.profileImage || ""}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background"
-                placeholder="https://example.com/image.jpg"
-              />
-            </FormField>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              onClick={() => setIsEditModalOpen(false)}
-              className="px-4 py-2 rounded-md border border-input bg-background hover:bg-secondary transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSaveStaff}
-              className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              Update Staff Member
+              {mode === "add" ? "Add Staff Member" : "Update Staff Member"}
             </button>
           </div>
         </div>
@@ -549,4 +606,3 @@ export default function StaffPage() {
     </div>
   )
 }
-

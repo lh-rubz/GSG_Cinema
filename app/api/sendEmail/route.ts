@@ -5,244 +5,197 @@ const resend = new Resend('re_aQuzhAmu_58SptGNacxb6MfxsK3hooC5u')
 
 const baseStyles = `
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap');
-    .container { max-width: 600px; margin: 0 auto; background: #0a0a0a; border-radius: 16px; overflow: hidden; }
-    .header { padding: 2rem; text-align: center; position: relative; }
-    .content { padding: 2rem; color: #e0e0e0; font-family: 'Oswald', sans-serif; }
-    .clapperboard { background: #f5c518; padding: 8px; border-radius: 50%; width: 40px; height: 40px; }
-    .btn { padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; }
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      padding: 20px 0;
+      border-bottom: 1px solid #eeeeee;
+    }
+    .logo {
+      height: 50px;
+      margin-bottom: 15px;
+    }
+    .content {
+      padding: 20px 0;
+    }
+    .button {
+      display: inline-block;
+      padding: 12px 24px;
+      background-color: #2563eb;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .footer {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #eeeeee;
+      font-size: 12px;
+      color: #666666;
+      text-align: center;
+    }
   </style>
 `
 
 const footer = `
-  <div style="background: #1a1a1a; padding: 1rem; text-align: center; color: #666; font-size: 0.8rem; border-top: 1px solid #333;">
-    © ${new Date().getFullYear()} CinemaHub. All rights reserved.
+  <div class="footer">
+    <p>© ${new Date().getFullYear()} CinemaHub. All rights reserved.</p>
+    <p>If you didn't request this email, please ignore it.</p>
   </div>
 `
 
-const socialLinks = `
-  <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #333; text-align: center;">
-    <p style="color: #a0a0a0; margin-bottom: 1rem;">Follow the drama 🎭</p>
-    <div style="display: flex; gap: 1rem; justify-content: center;">
-      <a href="#" style="color: #ffffff; text-decoration: none; padding: 8px 16px; border-radius: 8px; background: #222;">
-        🎥 Instagram
-      </a>
-      <a href="#" style="color: #ffffff; text-decoration: none; padding: 8px 16px; border-radius: 8px; background: #222;">
-        🎞️ Facebook
-      </a>
-    </div>
-  </div>
-`
+const templates = {
+  contact: (data: {
+    name: string
+    email: string
+    subject: string
+    message: string
+  }) => `
+    <!DOCTYPE html>
+    <html>
+    <head>${baseStyles}</head>
+    <body>
+      <div class="header">
+        <img src="https://i.pinimg.com/236x/e4/c4/dd/e4c4ddf83131e3d993eb3813fb9b4556.jpg" alt="CinemaHub" class="logo">
+        <h1>New Contact Message</h1>
+      </div>
+      <div class="content">
+        <p><strong>From:</strong> ${data.name}</p>
+        <p><strong>Email:</strong> ${data.email}</p>
+        <p><strong>Subject:</strong> ${data.subject}</p>
+        <div style="margin-top: 20px; padding: 15px; background: #f8f8f8; border-radius: 4px;">
+          <p>${data.message.replace(/\n/g, '<br>')}</p>
+        </div>
+      </div>
+      ${footer}
+    </body>
+    </html>
+  `,
 
-const templateGenerator = (type: string, body: any) => {
-  switch(type) {
-    case 'contact':
-      return `
-        <!DOCTYPE html>
-        <html>
-        <head>${baseStyles}</head>
-        <body style="margin: 0; padding: 30px 0; background: #1a1a1a;">
-          <div class="container" style="box-shadow: 0 8px 32px rgba(229,9,20,0.1); border: 1px solid #e50914;">
-            <div class="header" style="background: linear-gradient(135deg, #e50914 0%, #b20710 100%);">
-              <img src="https://i.pinimg.com/236x/e4/c4/dd/e4c4ddf83131e3d993eb3813fb9b4556.jpg" alt="CinemaHub" style="height: 50px;">
-              <h1 style="color: white; margin: 1rem 0 0; font-size: 2rem; text-transform: uppercase;">New Scene Alert</h1>
-            </div>
-            <div class="content">
-              <div style="background: #1a1a1a; padding: 2rem; border-radius: 12px; border-left: 4px solid #e50914;">
-                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
-                  <div class="clapperboard">📨</div>
-                  <h2 style="margin: 0; color: #ffffff; font-size: 1.5rem;">${body.name}</h2>
-                </div>
-                <div style="display: grid; gap: 1.5rem;">
-                  <div>
-                    <p style="color: #f5c518; margin: 0;">Subject</p>
-                    <p style="color: #fff; margin: 0; font-size: 1.2rem;">${body.subject}</p>
-                  </div>
-                  <div>
-                    <p style="color: #f5c518; margin: 0;">Message</p>
-                    <div style="background: #2a2a2a; padding: 1rem; border-radius: 8px; margin-top: 0.5rem;">
-                      <p style="margin: 0; white-space: pre-line;">${body.message}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              ${socialLinks}
-            </div>
-            ${footer}
-          </div>
-        </body>
-        </html>
-      `
+  userWelcome: (data: {
+    name: string
+    email: string
+    verifyLink: string
+  }) => `
+    <!DOCTYPE html>
+    <html>
+    <head>${baseStyles}</head>
+    <body>
+      <div class="header">
+        <img src="https://i.pinimg.com/236x/e4/c4/dd/e4c4ddf83131e3d993eb3813fb9b4556.jpg" alt="CinemaHub" class="logo">
+        <h1>Welcome to CinemaHub</h1>
+      </div>
+      <div class="content">
+        <p>Hello ${data.name},</p>
+        <p>Thank you for creating an account with CinemaHub. To get started, please verify your email address:</p>
+        <p style="text-align: center; margin: 30px 0;">
+          <a href="${data.verifyLink}" class="button">Verify Email</a>
+        </p>
+        <p>If the button doesn't work, copy and paste this link into your browser:</p>
+        <p style="word-break: break-all;">${data.verifyLink}</p>
+      </div>
+      ${footer}
+    </body>
+    </html>
+  `,
 
-    case 'newStaff':
-      return `
-        <!DOCTYPE html>
-        <html>
-        <head>${baseStyles}</head>
-        <body style="margin: 0; padding: 30px 0; background: #1a1a1a;">
-          <div class="container" style="box-shadow: 0 8px 32px rgba(245,197,24,0.1); border: 1px solid #f5c518;">
-            <div class="header" style="background: linear-gradient(135deg, #f5c518 0%, #d4af37 100%);">
-              <img src="https://i.pinimg.com/236x/e4/c4/dd/e4c4ddf83131e3d993eb3813fb9b4556.jpg" alt="CinemaHub" style="height: 50px;">
-              <h1 style="color: #000; margin: 1rem 0 0; font-size: 2rem; text-transform: uppercase;">New Crew Member</h1>
-            </div>
-            <div class="content">
-              <div style="background: #1a1a1a; padding: 2rem; border-radius: 12px; border-left: 4px solid #f5c518;">
-                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
-                  <div class="clapperboard">🎬</div>
-                  <h2 style="margin: 0; color: #ffffff; font-size: 1.5rem;">Welcome ${body.staffName}!</h2>
-                </div>
-                <div style="display: grid; gap: 1.5rem;">
-                  <div>
-                    <p style="color: #f5c518; margin: 0;">Role</p>
-                    <p style="color: #fff; margin: 0; font-size: 1.2rem;">${body.role}</p>
-                  </div>
-                  <div>
-                    <p style="color: #f5c518; margin: 0;">Credentials</p>
-                    <div style="background: #2a2a2a; padding: 1rem; border-radius: 8px; margin-top: 0.5rem;">
-                      <p style="margin: 0;">Email: ${body.email}</p>
-                      <p style="margin: 0.5rem 0 0;">Temporary Password: ${body.tempPassword}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              ${socialLinks}
-            </div>
-            ${footer}
-          </div>
-        </body>
-        </html>
-      `
+  staffWelcome: (data: {
+    name: string
+    email: string
+    tempPassword: string
+    role: string
+  }) => `
+    <!DOCTYPE html>
+    <html>
+    <head>${baseStyles}</head>
+    <body>
+      <div class="header">
+        <img src="https://i.pinimg.com/236x/e4/c4/dd/e4c4ddf83131e3d993eb3813fb9b4556.jpg" alt="CinemaHub" class="logo">
+        <h1>Welcome to the CinemaHub Team</h1>
+      </div>
+      <div class="content">
+        <p>Dear ${data.name},</p>
+        <p>You have been added as a <strong>${data.role}</strong> to CinemaHub. Below are your login credentials:</p>
+        
+        <div style="margin: 25px 0; padding: 15px; background: #f8f8f8; border-radius: 4px;">
+          <p><strong>Email:</strong> ${data.email}</p>
+          <p><strong>Temporary Password:</strong> ${data.tempPassword}</p>
+        </div>
+        
+        <p>For security reasons, please change your password after your first login.</p>
+        <p style="text-align: center; margin-top: 30px;">
+          <a href="https://cinemahub.com/login" class="button">Login to Your Account</a>
+        </p>
+      </div>
+      ${footer}
+    </body>
+    </html>
+  `
+}
 
-    case 'userSignup':
-      return `
-        <!DOCTYPE html>
-        <html>
-        <head>${baseStyles}</head>
-        <body style="margin: 0; padding: 30px 0; background: #1a1a1a;">
-          <div class="container" style="box-shadow: 0 8px 32px rgba(0,150,255,0.1); border: 1px solid #0096ff;">
-            <div class="header" style="background: linear-gradient(135deg, #0096ff 0%, #0047ab 100%);">
-              <img src="https://i.pinimg.com/236x/e4/c4/dd/e4c4ddf83131e3d993eb3813fb9b4556.jpg" alt="CinemaHub" style="height: 50px;">
-              <h1 style="color: white; margin: 1rem 0 0; font-size: 2rem; text-transform: uppercase;">Action! Account Created</h1>
-            </div>
-            <div class="content">
-              <div style="background: #1a1a1a; padding: 2rem; border-radius: 12px; border-left: 4px solid #0096ff;">
-                <div style="text-align: center; margin-bottom: 2rem;">
-                  <div style="font-size: 3rem;">🎉</div>
-                  <h2 style="margin: 1rem 0; color: #ffffff; font-size: 1.5rem;">Lights, Camera, Action ${body.name}!</h2>
-                  <p style="color: #a0a0a0;">Your backstage pass to cinematic experiences</p>
-                </div>
-                <a href="${body.verifyLink}" class="btn" style="background: #0096ff; color: white; width: 100%; text-align: center;">
-                  Verify Your Account
-                </a>
-              </div>
-              ${socialLinks}
-            </div>
-            ${footer}
-          </div>
-        </body>
-        </html>
-      `
+// Type validation
+type EmailType = keyof typeof templates
 
-    case 'deleteStaff':
-      return `
-        <!DOCTYPE html>
-        <html>
-        <head>${baseStyles}</head>
-        <body style="margin: 0; padding: 30px 0; background: #1a1a1a;">
-          <div class="container" style="box-shadow: 0 8px 32px rgba(255,69,0,0.1); border: 1px solid #ff4500;">
-            <div class="header" style="background: linear-gradient(135deg, #ff4500 0%, #cc3300 100%);">
-              <img src="https://i.pinimg.com/236x/e4/c4/dd/e4c4ddf83131e3d993eb3813fb9b4556.jpg" alt="CinemaHub" style="height: 50px;">
-              <h1 style="color: white; margin: 1rem 0 0; font-size: 2rem; text-transform: uppercase;">Crew Update</h1>
-            </div>
-            <div class="content">
-              <div style="background: #1a1a1a; padding: 2rem; border-radius: 12px; border-left: 4px solid #ff4500;">
-                <div style="text-align: center; margin-bottom: 2rem;">
-                  <div style="font-size: 3rem;">🎬</div>
-                  <h2 style="margin: 1rem 0; color: #ffffff; font-size: 1.5rem;">Staff Access Removed</h2>
-                  <p style="color: #a0a0a0;">${body.staffName}'s backstage pass has been revoked</p>
-                </div>
-                <div style="background: #2a2a2a; padding: 1rem; border-radius: 8px;">
-                  <p style="margin: 0; color: #ff4500;">Effective Date: ${body.effectiveDate}</p>
-                </div>
-              </div>
-              ${socialLinks}
-            </div>
-            ${footer}
-          </div>
-        </body>
-        </html>
-      `
-
-    case 'movieStatus':
-      return `
-        <!DOCTYPE html>
-        <html>
-        <head>${baseStyles}</head>
-        <body style="margin: 0; padding: 30px 0; background: #1a1a1a;">
-          <div class="container" style="box-shadow: 0 8px 32px rgba(0,255,0,0.1); border: 1px solid #00ff00;">
-            <div class="header" style="background: linear-gradient(135deg, #00ff00 0%, #009900 100%);">
-              <img src="https://i.pinimg.com/236x/e4/c4/dd/e4c4ddf83131e3d993eb3813fb9b4556.jpg" alt="CinemaHub" style="height: 50px;">
-              <h1 style="color: #000; margin: 1rem 0 0; font-size: 2rem; text-transform: uppercase;">Reel Update</h1>
-            </div>
-            <div class="content">
-              <div style="background: #1a1a1a; padding: 2rem; border-radius: 12px; border-left: 4px solid #00ff00;">
-                <div style="text-align: center; margin-bottom: 2rem;">
-                  <div style="font-size: 3rem;">🍿</div>
-                  <h2 style="margin: 1rem 0; color: #ffffff; font-size: 1.5rem;">${body.movieTitle}</h2>
-                  <p style="color: #a0a0a0;">Status changed to: <span style="color: #00ff00;">${body.newStatus}</span></p>
-                </div>
-                <div style="background: #2a2a2a; padding: 1rem; border-radius: 8px;">
-                  <p style="margin: 0; color: #00ff00;">${body.statusMessage}</p>
-                </div>
-                ${body.ticketLink ? `
-                <a href="${body.ticketLink}" class="btn" style="background: #00ff00; color: #000; margin-top: 2rem; width: 100%; text-align: center;">
-                  Get Tickets Now
-                </a>
-                ` : ''}
-              </div>
-              ${socialLinks}
-            </div>
-            ${footer}
-          </div>
-        </body>
-        </html>
-      `
-
-    default:
-      return ''
-  }
+interface EmailRequest {
+  type: EmailType
+  recipient: string
+  subject?: string
+  [key: string]: any // Additional dynamic properties
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    
-    if (!body.type) {
+    const body: EmailRequest = await request.json()
+
+    // Validate required fields
+    if (!body.type || !body.recipient) {
       return NextResponse.json(
-        { error: 'Missing email type' },
+        { error: 'Missing required fields: type and recipient are required' },
         { status: 400 }
       )
     }
 
-    const htmlContent = templateGenerator(body.type, body)
-    
+    // Validate email type
+    if (!templates[body.type]) {
+      return NextResponse.json(
+        { error: 'Invalid email type specified' },
+        { status: 400 }
+      )
+    }
+
+    // Generate HTML content
+    const htmlContent = templates[body.type](body as any)
+    const defaultSubject = {
+      contact: 'New Contact Message',
+      userWelcome: 'Welcome to CinemaHub!',
+      staffWelcome: 'Your CinemaHub Staff Account'
+    }[body.type]
+
+    // Send email
     const { data, error } = await resend.emails.send({
-      from: 'CinemaHub <onboarding@resend.dev>',
-      to: [body.recipient],
-      subject: body.subject,
-      text: body.textContent,
-      html: htmlContent
+      from: 'Acme <onboarding@resend.dev>',
+      to: "habuelrub@gmail.com",
+      subject: body.subject || defaultSubject,
+      html: htmlContent,
     })
 
     if (error) {
-      console.error('Resend error:', error)
+      console.error('Email sending failed:', error)
       return NextResponse.json(
         { error: 'Failed to send email' },
         { status: 500 }
       )
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, emailId: data?.id })
 
   } catch (error) {
     console.error('Server error:', error)

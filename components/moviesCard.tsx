@@ -1,6 +1,8 @@
 import Link from "next/link"
 import type { Movie } from "@/types/types"
 import { Star, Clock, Tag } from "lucide-react"
+import { formatDuration } from "@/utils/formatters"
+import { usePreferences } from "@/context/PreferencesContext"
 
 interface MovieCardProps {
   movie: Movie
@@ -8,7 +10,7 @@ interface MovieCardProps {
 
 export default function MovieCard({ movie }: MovieCardProps) {
   const isComingSoon = movie.status === "coming_soon"
-
+const { preferences } = usePreferences();
   return (
     <div className="group relative bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out border border-gray-100 dark:border-zinc-800 h-full flex flex-col">
       {/* Image with gradient overlay */}
@@ -65,7 +67,7 @@ export default function MovieCard({ movie }: MovieCardProps) {
           {movie.duration && (
             <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
               <Clock className="w-3.5 h-3.5" />
-              <span>{movie.duration} min</span>
+              <span>{formatDuration(Number(movie.duration), preferences.durationFormat)}</span>
             </div>
           )}
         </div>

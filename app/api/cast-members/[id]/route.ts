@@ -37,16 +37,33 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const body = await request.json()
+    const { character, movieId } = body
 
-    const castMember = await prisma.castMember.update({
-      where: { id: params.id },
-      data: body,
+    if (!movieId) {
+      return NextResponse.json({ error: "Movie ID is required" }, { status: 400 })
+    }
+
+    // Update the character in the CastMovie table
+    const castMovie = await prisma.castMovie.update({
+      where: {
+        castMemberId_movieId: {
+          castMemberId: params.id,
+          movieId: movieId
+        }
+      },
+      data: {
+        character: character
+      },
+      include: {
+        castMember: true,
+        movie: true
+      }
     })
 
-    return NextResponse.json(castMember)
+    return NextResponse.json(castMovie)
   } catch (error) {
-    console.error("Error updating cast member:", error)
-    return NextResponse.json({ error: "Failed to update cast member" }, { status: 500 })
+    console.error("Error updating cast member character:", error)
+    return NextResponse.json({ error: "Failed to update cast member character" }, { status: 500 })
   }
 }
 

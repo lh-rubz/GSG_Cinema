@@ -4,21 +4,21 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { DataTable } from "@/components/data-table"
 import { Modal } from "@/components/modal"
-import { FormField } from "@/components/form-field"
 import { ConfirmDialog } from "@/components/confirm-dialog"
+
 import type { Showtime, Movie, Screen } from "@/types/types"
 import { showtimesApi } from "@/lib/endpoints/showtimes"
 import { moviesApi } from "@/lib/endpoints/movies"
 import { screensApi } from "@/lib/endpoints/screens"
-import type { ApiResponse } from "@/lib/client"
+import toast from "react-hot-toast"
+import { ShowtimeForm } from "./components/showtimesForms"
 
 export default function ShowtimesPage() {
   const [showtimes, setShowtimes] = useState<Showtime[]>([])
   const [movies, setMovies] = useState<Movie[]>([])
   const [screens, setScreens] = useState<Screen[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [currentShowtime, setCurrentShowtime] = useState<Showtime | null>(null)
   const [formData, setFormData] = useState<Partial<Showtime>>({
@@ -31,21 +31,7 @@ export default function ShowtimesPage() {
   })
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
-
-  const movieFormats = ["TwoD", "ThreeD", "imax", "fourDx"]
-
-  // Add date format conversion functions
-  const formatDateToDDMMYYYY = (dateStr: string) => {
-    if (!dateStr) return "";
-    const [year, month, day] = dateStr.split("-");
-    return `${day}-${month}-${year}`;
-  };
-
-  const formatDateToYYYYMMDD = (dateStr: string) => {
-    if (!dateStr) return "";
-    const [day, month, year] = dateStr.split("-");
-    return `${year}-${month}-${day}`;
-  };
+  const [mode, setMode] = useState<"add" | "edit">("add")
 
   useEffect(() => {
     fetchShowtimes()
@@ -92,6 +78,11 @@ export default function ShowtimesPage() {
     }
   }
 
+  const validateTimeFormat = (time: string): boolean => {
+    const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/
+    return timeRegex.test(time)
+  }
+
   const validateForm = () => {
     const errors: Record<string, string> = {}
     
@@ -107,8 +98,8 @@ export default function ShowtimesPage() {
       errors.date = "Date is required"
     }
     
-    if (!formData.time) {
-      errors.time = "Time is required"
+    if (!formData.time || !validateTimeFormat(formData.time)) {
+      errors.time = "Valid time in HH:MM (24-hour) format is required"
     }
     
     if (!formData.format) {
@@ -134,7 +125,8 @@ export default function ShowtimesPage() {
     })
     setFormErrors({})
     setErrorMessage(null)
-    setIsAddModalOpen(true)
+    setMode("add")
+    setIsModalOpen(true)
   }
 
   const handleEditShowtime = (showtime: Showtime) => {
@@ -142,7 +134,8 @@ export default function ShowtimesPage() {
     setFormData({ ...showtime })
     setFormErrors({})
     setErrorMessage(null)
-    setIsEditModalOpen(true)
+    setMode("edit")
+    setIsModalOpen(true)
   }
 
   const handleDeleteShowtime = (showtime: Showtime) => {
@@ -156,137 +149,118 @@ export default function ShowtimesPage() {
       setErrorMessage(null)
       setFormErrors({})
       
-      // Validate form before submitting
       if (!validateForm()) {
         return
       }
 
-      // Additional client-side validations
+      // Format time to ensure HH:MM format
+      const time = formData.time || ""
+      const [hours, minutes] = time.split(':')
+      const formattedTime = `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`
+
+      // Convert date from yyyy-mm-dd to dd-mm-yyyy
+      const date = new Date(formData.date || "")
+      const day = date.getDate().toString().padStart(2, '0')
+      const month = (date.getMonth() + 1).toString().padStart(2, '0')
+      const year = date.getFullYear()
+      const formattedDate = `${day}-${month}-${year}`
+
+      // Additional validations
       const selectedDate = new Date(formData.date || "")
       const today = new Date()
       today.setHours(0, 0, 0, 0)
 
       if (selectedDate < today) {
         setFormErrors({ ...formErrors, date: "Cannot create showtimes for past dates" })
-        setErrorMessage("Please select a future date for the showtime.")
+        toast.error("Please select a future date for the showtime.")
         return
       }
 
-      // Check if selected movie is available
       const selectedMovie = movies.find(m => m.id === formData.movieId)
       if (selectedMovie?.hidden) {
         setFormErrors({ ...formErrors, movieId: "Selected movie is currently hidden" })
-        setErrorMessage("Cannot create showtime for a hidden movie. Please select an active movie.")
+        toast.error("Cannot create showtime for a hidden movie. Please select an active movie.")
         return
       }
 
       if (selectedMovie?.status !== "now_showing") {
         setFormErrors({ ...formErrors, movieId: "Movie is not currently showing" })
-        setErrorMessage("Can only create showtimes for movies that are currently showing.")
+        toast.error("Can only create showtimes for movies that are currently showing.")
         return
       }
       
-      if (isAddModalOpen) {
+      if (mode === "add") {
         const showtimeId = `sh${Date.now()}`
         
         const response = await showtimesApi.createShowtime({
           id: showtimeId,
-          movieId: formData.movieId || "",
-          screenId: formData.screenId || "",
-          date: formData.date || "",
-          time: formData.time || "",
-          format: formData.format || "TwoD",
+          movieId: formData.movieId!,
+          screenId: formData.screenId!,
+          date: formattedDate,
+          time: formattedTime,
+          format: formData.format!,
           price: Number(formData.price) || 0,
         })
         
         if (response.error) {
           console.error("Error creating showtime:", response.error)
-          setErrorMessage(response.error)
-          
-          // Handle different error scenarios
-          const errorMessage = response.error.toLowerCase()
-          
-          // Time conflict errors
-          if (errorMessage.includes("time conflict") || errorMessage.includes("overlapping")) {
-            setFormErrors({ 
-              ...formErrors, 
-              screenId: "Time conflict on this screen",
-              time: "Time conflict with another showtime"
-            })
-          }
-          // Screen-related errors
-          else if (errorMessage.includes("screen not found")) {
-            setFormErrors({ ...formErrors, screenId: "Selected screen not found" })
-          }
-          else if (errorMessage.includes("screen capacity")) {
-            setFormErrors({ ...formErrors, screenId: "Screen capacity issue" })
-          }
-          else if (errorMessage.includes("screen type")) {
-            setFormErrors({ ...formErrors, format: "Incompatible format" })
-          }
-          // Movie-related errors
-          else if (errorMessage.includes("movie not found")) {
-            setFormErrors({ ...formErrors, movieId: "Selected movie not found" })
-          }
+          toast.error(response.error)
           return
         }
         
         if (response.data) {
           setShowtimes((prevShowtimes) => [...prevShowtimes, response.data as Showtime])
-          setIsAddModalOpen(false)
+          setIsModalOpen(false)
+          toast.success("Showtime added successfully!")
         }
-      } else if (isEditModalOpen && currentShowtime) {
+      } else if (mode === "edit" && currentShowtime) {
         const response = await showtimesApi.updateShowtime(currentShowtime.id, {
           movieId: formData.movieId,
           screenId: formData.screenId,
-          date: formData.date,
-          time: formData.time,
+          date: formattedDate,
+          time: formattedTime,
           format: formData.format,
           price: Number(formData.price),
         })
         
         if (response.error) {
           console.error("Error updating showtime:", response.error)
-          setErrorMessage(response.error)
-          
-          // Handle different error scenarios
-          const errorMessage = response.error.toLowerCase()
-          
-          // Time conflict errors
-          if (errorMessage.includes("time conflict") || errorMessage.includes("overlapping")) {
-            setFormErrors({ 
-              ...formErrors, 
-              screenId: "Time conflict on this screen",
-              time: "Time conflict with another showtime"
-            })
-          }
-          // Screen-related errors
-          else if (errorMessage.includes("screen not found")) {
-            setFormErrors({ ...formErrors, screenId: "Selected screen not found" })
-          }
-          else if (errorMessage.includes("screen capacity")) {
-            setFormErrors({ ...formErrors, screenId: "Screen capacity issue" })
-          }
-          else if (errorMessage.includes("screen type")) {
-            setFormErrors({ ...formErrors, format: "Incompatible format" })
-          }
-          // Movie-related errors
-          else if (errorMessage.includes("movie not found")) {
-            setFormErrors({ ...formErrors, movieId: "Selected movie not found" })
-          }
+          toast.error(response.error)
           return
         }
         
         if (response.data) {
           setShowtimes((prevShowtimes) =>
-            prevShowtimes.map((showtime) => (showtime.id === currentShowtime.id ? response.data as Showtime : showtime))
+            prevShowtimes.map((showtime) => 
+              showtime.id === currentShowtime.id ? response.data as Showtime : showtime
+            )
           )
-          setIsEditModalOpen(false)
+          setIsModalOpen(false)
+          toast.success("Showtime updated successfully!")
         }
       }
     } catch (error: any) {
       console.error("Error saving showtime:", error)
-      setErrorMessage("An unexpected error occurred. Please try again.")
+      toast.error("An unexpected error occurred. Please try again.")
+    }
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    
+    // Clear error for this field when user changes it
+    if (formErrors[name]) {
+      setFormErrors({ ...formErrors, [name]: "" })
+    }
+    
+    // Handle date format conversion
+    if (name === "date") {
+      // Convert from yyyy-mm-dd to dd-mm-yyyy for storage
+      const [year, month, day] = value.split("-")
+      const formattedDate = `${month}-${day}-${year}`
+      setFormData({ ...formData, [name]: formattedDate })
+    } else {
+      setFormData({ ...formData, [name]: value })
     }
   }
 
@@ -301,75 +275,25 @@ export default function ShowtimesPage() {
         today.setHours(0, 0, 0, 0)
         
         if (showtimeDate < today) {
-          setErrorMessage("Cannot delete past showtimes.")
+          toast.error("Cannot delete past showtimes.")
           return
         }
 
         const response = await showtimesApi.deleteShowtime(currentShowtime.id)
         if (response.status === 200) {
-          setShowtimes((prevShowtimes) => prevShowtimes.filter((showtime) => showtime.id !== currentShowtime.id))
+          setShowtimes((prevShowtimes) => 
+            prevShowtimes.filter((showtime) => showtime.id !== currentShowtime.id)
+          )
           setIsDeleteModalOpen(false)
+          toast.success("Showtime deleted successfully!")
         } else if (response.error) {
           console.error("Error deleting showtime:", response.error)
-          
-          const errorMessage = response.error.toLowerCase()
-          
-          if (errorMessage.includes("existing tickets") || errorMessage.includes("tickets sold")) {
-            setErrorMessage("Cannot delete this showtime because tickets have already been sold. Please cancel all tickets first.")
-          }
-          else if (errorMessage.includes("past showtime")) {
-            setErrorMessage("Cannot delete showtimes that have already occurred.")
-          }
-          else if (errorMessage.includes("not found")) {
-            setErrorMessage("This showtime no longer exists.")
-          }
-          else {
-            setErrorMessage(`Cannot delete showtime: ${response.error}`)
-          }
+          toast.error(`Cannot delete showtime: ${response.error}`)
         }
       } catch (error: any) {
         console.error("Error deleting showtime:", error)
-        console.log("Full error object:", JSON.stringify(error, null, 2))
-        
-        if (error.response?.data?.error) {
-          const errorMessage = error.response.data.error.toLowerCase()
-          
-          if (errorMessage.includes("existing tickets") || errorMessage.includes("tickets sold")) {
-            setErrorMessage("Cannot delete this showtime because tickets have already been sold. Please cancel all tickets first.")
-          }
-          else if (errorMessage.includes("past showtime")) {
-            setErrorMessage("Cannot delete showtimes that have already occurred.")
-          }
-          else if (errorMessage.includes("not found")) {
-            setErrorMessage("This showtime no longer exists.")
-          }
-          else {
-            setErrorMessage(`Error: ${error.response.data.error}`)
-          }
-        } else if (error instanceof Error) {
-          setErrorMessage(`Error: ${error.message || "Unknown error occurred"}`)
-        } else {
-          setErrorMessage("An unexpected error occurred while deleting the showtime.")
-        }
+        toast.error("An unexpected error occurred while deleting the showtime.")
       }
-    }
-  }
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    
-    // Handle date format conversion
-    if (name === "date") {
-      // Convert from yyyy-mm-dd to dd-mm-yyyy for storage
-      const formattedDate = formatDateToDDMMYYYY(value);
-      setFormData({ ...formData, [name]: formattedDate });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-    
-    // Clear error for this field when user changes it
-    if (formErrors[name]) {
-      setFormErrors({ ...formErrors, [name]: "" });
     }
   }
 
@@ -446,270 +370,23 @@ export default function ShowtimesPage() {
         />
       )}
 
-      {/* Add Showtime Modal */}
-      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Add New Showtime" size="md">
-        <div className="space-y-4">
-          <FormField label="Movie" id="movieId" required>
-            <select
-              id="movieId"
-              name="movieId"
-              value={formData.movieId || ""}
+      {/* Combined Add/Edit Modal */}
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title={mode === "add" ? "Add New Showtime" : "Edit Showtime"} 
+        size="md"
+      >
+        <ShowtimeForm
+          formData={formData}
+          formErrors={formErrors}
+          movies={movies}
+          screens={screens}
+          onSubmit={handleSaveShowtime}
+          onCancel={() => setIsModalOpen(false)}
               onChange={handleInputChange}
-              className={`w-full px-3 py-2 rounded-md border ${formErrors.movieId ? 'border-red-500' : 'border-input'} bg-background`}
-              required
-            >
-              <option value="">Select a movie</option>
-              {movies.map((movie) => (
-                <option key={movie.id} value={movie.id}>
-                  {movie.title}
-                </option>
-              ))}
-            </select>
-            {formErrors.movieId && (
-              <p className="mt-1 text-xs text-red-500">{formErrors.movieId}</p>
-            )}
-          </FormField>
-
-          <FormField label="Screen" id="screenId" required>
-            <select
-              id="screenId"
-              name="screenId"
-              value={formData.screenId || ""}
-              onChange={handleInputChange}
-              className={`w-full px-3 py-2 rounded-md border ${formErrors.screenId ? 'border-red-500' : 'border-input'} bg-background`}
-              required
-            >
-              <option value="">Select a screen</option>
-              {screens.map((screen) => (
-                <option key={screen.id} value={screen.id}>
-                  {screen.name}
-                </option>
-              ))}
-            </select>
-            {formErrors.screenId && (
-              <p className="mt-1 text-xs text-red-500">{formErrors.screenId}</p>
-            )}
-          </FormField>
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormField label="Date" id="date" required>
-              <input
-                type="date"
-                id="date"
-                name="date"
-                value={formData.date ? formatDateToYYYYMMDD(formData.date) : ""}
-                onChange={handleInputChange}
-                className={`w-full px-3 py-2 rounded-md border ${formErrors.date ? 'border-red-500' : 'border-input'} bg-background`}
-                required
-              />
-              {formErrors.date && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.date}</p>
-              )}
-            </FormField>
-
-            <FormField label="Time" id="time" required>
-              <input
-                type="time"
-                id="time"
-                name="time"
-                value={formData.time || ""}
-                onChange={handleInputChange}
-                className={`w-full px-3 py-2 rounded-md border ${formErrors.time ? 'border-red-500' : 'border-input'} bg-background`}
-                required
-              />
-              {formErrors.time && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.time}</p>
-              )}
-            </FormField>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormField label="Format" id="format" required>
-              <select
-                id="format"
-                name="format"
-                value={formData.format || "TwoD"}
-                onChange={handleInputChange}
-                className={`w-full px-3 py-2 rounded-md border ${formErrors.format ? 'border-red-500' : 'border-input'} bg-background`}
-                required
-              >
-                {movieFormats.map((format) => (
-                  <option key={format} value={format}>
-                    {format}
-                  </option>
-                ))}
-              </select>
-              {formErrors.format && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.format}</p>
-              )}
-            </FormField>
-
-            <FormField label="Price" id="price" required>
-              <input
-                type="number"
-                id="price"
-                name="price"
-                value={formData.price || ""}
-                onChange={handleInputChange}
-                min="0"
-                step="0.01"
-                className={`w-full px-3 py-2 rounded-md border ${formErrors.price ? 'border-red-500' : 'border-input'} bg-background`}
-                required
-              />
-              {formErrors.price && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.price}</p>
-              )}
-            </FormField>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              onClick={() => setIsAddModalOpen(false)}
-              className="px-4 py-2 rounded-md border border-input bg-background hover:bg-secondary transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSaveShowtime}
-              className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              Add Showtime
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Edit Showtime Modal */}
-      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Showtime" size="md">
-        <div className="space-y-4">
-          <FormField label="Movie" id="edit-movieId" required>
-            <select
-              id="edit-movieId"
-              name="movieId"
-              value={formData.movieId || ""}
-              onChange={handleInputChange}
-              className={`w-full px-3 py-2 rounded-md border ${formErrors.movieId ? 'border-red-500' : 'border-input'} bg-background`}
-              required
-            >
-              <option value="">Select a movie</option>
-              {movies.map((movie) => (
-                <option key={movie.id} value={movie.id}>
-                  {movie.title}
-                </option>
-              ))}
-            </select>
-            {formErrors.movieId && (
-              <p className="mt-1 text-xs text-red-500">{formErrors.movieId}</p>
-            )}
-          </FormField>
-
-          <FormField label="Screen" id="edit-screenId" required>
-            <select
-              id="edit-screenId"
-              name="screenId"
-              value={formData.screenId || ""}
-              onChange={handleInputChange}
-              className={`w-full px-3 py-2 rounded-md border ${formErrors.screenId ? 'border-red-500' : 'border-input'} bg-background`}
-              required
-            >
-              <option value="">Select a screen</option>
-              {screens.map((screen) => (
-                <option key={screen.id} value={screen.id}>
-                  {screen.name}
-                </option>
-              ))}
-            </select>
-            {formErrors.screenId && (
-              <p className="mt-1 text-xs text-red-500">{formErrors.screenId}</p>
-            )}
-          </FormField>
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormField label="Date" id="edit-date" required>
-              <input
-                type="date"
-                id="edit-date"
-                name="date"
-                value={formData.date ? formatDateToYYYYMMDD(formData.date) : ""}
-                onChange={handleInputChange}
-                className={`w-full px-3 py-2 rounded-md border ${formErrors.date ? 'border-red-500' : 'border-input'} bg-background`}
-                required
-              />
-              {formErrors.date && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.date}</p>
-              )}
-            </FormField>
-
-            <FormField label="Time" id="edit-time" required>
-              <input
-                type="time"
-                id="edit-time"
-                name="time"
-                value={formData.time || ""}
-                onChange={handleInputChange}
-                className={`w-full px-3 py-2 rounded-md border ${formErrors.time ? 'border-red-500' : 'border-input'} bg-background`}
-                required
-              />
-              {formErrors.time && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.time}</p>
-              )}
-            </FormField>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormField label="Format" id="edit-format" required>
-              <select
-                id="edit-format"
-                name="format"
-                value={formData.format || "TwoD"}
-                onChange={handleInputChange}
-                className={`w-full px-3 py-2 rounded-md border ${formErrors.format ? 'border-red-500' : 'border-input'} bg-background`}
-                required
-              >
-                {movieFormats.map((format) => (
-                  <option key={format} value={format}>
-                    {format}
-                  </option>
-                ))}
-              </select>
-              {formErrors.format && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.format}</p>
-              )}
-            </FormField>
-
-            <FormField label="Price" id="edit-price" required>
-              <input
-                type="number"
-                id="edit-price"
-                name="price"
-                value={formData.price || ""}
-                onChange={handleInputChange}
-                min="0"
-                step="0.01"
-                className={`w-full px-3 py-2 rounded-md border ${formErrors.price ? 'border-red-500' : 'border-input'} bg-background`}
-                required
-              />
-              {formErrors.price && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.price}</p>
-              )}
-            </FormField>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              onClick={() => setIsEditModalOpen(false)}
-              className="px-4 py-2 rounded-md border border-input bg-background hover:bg-secondary transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSaveShowtime}
-              className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              Update Showtime
-            </button>
-          </div>
-        </div>
+          mode={mode}
+        />
       </Modal>
 
       {/* Delete Confirmation */}
@@ -718,7 +395,7 @@ export default function ShowtimesPage() {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
         title="Delete Showtime"
-        message={`Are you sure you want to delete this showtime? This action cannot be undone.`}
+        message={`Are you sure you want to delete the showtime for ${currentShowtime ? getMovieTitle(currentShowtime.movieId) : ''}? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
         variant="danger"

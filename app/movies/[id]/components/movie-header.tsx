@@ -3,6 +3,8 @@ import { useState } from "react"
 import { Movie } from "@/types/types"
 import { ClockIcon, PlayIcon } from "lucide-react"
 import { StarRating } from "./star-rating"
+import { formatDuration } from "@/utils/formatters"
+import { usePreferences } from "@/context/PreferencesContext"
 
 interface MovieHeaderProps {
   movie: Movie
@@ -14,18 +16,9 @@ export function MovieHeader({ movie, onTrailerClick }: MovieHeaderProps) {
   const statusBadge = movie.status === "now_showing" 
     ? { text: "Now Showing", color: "bg-green-600" } 
     : { text: "Coming Soon", color: "bg-red-600" }
+    const { preferences } = usePreferences();
 
-  const formatDuration = () => {
-    if (!movie.duration) return ""
-    const minutes = parseInt(movie.duration)
-    
-    if (showHoursFormat) {
-      const hours = Math.floor(minutes / 60)
-      const remainingMinutes = minutes % 60
-      return `${hours}h ${remainingMinutes}m`
-    }
-    return `${minutes}m`
-  }
+ 
 
   return (
     <div 
@@ -71,7 +64,7 @@ export function MovieHeader({ movie, onTrailerClick }: MovieHeaderProps) {
                     className="flex items-center hover:opacity-80 transition-opacity cursor-pointer"
                   >
                     <ClockIcon className="w-5 h-5 mr-1" />
-                    {formatDuration()}
+                    {formatDuration(Number(movie.duration), preferences.durationFormat)}
                   </button>
                 )}
                 {movie.releaseDate && (

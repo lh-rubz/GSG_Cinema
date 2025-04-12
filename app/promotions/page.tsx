@@ -30,6 +30,26 @@ export default function PromotionsPage() {
     fetchPromotions();
   }, []);
 
+  const filterActivePromotions = (promotions: Promotion[]) => {
+    const currentDate = new Date();
+    return promotions.filter((promotion) => {
+      // Parse the database date string (2025-04-30T03:44)
+      const expiryDate = new Date(promotion.expiryDate);
+      return expiryDate >= currentDate;
+    });
+  };
+
+  const formatExpiryDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-12 h-full">
@@ -76,11 +96,7 @@ export default function PromotionsPage() {
     );
   }
 
-  const currentDate = new Date();
-  const validPromotions = promotions.filter((promotion) => {
-    const expiryDate = new Date(promotion.expiryDate);
-    return expiryDate >= currentDate;
-  });
+  const validPromotions = filterActivePromotions(promotions);
 
   return (
     <div className="container mx-auto px-4 py-12 h-full">
@@ -89,7 +105,10 @@ export default function PromotionsPage() {
       </h2>
       
       {validPromotions.length > 0 ? (
-        <PromotionsContainer promotions={validPromotions} />
+        <PromotionsContainer 
+          promotions={validPromotions} 
+          formatDate={formatExpiryDate} 
+        />
       ) : (
         <div className="flex flex-col items-center justify-center py-12 min-h-[50vh] gap-4">
           <svg

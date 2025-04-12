@@ -6,6 +6,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { Clock, Calendar, Star, ChevronDown, ChevronUp, Ticket, ChevronLeft, ChevronRight } from "lucide-react"
 import type { Showtime, Movie } from "@/types/types"
+import { formatDuration, formatTime } from "@/utils/formatters"
+import { usePreferences } from "@/context/PreferencesContext"
 
 interface EnhancedShowtime extends Showtime {
   movieDetails?: Movie
@@ -21,6 +23,7 @@ const ShowTimesContainer: React.FC<ShowTimesContainerProps> = ({ moviesShowTimes
   const [showMoreButtons, setShowMoreButtons] = useState<Record<string, boolean>>({})
   const [currentPage, setCurrentPage] = useState<Record<string, number>>({})
   const descriptionRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const { preferences } = usePreferences();
 
   const SHOWTIMES_PER_PAGE = 5
 
@@ -48,13 +51,7 @@ const ShowTimesContainer: React.FC<ShowTimesContainerProps> = ({ moviesShowTimes
     return () => window.removeEventListener('resize', checkDescriptionHeight)
   }, [moviesShowTimes])
 
-  // Helper function to format duration from minutes to hours and minutes
-  const formatDuration = (minutes?: number): string => {
-    if (!minutes) return "N/A"
-    const hours = Math.floor(minutes / 60)
-    const mins = minutes % 60
-    return `${hours}h ${mins}m`
-  }
+ 
 
   const getPaginatedShowtimes = (showtimes: string[], movieId: string) => {
     const page = currentPage[movieId] || 0
@@ -117,8 +114,8 @@ const ShowTimesContainer: React.FC<ShowTimesContainerProps> = ({ moviesShowTimes
                   <div className="flex flex-wrap gap-2">
                     <span className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-700 rounded-full text-sm font-medium text-zinc-700 dark:text-zinc-300 flex items-center">
                       <Clock className="w-4 h-4 mr-1.5" />
-                      {formatDuration(movieDetails?.duration ? Number(movieDetails.duration) : undefined)}
-                    </span>
+                      {formatDuration(Number(movieDetails?.duration), preferences.durationFormat)}
+                       </span>
 
                     {movieDetails?.rating && (
                       <span className="px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-full text-sm font-medium flex items-center">
@@ -199,7 +196,7 @@ const ShowTimesContainer: React.FC<ShowTimesContainerProps> = ({ moviesShowTimes
                                       flex items-center"
                           >
                             <Ticket className="w-4 h-4 mr-2 text-red-500 dark:text-red-400" />
-                            {time}
+                            {formatTime(time, preferences.timeFormat)}
                           </Link>
                         ))}
                         {totalShowtimePages > 1 && (
