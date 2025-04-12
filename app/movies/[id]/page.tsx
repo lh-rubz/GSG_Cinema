@@ -34,17 +34,18 @@ export default function MovieDetailsPage() {
         setIsLoading(true)
         const movieId = Array.isArray(id) ? id[0] : id
         
-        // Fetch all movie data including director, cast, and reviews
         const response = await moviesApi.getMovie(movieId!)
         const movieData = response.data
         
         setMovie(movieData!)
         setDirector(movieData!.director)
-        setCast(movieData!.cast.map(c => c.castMember))
+        setCast(movieData!.cast.map(c => ({
+          ...c.castMember,
+          character: c.character
+        })))
         setReviews(movieData!.reviews)
         
         
-         // Fetch showtimes for this movie
          const showtimesResponse = await showtimesApi.getShowtimes({ movieId: movieId! })
          setShowtimes(showtimesResponse.data) 
         
