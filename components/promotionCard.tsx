@@ -5,7 +5,7 @@ import Image from "next/image"
 import { CalendarIcon, Copy, Check, Ticket } from "lucide-react"
 import { useState, useEffect } from "react"
 import { parseDDMMYYYY } from "@/functions"
-
+import posterImage from "./assets/BigSalePoster.png"
 interface Iprops {
   promotion: Promotion
 }
@@ -65,7 +65,7 @@ const PromotionCard = ({ promotion }: Iprops) => {
       <div className="relative h-48 w-full">
        
           <Image
-            src={promotion.image?promotion.image:"./assets/BigSalePoster.png"}
+            src={promotion.image?promotion.image:posterImage}
             alt={promotion.description}
             fill
             className="object-cover transition-all duration-700 ease-out group-hover:scale-105"
