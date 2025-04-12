@@ -1,25 +1,19 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ArrowLeft, Save, Camera } from "lucide-react";
-
-// Temporary mock data - in a real app, this would come from a context or API
-const mockUser = {
-    username: "Mohammad",
-    role: "user",
-    email: "mohammad@example.com",
-    profileImage: "",
-    bio: "Movie enthusiast and cinema lover"
-};
+import { useAuth } from "@/hooks/use-auth";
+import { toast } from "react-hot-toast";
 
 export default function EditProfilePage() {
     const router = useRouter();
+    const { user, updateUser } = useAuth();
     const [formData, setFormData] = useState({
-        username: mockUser.username,
-        profileImage: mockUser.profileImage,
-        bio: mockUser.bio,
+        username: "",
+        profileImage: "",
+        bio: "",
         currentPassword: "",
         newPassword: "",
         confirmPassword: ""
@@ -28,12 +22,21 @@ export default function EditProfilePage() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
 
-    // Get the first letter of the username for the default avatar
+    useEffect(() => {
+        if (user) {
+            setFormData(prev => ({
+                ...prev,
+                username: user.username,
+                profileImage: user.profileImage || "",
+                bio: user.bio || ""
+            }));
+        }
+    }, [user]);
+
     const getInitials = (name: string) => {
         return name.charAt(0).toUpperCase();
     };
 
-    // Check if the profile image is valid or empty
     const hasValidImage = formData.profileImage && formData.profileImage.trim() !== "";
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -50,39 +53,64 @@ export default function EditProfilePage() {
         setError("");
         setSuccess("");
 
-        // Validate passwords if trying to change password
-        if (formData.newPassword) {
-            if (formData.newPassword !== formData.confirmPassword) {
-                setError("New passwords do not match");
-                setIsLoading(false);
-                return;
-            }
-            if (!formData.currentPassword) {
-                setError("Current password is required to change password");
-                setIsLoading(false);
-                return;
-            }
-        }
-
         try {
-            // In a real app, this would be an API call
-            // await updateProfile(formData);
+            const updateData: any = {
+                username: formData.username,
+                profileImage: formData.profileImage,
+                bio: formData.bio
+            };
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            if (formData.newPassword) {
+                if (formData.newPassword !== formData.confirmPassword) {
+                    setError("New passwords do not match");
+                    setIsLoading(false);
+                    return;
+                }
+                if (!formData.currentPassword) {
+                    setError("Current password is required to change password");
+                    setIsLoading(false);
+                    return;
+                }
+
+                updateData.currentPassword = formData.currentPassword;
+                updateData.password = formData.newPassword;
+            }
+
+            await updateUser(updateData);
 
             setSuccess("Profile updated successfully");
+            toast.success("Profile updated successfully");
 
-            // Redirect back to profile page after a short delay
+            setFormData(prev => ({
+                ...prev,
+                currentPassword: "",
+                newPassword: "",
+                confirmPassword: ""
+            }));
+
             setTimeout(() => {
                 router.push("/profile");
             }, 1500);
         } catch (err) {
-            setError("Failed to update profile. Please try again.");
+            const errorMessage = err instanceof Error ? err.message : "Failed to update profile. Please try again.";
+            setError(errorMessage);
+            toast.error(errorMessage);
         } finally {
             setIsLoading(false);
         }
     };
+
+    if (!user) {
+        return (
+            <main className="bg-gray-50 dark:bg-gray-900 px-4 py-16 mt-16">
+                <div className="max-w-2xl mx-auto">
+                    <div className="text-center">
+                        <p className="text-gray-600 dark:text-gray-300">Please log in to edit your profile.</p>
+                    </div>
+                </div>
+            </main>
+        );
+    }
 
     return (
         <main className="bg-gray-50 dark:bg-gray-900 px-4 py-16 mt-16">
@@ -184,7 +212,7 @@ export default function EditProfilePage() {
                             <input
                                 type="email"
                                 id="email"
-                                value={mockUser.email}
+                                value={user.email}
                                 disabled
                                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-gray-400"
                             />
