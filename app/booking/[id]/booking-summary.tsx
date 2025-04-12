@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import { Ticket, Trash2, Tag } from 'lucide-react'
-import { formatCurrency } from "@/lib/utils"
 import { Seat } from "@/types/types"
+import { usePreferences } from "@/context/PreferencesContext"
+import { formatCurrency } from "@/utils/formatters"
 
 interface BookingSummaryProps {
   showtime: any
@@ -17,6 +18,7 @@ export default function BookingSummary({ showtime, selectedSeats, onBooking, onR
   const [promotionError, setPromotionError] = useState<string | null>(null)
   const [discountAmount, setDiscountAmount] = useState(0)
   const [appliedPromotion, setAppliedPromotion] = useState<any>(null)
+  const { preferences } = usePreferences();
 
   const totalPrice = selectedSeats.reduce((sum, seat) => sum + showtime.price, 0)
   const finalPrice = totalPrice - discountAmount
@@ -76,7 +78,7 @@ export default function BookingSummary({ showtime, selectedSeats, onBooking, onR
                   <span className="text-zinc-900 dark:text-white">Seat {seat.number}</span>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="text-zinc-900 dark:text-white">{formatCurrency(showtime.price)}</span>
+                  <span className="text-zinc-900 dark:text-white">{formatCurrency(showtime.price,preferences.currency)}</span>
                   <button
                     onClick={() => onRemoveSeat(seat.id)}
                     className="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
@@ -117,17 +119,17 @@ export default function BookingSummary({ showtime, selectedSeats, onBooking, onR
         <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4">
           <div className="flex justify-between items-center mb-2">
             <span className="text-zinc-700 dark:text-zinc-300">Subtotal</span>
-            <span className="text-zinc-900 dark:text-white">{formatCurrency(totalPrice)}</span>
+            <span className="text-zinc-900 dark:text-white">{formatCurrency(totalPrice,preferences.currency)}</span>
           </div>
           {appliedPromotion && (
             <div className="flex justify-between items-center mb-2 text-green-600 dark:text-green-400">
               <span>Discount</span>
-              <span>-{formatCurrency(discountAmount)}</span>
+              <span>-{formatCurrency(discountAmount,preferences.currency)}</span>
             </div>
           )}
           <div className="flex justify-between items-center font-bold">
             <span className="text-zinc-900 dark:text-white">Total</span>
-            <span className="text-red-600 dark:text-red-400">{formatCurrency(finalPrice)}</span>
+            <span className="text-red-600 dark:text-red-400">{formatCurrency(finalPrice,preferences.currency)}</span>
           </div>
         </div>
 

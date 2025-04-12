@@ -6,13 +6,15 @@ import { receiptsApi } from "@/lib/endpoints/receipts"
 import { ArrowLeft, CheckCircle, Home, Ticket } from 'lucide-react'
 import Link from "next/link"
 import { Loading } from "@/components/loading-inline"
-import { formatCurrency } from "@/lib/utils"
+import { usePreferences } from "@/context/PreferencesContext"
+import { formatCurrency, formatTime } from "@/utils/formatters"
 
 export default function ConfirmationPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const receiptId = searchParams.get("receiptId")
-  
+  const { preferences } = usePreferences();
+
   interface Receipt {
     id: string;
     movie: { title: string };
@@ -116,10 +118,7 @@ export default function ConfirmationPage() {
     day: "numeric",
   })
   
-  const formattedTime = receiptDate.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-  })
+ 
 
   return (
     <div className="bg-zinc-50 dark:bg-zinc-900 min-h-screen">
@@ -147,7 +146,7 @@ export default function ConfirmationPage() {
                 <div className="flex justify-between">
                   <span className="text-zinc-600 dark:text-zinc-400">Date & Time</span>
                   <span className="text-zinc-800 dark:text-zinc-200 font-medium">
-                    {receipt.tickets[0]?.showtime?.date} • {receipt.tickets[0]?.showtime?.time}
+                    {receipt.tickets[0]?.showtime?.date} • {formatTime(receipt.tickets[0]?.showtime?.time,preferences.timeFormat)}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -170,7 +169,7 @@ export default function ConfirmationPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-600 dark:text-zinc-400">Total Amount</span>
-                  <span className="text-zinc-800 dark:text-zinc-200 font-medium">{formatCurrency(receipt.totalPrice)}</span>
+                  <span className="text-zinc-800 dark:text-zinc-200 font-medium">{formatCurrency(receipt.totalPrice,preferences.currency)}</span>
                 </div>
               </div>
             </div>

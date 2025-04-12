@@ -1,4 +1,4 @@
-export function formatCurrency(amount: number): string {
+export function formatCurrency(totalPrice: string, currency: string, amount: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',

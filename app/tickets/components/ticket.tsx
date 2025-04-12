@@ -1,5 +1,8 @@
 import { Calendar, Clock, Film, MapPin, User } from "lucide-react"
 import type { Movie, Showtime, Ticket, Screen } from "../../../types/types"
+import { usePreferences } from "@/context/PreferencesContext"
+import { formatTime } from "@/utils/formatters"
+import { formatCurrency } from "@/lib/utils"
 
 interface TicketProps {
   tickets: Ticket[]
@@ -17,6 +20,7 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
     .padStart(4, "0")}`
 
   const hasMultipleTickets = tickets.length > 1
+  const { preferences } = usePreferences();
 
   return (
     <div className={`w-full mb-8 ${isPast ? "opacity-90" : ""}`}>
@@ -28,8 +32,8 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
             {/* Bottom layer (3rd ticket) */}
             <div className={`
               absolute -bottom-2 -right-2 left-2 top-2
-              bg-gray-100 dark:bg-gray-700 rounded-xl
-              border border-gray-200 dark:border-gray-600
+              bg-zinc-100 dark:bg-zinc-700 rounded-xl
+              border border-zinc-200 dark:border-zinc-600
               transform rotate-1
               transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
               group-hover:translate-x-1 group-hover:translate-y-1
@@ -40,8 +44,8 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
             {/* Middle layer (2nd ticket) */}
             <div className={`
               absolute -bottom-1 -right-1 left-1 top-1
-              bg-gray-50 dark:bg-gray-800/40 rounded-xl
-              border border-gray-150 dark:border-gray-700/40
+              bg-zinc-50 dark:bg-zinc-800/40 rounded-xl
+              border border-zinc-150 dark:border-zinc-700/40
               transform rotate-0.5
               transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
               group-hover:translate-x-0.5 group-hover:translate-y-0.5
@@ -55,8 +59,8 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
         <div className={`
           relative z-20
           flex flex-col md:flex-row
-          bg-white dark:bg-gray-800 rounded-xl overflow-hidden
-          border border-gray-200 dark:border-gray-700
+          bg-white dark:bg-zinc-800 rounded-xl overflow-hidden
+          border border-zinc-200 dark:border-zinc-700
           shadow-sm
           transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
           group-hover:shadow-lg
@@ -64,7 +68,7 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
           ${hasMultipleTickets ? 'hover:border-red-200 dark:hover:border-red-900/50' : ''}
         `}>
           {/* Movie image */}
-          <div className="md:w-1/4 bg-gray-100 dark:bg-gray-700 flex items-center justify-center p-4">
+          <div className="md:w-1/4 bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center p-4">
             <div
               className="w-full h-48 md:h-full bg-cover bg-center rounded-lg overflow-hidden"
               style={{ backgroundImage: `url(${movie.image})` }}
@@ -76,43 +80,43 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
           </div>
 
           {/* Ticket details */}
-          <div className="flex-1 p-5 border-dashed border-2 dark:border-gray-600">
+          <div className="flex-1 p-5 border-dashed border-2 dark:border-zinc-600">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">{movie.title}</h3>
+                <h3 className="text-xl font-bold text-zinc-900 dark:text-white">{movie.title}</h3>
                 <div className="flex items-center mt-1">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">{screen.name}</span>
-                  <span className="mx-2 text-gray-300 dark:text-gray-600">•</span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">{showtime.format}</span>
+                  <span className="text-sm text-zinc-500 dark:text-zinc-400">{screen.name}</span>
+                  <span className="mx-2 text-zinc-300 dark:text-zinc-600">•</span>
+                  <span className="text-sm text-zinc-500 dark:text-zinc-400">{showtime.format}</span>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Date</p>
-                <p className="font-medium dark:text-gray-200 flex items-center">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Date</p>
+                <p className="font-medium dark:text-zinc-200 flex items-center">
                   <Calendar className="w-4 h-4 mr-2 text-red-500 dark:text-red-400" />
                   {showtime.date}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Time</p>
-                <p className="font-medium dark:text-gray-200 flex items-center">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Time</p>
+                <p className="font-medium dark:text-zinc-200 flex items-center">
                   <Clock className="w-4 h-4 mr-2 text-red-500 dark:text-red-400" />
-                  {showtime.time}
+                  {formatTime(showtime.time,preferences.timeFormat) }
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Seat{hasMultipleTickets ? "s" : ""}</p>
-                <p className="font-medium dark:text-gray-200 flex items-center">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Seat{hasMultipleTickets ? "s" : ""}</p>
+                <p className="font-medium dark:text-zinc-200 flex items-center">
                   <User className="w-4 h-4 mr-2 text-red-500 dark:text-red-400" />
                   {seatNumbers}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Screen</p>
-                <p className="font-medium dark:text-gray-200 flex items-center">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Screen</p>
+                <p className="font-medium dark:text-zinc-200 flex items-center">
                   <MapPin className="w-4 h-4 mr-2 text-red-500 dark:text-red-400" />
                   {screen.type.join(", ")}
                 </p>
@@ -121,13 +125,13 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
 
             <div className="flex justify-between items-center">
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Ticket ID</p>
-                <p className="font-mono text-sm font-medium text-gray-800 dark:text-gray-200">{ticketNumber}</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Ticket ID</p>
+                <p className="font-mono text-sm font-medium text-zinc-800 dark:text-zinc-200">{ticketNumber}</p>
               </div>
               <div className="flex items-center space-x-4">
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total</p>
-                  <p className="text-lg font-bold text-gray-900 dark:text-white">${totalPrice}</p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Total</p>
+                  <p className="text-lg font-bold text-zinc-900 dark:text-white">{formatCurrency(totalPrice, preferences.currency, Number(totalPrice))}</p>
                 </div>
                 <div>
                   <span
@@ -135,7 +139,7 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
                       px-3 py-1 rounded-full text-xs font-medium
                       ${
                         isPast
-                          ? "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                          ? "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300"
                           : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200"
                       }
                     `}
@@ -154,7 +158,7 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
             absolute -top-3 -right-3
             bg-red-600 text-white text-xs font-bold rounded-full
             h-7 w-7 flex items-center justify-center
-            border-2 border-white dark:border-gray-800
+            border-2 border-white dark:border-zinc-800
             shadow-lg z-30
             transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
             group-hover:scale-110 group-hover:-translate-y-0.5

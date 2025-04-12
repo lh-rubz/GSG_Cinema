@@ -1,5 +1,7 @@
+import { usePreferences } from "@/context/PreferencesContext"
 import { getScreenById } from "@/lib/screens-data"
 import { Seat, Showtime } from "@/types/types"
+import { formatCurrency, formatTime } from "@/utils/formatters"
 import Link from "next/link"
 import { useState } from "react"
 
@@ -12,7 +14,8 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
   const [use24HourFormat, setUse24HourFormat] = useState(true)
   const [showDollarPrice, setShowDollarPrice] = useState(false)
   const screen = getScreenById(showtime.screenId)
-  
+  const { preferences } = usePreferences();
+
   const formatStyles = {
     '2D': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
     '3D': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
@@ -20,31 +23,6 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
     '4dx': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
   }
 
-  const formatTime = (timeString: string) => {
-    const [hours, minutes] = timeString.split(':').map(Number)
-    
-    if (use24HourFormat) {
-      return timeString
-    } else {
-      const period = hours >= 12 ? 'PM' : 'AM'
-      const displayHours = hours % 12 || 12
-      return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`
-    }
-  }
-
-  const formatPrice = () => {
-    if (showDollarPrice) {
-      const usdPrice = showtime.price / 3.6
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD'
-      }).format(usdPrice)
-    }
-    return new Intl.NumberFormat('he-IL', {
-      style: 'currency',
-      currency: 'ILS'
-    }).format(showtime.price)
-  }
 
   return (
     <div className="relative bg-white dark:bg-zinc-800 rounded-lg shadow-lg overflow-hidden">
@@ -75,7 +53,7 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
                 onClick={() => setUse24HourFormat(!use24HourFormat)}
                 className="text-2xl font-bold text-zinc-900 dark:text-white hover:text-red-600 transition-colors"
               >
-                {formatTime(showtime.time)}
+                {formatTime(showtime.time,preferences.timeFormat )}
               </button>
               <div className="text-sm text-zinc-500 dark:text-zinc-400">
                 {screen?.name || "Screen"}
@@ -86,7 +64,7 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
             onClick={() => setShowDollarPrice(!showDollarPrice)}
             className="text-xl font-bold text-red-600 hover:text-red-700 transition-colors"
           >
-            {formatPrice()}
+            {formatCurrency(showtime.price, preferences.currency)}
           </button>
         </div>
 
@@ -109,6 +87,8 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
           </button></Link>
         </div>
       </div>
+
+
 
       {/* Ticket perforation bottom */}
       <div className="absolute bottom-0 left-0 w-full h-3 flex">

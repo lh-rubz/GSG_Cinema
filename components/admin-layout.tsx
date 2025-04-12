@@ -7,6 +7,8 @@ import { Film, Users, User, Video, Cast, MonitorPlay, Ticket, LayoutDashboard, M
 import ThemeToggle from "./theme-toggle"
 import { useAuth } from "@/hooks/use-auth"
 import { ConfirmDialog } from "./confirm-dialog"
+import { usePreferences } from "@/context/PreferencesContext"
+import { formatCurrency } from "@/utils/formatters"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -14,6 +16,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname()
   const router = useRouter() // Initialize router
   const { user, logout } = useAuth()
+  const { preferences } = usePreferences()
 
   const navItems = [
     {
@@ -114,6 +117,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </Link>
           ))}
         </nav>
+        <div className="p-4">
+          <p>Total Revenue: {formatCurrency(10000, preferences.currency)}</p>
+        </div>
         <div className="absolute bottom-0 w-full p-4 border-t border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

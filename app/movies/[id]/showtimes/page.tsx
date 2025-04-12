@@ -8,6 +8,8 @@ import { Loading } from "@/components/loading-inline"
 import { ArrowLeft, Calendar, Clock, Film, Info } from 'lucide-react'
 import Link from "next/link"
 import { format } from "date-fns"
+import { usePreferences } from "@/context/PreferencesContext"
+import { formatDuration } from "@/utils/formatters"
 
 export default function MovieShowtimesPage() {
   const params = useParams()
@@ -16,9 +18,11 @@ export default function MovieShowtimesPage() {
   const [error, setError] = useState<string | null>(null)
   const [movie, setMovie] = useState<any>(null)
   const [showtimes, setShowtimes] = useState<any[]>([])
+ const { preferences } = usePreferences();
 
   useEffect(() => {
     const fetchData = async () => {
+     
       try {
         setIsLoading(true)
         setError(null)
@@ -135,7 +139,7 @@ export default function MovieShowtimesPage() {
                       <div className="flex items-center gap-2">
                         <Clock className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
                         <span className="text-zinc-900 dark:text-white">
-                          {format(new Date(showtime.time), "h:mm a")}
+                         {formatDuration(showtime.time, preferences.timeFormat)}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
