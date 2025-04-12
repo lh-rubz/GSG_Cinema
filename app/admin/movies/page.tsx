@@ -197,25 +197,25 @@ export default function MoviesPage() {
 
   const handleSaveMovie = async () => {
     try {
-      setErrorMessage(null)
-      
+      setErrorMessage(null);
+
       const moviePayload = {
-          ...formData,
-          duration: formData.duration || "",
+        ...formData,
+        duration: formData.duration || "",
         cast: selectedCast.map((c) => ({
           castMemberId: c.castMemberId,
           character: c.character || "",
         })),
-      }
+      };
 
-      let response: ApiResponse<MovieWithCast>
+      let response: ApiResponse<MovieWithCast>;
 
       if (!currentMovie) {
         // Create new movie
-        response = await moviesApi.createMovie(moviePayload as any)
+        response = await moviesApi.createMovie(moviePayload as any);
       } else {
         // Update existing movie
-        const { directorId, ...updateData } = formData
+        const { directorId, ...updateData } = formData;
         response = await moviesApi.updateMovie(currentMovie.id, {
           ...updateData,
           duration: updateData.duration || "",
@@ -223,37 +223,62 @@ export default function MoviesPage() {
             castMemberId: c.castMemberId,
             character: c.character || "",
           })),
-        } as any)
-      }
-        
-        if (response.error) {
-        console.error("Error saving movie:", response.error)
-        setErrorMessage(`Failed to save movie: ${response.error}`)
-          return
+        } as any);
+
+        // Handle cast updates if the movie already exists
+        if (currentMovie.cast) {
+          const currentCastMap = new Map(
+            currentMovie.cast.map((c) => [c.castMemberId, c.character])
+          );
+
+          for (const castMember of selectedCast) {
+            const currentCharacter = currentCastMap.get(castMember.castMemberId);
+            if (currentCharacter !== castMember.character) {
+              // Update the cast member if the character has changed
+              try {
+                await castMembersApi.updateCastMember(castMember.castMemberId, {
+                  character: castMember.character,
+                  movieId: currentMovie.id,
+                });
+              } catch (error) {
+                console.error(
+                  `Error updating cast member ${castMember.castMemberId}:`,
+                  error
+                );
+              }
+            }
+          }
         }
-        
+      }
+
+      if (response.error) {
+        console.error("Error saving movie:", response.error);
+        setErrorMessage(`Failed to save movie: ${response.error}`);
+        return;
+      }
+
       if (response.data) {
         if (!currentMovie) {
-          setMovies((prev) => [...prev, response.data as MovieWithCast])
+          setMovies((prev) => [...prev, response.data as MovieWithCast]);
         } else {
-          setMovies((prev) => 
-            prev.map((m) => 
-              m.id === currentMovie.id 
-                ? { 
-                    ...response.data as MovieWithCast,
-                    cast: selectedCast
-                  } 
+          setMovies((prev) =>
+            prev.map((m) =>
+              m.id === currentMovie.id
+                ? {
+                    ...response.data,
+                    cast: selectedCast,
+                  }
                 : m
             )
-          )
+          );
         }
-        setIsModalOpen(false)
+        setIsModalOpen(false);
       }
     } catch (error) {
-      console.error("Error saving movie:", error)
-      setErrorMessage("An unexpected error occurred. Please try again.")
+      console.error("Error saving movie:", error);
+      setErrorMessage("An unexpected error occurred. Please try again.");
     }
-  }
+  };
 
   const handleConfirmDelete = async () => {
     if (currentMovie) {
