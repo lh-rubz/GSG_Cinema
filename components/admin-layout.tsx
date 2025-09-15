@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation" // Import useRouter for navigation
-import { Film, Users, User, Video, Cast, MonitorPlay, Ticket, LayoutDashboard, Menu, X, LogOut, Calendar, Tag } from "lucide-react"
+import { Film, Users, User, Video, Cast, MonitorPlay, Ticket, LayoutDashboard, Menu, X, LogOut, Calendar, Tag, Flag } from "lucide-react"
 import ThemeToggle from "./theme-toggle"
 import { useAuth } from "@/hooks/use-auth"
 import { ConfirmDialog } from "./confirm-dialog"
@@ -97,6 +97,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       label: "Promotions",
       href: "/admin/promotions",
       icon: <Tag className="h-5 w-5" />,
+    },
+    {
+      label: "Reports",
+      href: "/admin/reports",
+      icon: <Flag className="h-5 w-5" />,
+      adminOnly: true,
     },
   ]
 
