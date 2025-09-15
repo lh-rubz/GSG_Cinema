@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation" // Import useRouter for navigation
 import { Film, Users, User, Video, Cast, MonitorPlay, Ticket, LayoutDashboard, Menu, X, LogOut, Calendar, Tag } from "lucide-react"
@@ -9,10 +9,13 @@ import { useAuth } from "@/hooks/use-auth"
 import { ConfirmDialog } from "./confirm-dialog"
 import { usePreferences } from "@/context/PreferencesContext"
 import { formatCurrency } from "@/utils/formatters"
+import { statsApi, type Stats } from "@/lib/endpoints/stats"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false) // State for confirmation dialog
+  const [revenue, setRevenue] = useState(0)
+  const [isLoadingRevenue, setIsLoadingRevenue] = useState(true)
   const pathname = usePathname()
   const router = useRouter() // Initialize router
   const { user, logout, isAuthenticated } = useAuth()
@@ -23,6 +26,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push('/403')
     return null
   }
+
+  // Fetch revenue data
+  useEffect(() => {
+    async function fetchRevenue() {
+      try {
+        setIsLoadingRevenue(true)
+        const response = await statsApi.getStats()
+        if (response.data) {
+          setRevenue(response.data.revenue)
+        }
+      } catch (error) {
+        console.error("Error fetching revenue data:", error)
+      } finally {
+        setIsLoadingRevenue(false)
+      }
+    }
+
+    fetchRevenue()
+  }, [])
 
   const navItems = [
     {
@@ -86,7 +108,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-zinc-50 via-white to-red-50/30 dark:from-zinc-900 dark:via-zinc-900 dark:to-red-950/20">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />
@@ -94,11 +116,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-white dark:bg-zinc-800 border-r border-zinc-200 dark:border-zinc-700 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-white/90 dark:bg-zinc-800/95 backdrop-blur-md border-r border-zinc-200/50 dark:border-zinc-700/50 shadow-xl transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex h-16 items-center justify-between px-4 border-b border-zinc-200 dark:border-zinc-700">
+        <div className="flex h-16 items-center justify-between px-4 border-b border-zinc-200/50 dark:border-zinc-700/50 bg-gradient-to-r from-red-50/50 to-orange-50/30 dark:from-red-900/10 dark:to-orange-900/10">
           <Link href="/admin" className="flex items-center gap-2">
             <Film className="h-6 w-6 text-red-600 dark:text-red-500" />
             <span className="text-lg font-semibold text-zinc-900 dark:text-white">Cinema Admin</span>
@@ -112,10 +134,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                 pathname === item.href 
-                  ? "bg-red-600 text-white" 
-                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-white"
+                  ? "bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg shadow-red-500/25 scale-105" 
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-white/60 dark:hover:bg-zinc-700/50 hover:text-red-600 dark:hover:text-red-400 hover:scale-105 hover:shadow-md"
               }`}
             >
               {item.icon}
@@ -124,9 +146,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           ))}
         </nav>
         <div className="p-4">
-          <p>Total Revenue: {formatCurrency(10000, preferences.currency)}</p>
+          <div className="bg-gradient-to-r from-green-50/80 to-emerald-50/60 dark:from-green-900/20 dark:to-emerald-900/10 rounded-xl p-4 border border-green-200/50 dark:border-green-700/30">
+            <p className="text-sm font-medium text-green-700 dark:text-green-400 mb-1">Total Revenue</p>
+            {isLoadingRevenue ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-green-300 border-t-green-600 rounded-full animate-spin"></div>
+                <span className="text-sm text-green-600 dark:text-green-400">Loading...</span>
+              </div>
+            ) : (
+              <p className="text-xl font-bold text-green-800 dark:text-green-300">
+                {formatCurrency(revenue, preferences.currency as 'USD' | 'NIS')}
+              </p>
+            )}
+          </div>
         </div>
-        <div className="absolute bottom-0 w-full p-4 border-t border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
+        <div className="absolute bottom-0 w-full p-4 border-t border-zinc-200/50 dark:border-zinc-700/50 bg-gradient-to-r from-white/90 to-red-50/50 dark:from-zinc-800/90 dark:to-red-900/10 backdrop-blur-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-full bg-red-600 flex items-center justify-center text-white">
@@ -153,7 +187,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main content */}
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Header */}
-        <header className="h-16 border-b border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-between px-4 lg:px-6">
+        <header className="h-16 border-b border-zinc-200/50 dark:border-zinc-700/50 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md shadow-sm flex items-center justify-between px-4 lg:px-6">
           <button className="lg:hidden text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white" onClick={() => setSidebarOpen(true)}>
             <Menu className="h-6 w-6" />
           </button>
@@ -165,7 +199,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         {/* Main content area */}
-        <main className="flex-1 overflow-auto p-4 lg:p-6">{children}</main>
+        <main className="flex-1 overflow-auto p-4 lg:p-6 bg-gradient-to-b from-transparent to-zinc-50/30 dark:to-zinc-900/30">{children}</main>
       </div>
 
       {/* Confirm Logout Dialog */}
