@@ -3,18 +3,13 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MovieFilters } from "@/components/movies-filters";
 import { NoMoviesFound } from "@/components/no-movies-found";
-import { Movie, MovieGenre } from "@/types/types";
+import { Movie, MovieGenre, ActiveTab } from "@/types/types";
 import { ALL_GENRES } from "@/types/types";
 import MoviesContainer from "@/components/moviesRouteContainer";
 import { moviesApi } from "@/lib";
 
 import { useTheme } from "next-themes";
 import { Loading } from "@/components/loading-inline";
-
-export enum ActiveTab {
-  NOW = "now",
-  SOON = "soon",
-}
 
 interface Filters {
   genre: MovieGenre | "";

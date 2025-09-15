@@ -25,7 +25,6 @@ const PromotionsContainer = ({ promotions }: Iprops) => {
         <PromotionCard 
           key={prom.id} 
           promotion={prom}
-          formatDate={formatExpiryDate}
         />
       ))}
     </div>

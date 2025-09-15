@@ -23,7 +23,7 @@ export function DashboardLayout({
         userName={userName} 
         userImage={userImage} 
       />
-      <main className="md:ml-64 p-4 md:p-8">
+      <main className="md:ml-64 p-4 md:pl-4 md:pr-8 md:py-8">
         {children}
       </main>
     </div>

@@ -12,10 +12,11 @@ export const getReplyById = (id: string): Reply | undefined => {
   };
   
   // Add a new reply
-  export const createReply = (userId: string, comment: string): Reply => {
+  export const createReply = (userId: string, reviewId: string, comment: string): Reply => {
     const newReply: Reply = {
       id: (Math.random() * 100000).toString(), // Mock ID generation (replace with real ID generation)
       userId,
+      reviewId,
       comment,
       date: new Date().toISOString(),
       reportedBy:[] // Current date and time

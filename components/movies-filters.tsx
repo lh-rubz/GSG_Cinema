@@ -1,6 +1,5 @@
 "use client";
-import { ActiveTab } from "@/app/movies/page";
-import { ALL_GENRES, MovieGenre } from "@/types/types";
+import { ActiveTab, ALL_GENRES, MovieGenre } from "@/types/types";
 
 import { useRouter, useSearchParams } from "next/navigation";
 

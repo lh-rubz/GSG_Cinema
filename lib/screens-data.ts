@@ -13,7 +13,7 @@ export function getScreenById(id: string): Screen | undefined {
 }
 
 // Function to get screens by type (e.g., "IMAX", "Premium")
-export function getScreensByType(type: "Standard" | "Premium" | "IMAX" | "4DX"): Screen[] {
+export function getScreensByType(type: "Standard" | "Premium" | "IMAX" | "FourDX"): Screen[] {
   return screens.filter(screen => screen.type.includes(type));
 }
 

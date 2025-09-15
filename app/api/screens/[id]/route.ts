@@ -1,10 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const screen = await prisma.screen.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         seats: {
           orderBy: [{ row: "asc" }, { col: "asc" }],
@@ -43,12 +44,13 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const body = await request.json()
 
     const existingScreen = await prisma.screen.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     if (!existingScreen) {
@@ -56,7 +58,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     const screen = await prisma.screen.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         name: body.name,
         type: body.type,
@@ -74,10 +76,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const showtimesCount = await prisma.showtime.count({
-      where: { screenId: params.id },
+      where: { screenId: id },
     })
 
     if (showtimesCount > 0) {
@@ -85,11 +88,11 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     await prisma.seat.deleteMany({
-      where: { screenId: params.id },
+      where: { screenId: id },
     })
 
     await prisma.screen.delete({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     return NextResponse.json({ message: "Screen deleted successfully" })

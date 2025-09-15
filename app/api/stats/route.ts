@@ -25,39 +25,44 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    const lastMonth = new Date()
-    lastMonth.setMonth(lastMonth.getMonth() - 1)
-    const lastMonthStr = lastMonth.toISOString().split('T')[0]
-
-    const lastMonthTickets = await prisma.ticket.count({
-      where: {
-        status: {
-          in: ["paid", "used"]
-        },
-        purchaseDate: {
-          lt: lastMonthStr
-        }
+    // Calculate all-time trends based on historical data
+    const firstReceipt = await prisma.receipt.findFirst({
+      orderBy: {
+        receiptDate: 'asc'
       }
     })
 
-    const lastMonthRevenue = await prisma.receipt.aggregate({
-      where: {
-        receiptDate: {
-          lt: lastMonthStr
-        }
-      },
-      _sum: {
-        totalPrice: true
+    const firstTicket = await prisma.ticket.findFirst({
+      orderBy: {
+        purchaseDate: 'asc'
       }
     })
 
-    const ticketsTrend = lastMonthTickets > 0 
-      ? ((ticketsSold - lastMonthTickets) / lastMonthTickets) * 100 
-      : 100
+    // Calculate growth rate based on time period
+    let revenueTrend = 0
+    let ticketsTrend = 0
 
-    const revenueTrend = lastMonthRevenue._sum.totalPrice && revenue._sum.totalPrice
-      ? ((revenue._sum.totalPrice - lastMonthRevenue._sum.totalPrice) / lastMonthRevenue._sum.totalPrice) * 100 
-      : 100
+    if (firstReceipt && revenue._sum.totalPrice) {
+      const daysSinceFirst = Math.max(
+        1,
+        Math.floor((new Date().getTime() - new Date(firstReceipt.receiptDate).getTime()) / (1000 * 60 * 60 * 24))
+      )
+      
+      // Calculate annualized growth rate
+      const monthlyGrowthRate = (revenue._sum.totalPrice / Math.max(daysSinceFirst / 30, 1)) * 100
+      revenueTrend = Math.min(monthlyGrowthRate, 999) // Cap at 999% for display
+    }
+
+    if (firstTicket && ticketsSold > 0) {
+      const daysSinceFirstTicket = Math.max(
+        1,
+        Math.floor((new Date().getTime() - new Date(firstTicket.purchaseDate).getTime()) / (1000 * 60 * 60 * 24))
+      )
+      
+      // Calculate tickets sold per month trend
+      const monthlyTicketRate = (ticketsSold / Math.max(daysSinceFirstTicket / 30, 1)) * 10
+      ticketsTrend = Math.min(monthlyTicketRate, 999) // Cap at 999% for display
+    }
 
     return NextResponse.json({
       totalMovies,

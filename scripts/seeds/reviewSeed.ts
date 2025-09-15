@@ -1,4 +1,5 @@
-import { Movie, Review, User } from '@prisma/client';
+import { Movie, User } from '@prisma/client';
+import { Review } from '@/types/types';
 import axios, { AxiosResponse } from 'axios';
 
 const api = axios.create({
@@ -15,7 +16,9 @@ const api = axios.create({
         rating: 5,
         comment: "One of the best movies I've ever seen. The concept is mind-blowing and the execution is flawless.",
         date: "2023-05-16T14:30:00Z",
-        likes: 0
+        likedBy: [],
+        replies: [],
+        reportedBy: []
        },
        {
         id: "rev2",
@@ -24,7 +27,9 @@ const api = axios.create({
         rating: 4,
         comment: "A surprisingly deep and entertaining movie. Great performances by Margot Robbie and Ryan Gosling.",
         date: "2023-05-16T15:45:00Z",
-        likes: 0
+        likedBy: [],
+        replies: [],
+        reportedBy: []
       },
       {
         id: "rev3",
@@ -33,7 +38,9 @@ const api = axios.create({
         rating: 5,
         comment: "Visually stunning and faithful to the book. Can't wait for part two!",
         date: "2023-05-16T16:20:00Z",
-        likes: 0
+        likedBy: [],
+        replies: [],
+        reportedBy: []
       }
     ];
 

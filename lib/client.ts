@@ -1,6 +1,6 @@
 const API_BASE_URL = '/api';
 
-interface ApiResponse<T> {
+export interface ApiResponse<T> {
   status: number;
   data?: T;
   error?: string;

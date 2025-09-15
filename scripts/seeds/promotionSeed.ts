@@ -1,4 +1,5 @@
-import { Promotion } from '@prisma/client';
+import { Promotion as PrismaPromotion } from '@prisma/client';
+import { Promotion } from '@/types/types';
 import axios, { AxiosResponse } from 'axios';
 
 const api = axios.create({
@@ -17,7 +18,8 @@ type PromotionInput = Omit<Promotion, 'id' | 'createdAt' | 'updatedAt'>;
         description: "Welcome offer - 20% off on your first booking",
         startDate: "2024-01-01T00:00:00.000Z",
         expiryDate: "2024-12-31T23:59:59.999Z",
-        isActive: true
+        isActive: true,
+        image: "https://image.api.playstation.com/vulcan/ap/rnd/202009/3021/SfK6snCLSX4qRfmIVQXrYXJK.png"
       },
       {
         code: "MOVIENIGHT",

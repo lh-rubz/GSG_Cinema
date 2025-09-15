@@ -25,7 +25,7 @@ export default function CustomersPage() {
     gender: "M",
     bio: "",
     profileImage: "",
-    role: "customer",
+    role: "User",
     movieIdsPurchased: [],
   })
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -40,28 +40,7 @@ export default function CustomersPage() {
       setIsLoading(true)
       const response = await usersApi.getUsers()
       if (response.data) {
-        const mappedUsers = response.data.map(user => {
-
-          const apiRole = user.role as string;
-          let frontendRole: "admin" | "staff" | "customer";
-          
-          if (apiRole === "User") {
-            frontendRole = "customer";
-          } else if (apiRole === "Admin") {
-            frontendRole = "admin";
-          } else if (apiRole === "Staff") {
-            frontendRole = "staff";
-          } else {
-            frontendRole = "customer";
-          }
-          
-          return {
-            ...user,
-            role: frontendRole
-          };
-        });
-        
-        const filteredUsers = mappedUsers.filter(user => user.role === "customer")
+        const filteredUsers = response.data.filter(user => user.role === "User")
         setCustomers(filteredUsers)
       }
     } catch (error) {
@@ -81,7 +60,7 @@ export default function CustomersPage() {
       gender: "M",
       bio: "",
       profileImage: "",
-      role: "customer",
+      role: "User",
       movieIdsPurchased: [],
     })
     setFormErrors({})
@@ -136,6 +115,7 @@ export default function CustomersPage() {
           gender: formData.gender || "M",
           bio: formData.bio || "",
           profileImage: formData.profileImage || "",
+          role: "User",
         })
         
         if (response.error) {

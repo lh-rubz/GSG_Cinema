@@ -107,7 +107,6 @@ export default function PromotionsPage() {
       {validPromotions.length > 0 ? (
         <PromotionsContainer 
           promotions={validPromotions} 
-          formatDate={formatExpiryDate} 
         />
       ) : (
         <div className="flex flex-col items-center justify-center py-12 min-h-[50vh] gap-4">

@@ -107,6 +107,17 @@ enum PromotionType {
   BUY_ONE_GET_ONE
 }
 
+enum ReportStatus {
+  PENDING
+  RESOLVED
+  DISMISSED
+}
+
+enum ReportContentType {
+  REVIEW
+  REPLY
+}
+
 model UserPreferences {
   id            String        @id @default(uuid())
   userId        String        @unique
@@ -214,33 +225,56 @@ model Showtime {
 }
 
 model Review {
-  id       String   @id @default(uuid())
-  movieId  String
-  movie    Movie    @relation(fields: [movieId], references: [id])
-  userId   String
-  user     User     @relation(fields: [userId], references: [id])
-  rating   Int
-  comment  String   @db.Text
-  date     String
-  likes    Int      @default(0)
-  likedBy  User[]   @relation("ReviewLikes")
-  replies  Reply[]
+  id         String   @id @default(uuid())
+  movieId    String
+  movie      Movie    @relation(fields: [movieId], references: [id])
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  rating     Int
+  comment    String   @db.Text
+  date       String
+  likes      Int      @default(0)
+  likedBy    User[]   @relation("ReviewLikes")
+  replies    Reply[]
+  reportedBy String[] @default([])
+  reports    ReportedContent[]
 
   @@index([movieId])
   @@index([userId])
 }
 
 model Reply {
-  id        String  @id @default(uuid())
-  reviewId  String
-  review    Review  @relation(fields: [reviewId], references: [id])
-  userId    String
-  user      User    @relation(fields: [userId], references: [id])
-  comment   String  @db.Text
-  date      String
+  id         String  @id @default(uuid())
+  reviewId   String
+  review     Review  @relation(fields: [reviewId], references: [id])
+  userId     String
+  user       User    @relation(fields: [userId], references: [id])
+  comment    String  @db.Text
+  date       String
+  reportedBy String[] @default([])
+  reports    ReportedContent[]
 
   @@index([reviewId])
   @@index([userId])
+}
+
+model ReportedContent {
+  id         String            @id @default(uuid())
+  reporterId String
+  reporter   User              @relation("Reporter", fields: [reporterId], references: [id])
+  reason     String?           @db.Text
+  status     ReportStatus      @default(PENDING)
+  reportDate String
+  contentType ReportContentType
+  reviewId   String?
+  review     Review?           @relation(fields: [reviewId], references: [id])
+  replyId    String?
+  reply      Reply?            @relation(fields: [replyId], references: [id])
+
+  @@index([reporterId])
+  @@index([reviewId])
+  @@index([replyId])
+  @@index([status])
 }
 
 model User {
@@ -258,6 +292,7 @@ model User {
   tickets           Ticket[]
   receipts          Receipt[]
   likedReviews      Review[]  @relation("ReviewLikes")
+  reports           ReportedContent[] @relation("Reporter")
   role              Role
 
   @@index([email])

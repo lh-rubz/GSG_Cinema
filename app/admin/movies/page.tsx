@@ -2,12 +2,14 @@
 
 import type React from "react"
 import { useState, useEffect, useMemo } from "react"
-import { Film, Star, Search, X, ChevronDown, ChevronUp, Edit, Trash2 } from "lucide-react"
+import { Film, Star, Search, X, ChevronDown, ChevronUp, Edit, Trash2, Calendar, Tag, User } from "lucide-react"
 import type { Movie, MovieGenre, CastMember, Director } from "@/types/types"
+import { ALL_GENRES } from "@/types/types"
 import type { ApiResponse } from "@/lib/client"
 import { moviesApi } from "@/lib/endpoints/movies"
 import { castMembersApi } from "@/lib/endpoints/cast-members"
 import { directorsApi } from "@/lib/endpoints/directors"
+import toast from "react-hot-toast"
 
 interface MovieWithCast extends Movie {
   cast?: Array<{
@@ -17,25 +19,7 @@ interface MovieWithCast extends Movie {
   }>
 }
 
-// Sample data
-const ALL_GENRES: MovieGenre[] = [
-  "Action",
-  "Adventure",
-  "Comedy",
-  "Drama",
-  "Fantasy",
-  "Horror",
-  "Mystery",
-  "Romance",
-  "SciFi",
-  "Thriller",
-  "Crime",
-  "Animation",
-  "Documentary",
-  "Family",
-  "Western",
-  "Arabic",
-]
+// Use genres from types file
 
 export default function MoviesPage() {
   const [movies, setMovies] = useState<MovieWithCast[]>([])
@@ -54,7 +38,6 @@ export default function MoviesPage() {
     duration: "",
     trailer: "",
     releaseDate: "",
-    castIds: [],
     status: "coming_soon",
     hidden: false,
   })
@@ -163,7 +146,6 @@ export default function MoviesPage() {
       duration: "",
       trailer: "",
       releaseDate: "",
-      castIds: [],
       status: "coming_soon",
       hidden: false,
     })
@@ -199,84 +181,83 @@ export default function MoviesPage() {
     try {
       setErrorMessage(null);
 
-      const moviePayload = {
-        ...formData,
-        duration: formData.duration || "",
-        cast: selectedCast.map((c) => ({
-          castMemberId: c.castMemberId,
-          character: c.character || "",
-        })),
-      };
-
       let response: ApiResponse<MovieWithCast>;
 
       if (!currentMovie) {
-        // Create new movie
-        response = await moviesApi.createMovie(moviePayload as any);
-      } else {
-        // Update existing movie
-        const { directorId, ...updateData } = formData;
-        response = await moviesApi.updateMovie(currentMovie.id, {
-          ...updateData,
-          duration: updateData.duration || "",
+        // Create new movie - use cast array format
+        const moviePayload = {
+          ...formData,
+          duration: formData.duration || "",
           cast: selectedCast.map((c) => ({
             castMemberId: c.castMemberId,
-            character: c.character || "",
+            character: c.character || "Unknown Character",
           })),
-        } as any);
+        };
+        
+        response = await moviesApi.createMovie(moviePayload as any);
+      } else {
+        // Update existing movie - use castIds and characters format
+        const { directorId, ...updateData } = formData;
+        
+        // Create characters object mapping castMemberId to character name
+        const characters: { [key: string]: string } = {};
+        selectedCast.forEach((c) => {
+          characters[c.castMemberId] = c.character || "Unknown Character";
+        });
 
-        // Handle cast updates if the movie already exists
-        if (currentMovie.cast) {
-          const currentCastMap = new Map(
-            currentMovie.cast.map((c) => [c.castMemberId, c.character])
-          );
-
-          for (const castMember of selectedCast) {
-            const currentCharacter = currentCastMap.get(castMember.castMemberId);
-            if (currentCharacter !== castMember.character) {
-              // Update the cast member if the character has changed
-              try {
-                await castMembersApi.updateCastMember(castMember.castMemberId, {
-                  character: castMember.character,
-                  movieId: currentMovie.id,
-                });
-              } catch (error) {
-                console.error(
-                  `Error updating cast member ${castMember.castMemberId}:`,
-                  error
-                );
-              }
-            }
-          }
-        }
+        const updatePayload = {
+          ...updateData,
+          duration: updateData.duration || "",
+          castIds: selectedCast.map((c) => c.castMemberId),
+          characters: characters,
+        };
+        
+        response = await moviesApi.updateMovie(currentMovie.id, updatePayload as any);
       }
 
       if (response.error) {
         console.error("Error saving movie:", response.error);
-        setErrorMessage(`Failed to save movie: ${response.error}`);
+        const errorMsg = `Failed to save movie: ${response.error}`;
+        setErrorMessage(errorMsg);
+        toast.error(errorMsg)
         return;
       }
 
-      if (response.data) {
+      // Check if the operation was successful (either has data or status is ok)
+      if (response.data || (response.status >= 200 && response.status < 300)) {
+        const movieData = response.data;
+        console.log("Movie save response:", response); // Debug log
+        
         if (!currentMovie) {
-          setMovies((prev) => [...prev, response.data as MovieWithCast]);
+          // Creating new movie
+          if (movieData) {
+            setMovies((prev) => [...prev, movieData as MovieWithCast]);
+          }
+          toast.success(`"${movieData?.title || formData.title}" has been successfully added to the cinema.`)
         } else {
-          setMovies((prev) =>
-            prev.map((m) =>
-              m.id === currentMovie.id
-                ? {
-                    ...response.data,
-                    cast: selectedCast,
-                  }
-                : m
-            )
-          );
+          // Updating existing movie
+          if (movieData) {
+            setMovies((prev) =>
+              prev.map((m) =>
+                m.id === currentMovie.id ? (movieData as MovieWithCast) : m
+              )
+            );
+          }
+          toast.success(`"${movieData?.title || currentMovie.title}" has been successfully updated.`)
         }
+        
         setIsModalOpen(false);
+        
+        // If no data in response, refetch to ensure we have latest data
+        if (!movieData) {
+          fetchMovies();
+        }
       }
     } catch (error) {
       console.error("Error saving movie:", error);
-      setErrorMessage("An unexpected error occurred. Please try again.");
+      const errorMsg = "An unexpected error occurred. Please try again.";
+      setErrorMessage(errorMsg);
+      toast.error(errorMsg)
     }
   };
 
@@ -288,17 +269,22 @@ export default function MoviesPage() {
         
         if (response.error) {
           console.error("Error deleting movie:", response.error)
-          setErrorMessage(`Cannot delete ${currentMovie.title}: ${response.error}`)
+          const errorMsg = `Cannot delete ${currentMovie.title}: ${response.error}`;
+          setErrorMessage(errorMsg)
+          toast.error(errorMsg)
           return
         }
         
         if (response.status === 200) {
           setMovies((prev) => prev.filter((m) => m.id !== currentMovie.id))
           setIsDeleteModalOpen(false)
+          toast.success(`"${currentMovie.title}" has been successfully deleted.`)
         }
       } catch (error) {
         console.error("Error deleting movie:", error)
-        setErrorMessage(error instanceof Error ? error.message : "An unexpected error occurred")
+        const errorMsg = error instanceof Error ? error.message : "An unexpected error occurred";
+        setErrorMessage(errorMsg)
+        toast.error(errorMsg)
       }
     }
   }
@@ -344,64 +330,13 @@ export default function MoviesPage() {
     setSelectedCast((prev) => prev.filter((c) => c.castMemberId !== castMemberId))
   }
 
-  const handleCastCharacterChange = async (castMemberId: string, character: string) => {
-    try {
-      if (!currentMovie?.id) {
-        console.error("No movie selected")
-        return
-      }
-
-      // Update the local state first for immediate UI feedback
-      setSelectedCast(prev =>
-        prev.map(c =>
-          c.castMemberId === castMemberId ? { ...c, character } : c
-        )
+  const handleCastCharacterChange = (castMemberId: string, character: string) => {
+    // Simply update the local state - changes will be saved when the movie is saved
+    setSelectedCast(prev =>
+      prev.map(c =>
+        c.castMemberId === castMemberId ? { ...c, character } : c
       )
-
-      // Update the cast member in the database
-      const response = await castMembersApi.updateCastMember(castMemberId, { 
-        character,
-        movieId: currentMovie.id
-      })
-      
-      if (response.error) {
-        console.error("Error updating cast member:", response.error)
-        // Revert the local state if the update failed
-        setSelectedCast(prev =>
-          prev.map(c =>
-            c.castMemberId === castMemberId 
-              ? { ...c, character: c.character } // Revert to previous character
-              : c
-          )
-        )
-        return
-      }
-
-      // Update the movies state to reflect the change
-      setMovies(prev =>
-        prev.map(movie => {
-          if (movie.id === currentMovie.id && movie.cast) {
-            return {
-              ...movie,
-              cast: movie.cast.map(c =>
-                c.castMemberId === castMemberId ? { ...c, character } : c
-              )
-            }
-          }
-          return movie
-        })
-      )
-    } catch (error) {
-      console.error("Error updating cast member:", error)
-      // Revert the local state if there was an error
-      setSelectedCast(prev =>
-        prev.map(c =>
-          c.castMemberId === castMemberId 
-            ? { ...c, character: c.character } // Revert to previous character
-            : c
-        )
-      )
-    }
+    )
   }
 
   return (
@@ -410,21 +345,25 @@ export default function MoviesPage() {
         <h1 className="text-2xl font-bold">Movies</h1>
         <button
           onClick={handleAddMovie}
-          className="px-4 py-2 rounded-md bg-zinc-600 text-white hover:bg-zinc-700 transition-colors dark:bg-zinc-500 dark:hover:bg-zinc-600"
+          className="px-6 py-3 rounded-xl bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-semibold transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl hover:shadow-red-500/25 flex items-center gap-2"
         >
+          <Film className="h-5 w-5" />
           Add Movie
         </button>
       </div>
 
       {errorMessage && (
-        <div className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-red-900/30 dark:text-red-400">
-          {errorMessage}
-          <button
-            onClick={() => setErrorMessage(null)}
-            className="ml-2 font-medium underline hover:text-red-900 dark:hover:text-red-300"
-          >
-            Dismiss
-          </button>
+        <div className="p-4 mb-6 text-sm text-red-800 rounded-xl bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 dark:text-red-400 border-l-4 border-red-500 shadow-lg animate-in slide-in-from-top-2 duration-300">
+          <div className="flex items-center gap-2">
+            <X className="h-4 w-4 text-red-600 dark:text-red-400" />
+            <span className="font-medium">{errorMessage}</span>
+            <button
+              onClick={() => setErrorMessage(null)}
+              className="ml-auto px-3 py-1 text-xs font-semibold rounded-lg bg-red-100 dark:bg-red-800/50 hover:bg-red-200 dark:hover:bg-red-700/50 transition-colors duration-200"
+            >
+              Dismiss
+            </button>
+          </div>
         </div>
       )}
 
@@ -436,9 +375,9 @@ export default function MoviesPage() {
             placeholder="Search movies..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 pl-10 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+            className="w-full px-5 py-4 pl-12 rounded-xl border-2 border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm text-zinc-900 dark:text-zinc-100 focus:border-red-500 dark:focus:border-red-400 focus:ring-2 focus:ring-red-500/20 transition-all duration-200 hover:bg-white dark:hover:bg-zinc-800 shadow-sm"
           />
-          <Search className="absolute left-3 top-2.5 h-5 w-5 text-zinc-500 dark:text-zinc-400" />
+          <Search className="absolute left-4 top-4 h-5 w-5 text-zinc-500 dark:text-zinc-400" />
         </div>
 
         {isLoading ? (
@@ -446,9 +385,9 @@ export default function MoviesPage() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-600 dark:border-zinc-500"></div>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
+          <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-lg bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm">
             <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
-              <thead className="bg-zinc-50 dark:bg-zinc-800">
+              <thead className="bg-gradient-to-r from-zinc-50/80 to-red-50/50 dark:from-zinc-800/80 dark:to-red-900/20">
                 <tr>
                   <th
                     scope="col"
@@ -550,7 +489,7 @@ export default function MoviesPage() {
               </thead>
               <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-200 dark:divide-zinc-700">
                 {filteredMovies.map((movie) => (
-                  <tr key={movie.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                  <tr key={movie.id} className="hover:bg-gradient-to-r hover:from-red-50/30 hover:to-orange-50/30 dark:hover:from-red-900/10 dark:hover:to-orange-900/10 transition-all duration-200">
                     <td className="px-4 py-4 whitespace-nowrap">
         <div className="flex items-center gap-3">
                         {movie.image ? (
@@ -609,14 +548,14 @@ export default function MoviesPage() {
                     <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
           <button 
                         onClick={() => handleEditMovie(movie)}
-                        className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-400 mr-3"
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 mr-3 p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 hover:scale-110"
           >
                         <Edit className="h-4 w-4" />
                         <span className="sr-only">Edit</span>
           </button>
                       <button
                         onClick={() => handleDeleteMovie(movie)}
-                        className="text-red-600 hover:text-red-900 dark:text-red-500 dark:hover:text-red-400"
+                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 hover:scale-110"
                       >
                         <Trash2 className="h-4 w-4" />
                         <span className="sr-only">Delete</span>
@@ -637,33 +576,34 @@ export default function MoviesPage() {
       )}
       </div>
 
-      {/* Custom Modal for Movie Form */}
+      {/* Enhanced Modal for Movie Form */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="fixed inset-0 z-50 overflow-y-auto animate-in fade-in duration-200">
           <div className="flex items-center justify-center min-h-screen p-4">
             <div
-              className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-all duration-300 animate-in fade-in"
               onClick={() => setIsModalOpen(false)}
             ></div>
-            <div className="relative bg-white dark:bg-zinc-900 rounded-lg shadow-xl max-w-4xl w-full mx-auto z-10">
-              <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-700">
-                <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+            <div className="relative bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 dark:border-zinc-700/50 max-w-4xl w-full mx-auto z-10 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+              <div className="flex items-center justify-between p-6 border-b border-white/10 dark:border-zinc-700/50 bg-gradient-to-r from-red-50/50 to-orange-50/50 dark:from-red-900/10 dark:to-orange-900/10 rounded-t-2xl">
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-orange-600 dark:from-red-400 dark:to-orange-400 bg-clip-text text-transparent">
                   {currentMovie ? "Edit Movie" : "Add New Movie"}
                 </h3>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
+                  className="text-zinc-500 hover:text-red-600 dark:text-zinc-400 dark:hover:text-red-400 transition-all duration-200 hover:scale-110 hover:rotate-90 p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
                 >
                   <X className="h-5 w-5" />
                   <span className="sr-only">Close</span>
                 </button>
         </div>
 
-              <div className="p-6 max-h-[70vh] overflow-y-auto">
+              <div className="p-6 max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-red-300 dark:scrollbar-thumb-red-700 scrollbar-track-transparent">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   {/* Title and Year */}
                   <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label htmlFor="title" className="flex items-center gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+                      <Film className="h-4 w-4 text-red-500" />
                       Title <span className="text-red-500">*</span>
                     </label>
               <input
@@ -672,12 +612,13 @@ export default function MoviesPage() {
                 name="title"
                 value={formData.title || ""}
                 onChange={handleInputChange}
-                      className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                      className="w-full px-4 py-3 rounded-xl border-2 border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm text-zinc-900 dark:text-zinc-100 focus:border-red-500 dark:focus:border-red-400 focus:ring-2 focus:ring-red-500/20 transition-all duration-200 hover:bg-white dark:hover:bg-zinc-800"
                 required
               />
                   </div>
                   <div>
-                    <label htmlFor="year" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label htmlFor="year" className="flex items-center gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+                      <Calendar className="h-4 w-4 text-red-500" />
                       Year <span className="text-red-500">*</span>
                     </label>
               <input
@@ -686,7 +627,7 @@ export default function MoviesPage() {
                 name="year"
                 value={formData.year || ""}
                 onChange={handleInputChange}
-                      className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                      className="w-full px-4 py-3 rounded-xl border-2 border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm text-zinc-900 dark:text-zinc-100 focus:border-red-500 dark:focus:border-red-400 focus:ring-2 focus:ring-red-500/20 transition-all duration-200 hover:bg-white dark:hover:bg-zinc-800"
                 required
               />
                   </div>
@@ -696,8 +637,9 @@ export default function MoviesPage() {
                 <div className="mb-4">
                   <label
                     htmlFor="description"
-                    className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1"
+                    className="flex items-center gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2"
                   >
+                    <Edit className="h-4 w-4 text-red-500" />
                     Description <span className="text-red-500">*</span>
                   </label>
             <textarea
@@ -705,27 +647,28 @@ export default function MoviesPage() {
               name="description"
               value={formData.description || ""}
               onChange={handleInputChange}
-                    rows={2}
-                    className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 resize-none"
+                    rows={3}
+                    className="w-full px-4 py-3 rounded-xl border-2 border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm text-zinc-900 dark:text-zinc-100 resize-none focus:border-red-500 dark:focus:border-red-400 focus:ring-2 focus:ring-red-500/20 transition-all duration-200 hover:bg-white dark:hover:bg-zinc-800"
               required
             />
                 </div>
 
                 {/* Genres */}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
+                    <Tag className="h-4 w-4 text-red-500" />
                     Genres <span className="text-red-500">*</span>
                   </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-4 bg-zinc-50/50 dark:bg-zinc-800/30 rounded-xl border border-zinc-200 dark:border-zinc-700">
               {ALL_GENRES.map((genre) => (
-                      <label key={genre} className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                      <label key={genre} className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300 cursor-pointer hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200 p-2 rounded-lg hover:bg-white/50 dark:hover:bg-zinc-700/50">
                   <input
                     type="checkbox"
                           checked={formData.genre?.some(g => g === genre) || false}
                     onChange={() => handleGenreChange(genre)}
-                          className="rounded border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-500"
+                          className="rounded-md border-2 border-zinc-300 dark:border-zinc-600 text-red-600 focus:ring-red-500 focus:ring-2 transition-all duration-200 hover:border-red-400"
                   />
-                  {genre}
+                  <span className="font-medium">{genre}</span>
                 </label>
               ))}
             </div>
@@ -734,7 +677,8 @@ export default function MoviesPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   {/* Rating and Duration */}
                   <div>
-                    <label htmlFor="rating" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label htmlFor="rating" className="flex items-center gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+                      <Star className="h-4 w-4 text-red-500" />
                       Rating
                     </label>
               <input
@@ -743,7 +687,7 @@ export default function MoviesPage() {
                 name="rating"
                 value={formData.rating || ""}
                 onChange={handleInputChange}
-                      className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                      className="w-full px-4 py-3 rounded-xl border-2 border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm text-zinc-900 dark:text-zinc-100 focus:border-red-500 dark:focus:border-red-400 focus:ring-2 focus:ring-red-500/20 transition-all duration-200 hover:bg-white dark:hover:bg-zinc-800"
                     />
                   </div>
                   <div>
@@ -858,7 +802,10 @@ export default function MoviesPage() {
 
           {/* Cast Members Section */}
                 <div className="mb-4">
-                  <h3 className="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-2">Cast Members</h3>
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-3">
+                    <User className="h-5 w-5 text-red-500" />
+                    Cast Members
+                  </h3>
             
                   <div className="relative mb-2">
                 <input
@@ -893,11 +840,11 @@ export default function MoviesPage() {
             </div>
             
                   {/* Selected Cast Members */}
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                  <div className="space-y-3 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-red-300 dark:scrollbar-thumb-red-700 scrollbar-track-transparent">
                     {selectedCast.map((cast) => (
                       <div
                         key={cast.castMemberId}
-                        className="flex items-center gap-3 p-2 bg-zinc-100 dark:bg-zinc-800 rounded-md"
+                        className="flex items-center gap-3 p-4 bg-gradient-to-r from-zinc-100/80 to-white/50 dark:from-zinc-800/80 dark:to-zinc-700/50 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:shadow-md transition-all duration-200"
                       >
                         {cast.castMember?.image && (
                           <img
@@ -936,7 +883,8 @@ export default function MoviesPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   {/* Status and Visibility */}
                   <div>
-                    <label htmlFor="status" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label htmlFor="status" className="flex items-center gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+                      <ChevronDown className="h-4 w-4 text-red-500" />
                       Status <span className="text-red-500">*</span>
                     </label>
               <select
@@ -944,7 +892,7 @@ export default function MoviesPage() {
                 name="status"
                 value={formData.status || "coming_soon"}
                 onChange={handleInputChange}
-                      className="w-full px-3 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                      className="w-full px-4 py-3 rounded-xl border-2 border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm text-zinc-900 dark:text-zinc-100 focus:border-red-500 dark:focus:border-red-400 focus:ring-2 focus:ring-red-500/20 transition-all duration-200 hover:bg-white dark:hover:bg-zinc-800"
                 required
               >
                 <option value="coming_soon">Coming Soon</option>
@@ -952,31 +900,31 @@ export default function MoviesPage() {
               </select>
                   </div>
                   <div className="flex items-center">
-                    <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                    <label className="flex items-center gap-3 text-sm font-medium text-zinc-700 dark:text-zinc-300 cursor-pointer p-3 rounded-xl hover:bg-red-50/30 dark:hover:bg-red-900/10 transition-all duration-200">
                 <input
                   type="checkbox"
                   id="hidden"
                   name="hidden"
                   checked={formData.hidden || false}
                   onChange={handleCheckboxChange}
-                        className="rounded border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-500"
+                        className="rounded-lg border-2 border-zinc-300 dark:border-zinc-600 text-red-600 focus:ring-red-500 focus:ring-2 transition-all duration-200 hover:border-red-400"
                 />
-                <span>Hide this movie</span>
+                <span className="select-none">Hide this movie from public view</span>
               </label>
                   </div>
                 </div>
           </div>
 
-              <div className="flex justify-end gap-3 p-4 border-t border-zinc-200 dark:border-zinc-700">
+              <div className="flex justify-end gap-4 p-6 border-t border-white/10 dark:border-zinc-700/50 bg-gradient-to-r from-zinc-50/50 to-white/50 dark:from-zinc-800/30 dark:to-zinc-900/30 rounded-b-2xl">
             <button
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
+                  className="px-6 py-3 rounded-xl border-2 border-zinc-300 dark:border-zinc-600 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 transition-all duration-200 font-medium hover:scale-105 active:scale-95"
             >
               Cancel
             </button>
             <button
               onClick={handleSaveMovie}
-                  className="px-4 py-2 rounded-md bg-zinc-600 text-white hover:bg-zinc-700 transition-colors dark:bg-zinc-500 dark:hover:bg-zinc-600"
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-semibold transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl hover:shadow-red-500/25"
             >
                   {currentMovie ? "Update Movie" : "Save Movie"}
             </button>
@@ -986,32 +934,37 @@ export default function MoviesPage() {
             </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Enhanced Delete Confirmation Modal */}
       {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="fixed inset-0 z-50 overflow-y-auto animate-in fade-in duration-200">
           <div className="flex items-center justify-center min-h-screen p-4">
             <div
-              className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-all duration-300 animate-in fade-in"
               onClick={() => setIsDeleteModalOpen(false)}
             ></div>
-            <div className="relative bg-white dark:bg-zinc-900 rounded-lg shadow-xl max-w-md w-full mx-auto z-10">
+            <div className="relative bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 dark:border-zinc-700/50 max-w-md w-full mx-auto z-10 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
               <div className="p-6">
-                <h3 className="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-4">Delete Movie</h3>
-                <p className="text-zinc-700 dark:text-zinc-300 mb-6">
-                  Are you sure you want to delete "{currentMovie?.title}"? This action cannot be undone.
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-3 rounded-full bg-red-100 dark:bg-red-900/30">
+                    <Trash2 className="h-6 w-6 text-red-600 dark:text-red-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Delete Movie</h3>
+                </div>
+                <p className="text-zinc-700 dark:text-zinc-300 mb-6 bg-red-50/50 dark:bg-red-900/10 p-4 rounded-xl border-l-4 border-red-500">
+                  Are you sure you want to delete <span className="font-semibold text-red-600 dark:text-red-400">"{currentMovie?.title}"</span>? This action cannot be undone and will permanently remove all associated data.
                 </p>
-                <div className="flex justify-end gap-3">
+                <div className="flex justify-end gap-4">
             <button
                     onClick={() => setIsDeleteModalOpen(false)}
-                    className="px-4 py-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
+                    className="px-6 py-3 rounded-xl border-2 border-zinc-300 dark:border-zinc-600 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 transition-all duration-200 font-medium hover:scale-105 active:scale-95"
             >
               Cancel
             </button>
             <button
                     onClick={handleConfirmDelete}
-                    className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors dark:bg-red-500 dark:hover:bg-red-600"
+                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl hover:shadow-red-500/25"
             >
-                    Delete
+                    Delete Movie
             </button>
           </div>
         </div>

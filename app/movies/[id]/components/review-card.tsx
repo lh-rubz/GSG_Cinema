@@ -7,43 +7,12 @@ import { Review, Reply, User } from "@/types/types"
 import { useAuth } from "@/hooks/use-auth"
 import { toast } from "react-hot-toast"
 import Link from "next/link"
+import { ReportPopup } from "@/components/report-popup"
+
+import { EnrichedReview } from "@/types/types"
 
 interface ReviewCardProps {
-  review: {
-    id: string;
-    movieId: string;
-    userId: string;
-    rating: number;
-    comment: string;
-    date: string;
-    likes: number;
-    likedBy: {
-      id: string;
-      username: string;
-      displayName: string | null;
-      profileImage: string | null;
-    }[];
-    replies: {
-      id: string;
-      userId: string;
-      comment: string;
-      date: string;
-      reportedBy: string[];
-      user: {
-        id: string;
-        username: string;
-        displayName: string | null;
-        profileImage: string | null;
-      };
-    }[];
-    reportedBy: string[];
-    user: {
-      id: string;
-      username: string;
-      displayName: string | null;
-      profileImage: string | null;
-    };
-  };
+  review: EnrichedReview;
   onReviewUpdated?: () => void;
   defaultVisibleReplies?: number;
 }
@@ -62,6 +31,8 @@ export function ReviewCard({
   const [isLiking, setIsLiking] = useState(false)
   const [isReplying, setIsReplying] = useState(false)
   const [showLoginPopup, setShowLoginPopup] = useState(false)
+  const [reportPopup, setReportPopup] = useState<{ type: 'review' | 'reply', id: string } | null>(null)
+  const [isReporting, setIsReporting] = useState(false)
 
   // Count replies for this review
   const replyCount = review.replies?.length || 0
@@ -191,20 +162,33 @@ export function ReviewCard({
     }
   }
 
-  const handleReport = async (type: 'review' | 'reply', id: string) => {
+  const handleReportClick = (type: 'review' | 'reply', id: string) => {
     if (!isAuthenticated) {
       setShowLoginPopup(true)
       return
     }
 
+    setReportPopup({ type, id })
+    setShowMoreMenu(null)
+  }
+
+  const handleReportSubmit = async (reason: string) => {
+    if (!reportPopup) return
+
+    setIsReporting(true)
     try {
-      const response = await fetch(`/api/reviews/${id}/report`, {
+      const endpoint = reportPopup.type === 'review' 
+        ? `/api/reviews/${reportPopup.id}/report` 
+        : `/api/replies/${reportPopup.id}/report`
+      
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           userId: user?.id,
+          reason: reason,
         }),
       })
 
@@ -214,11 +198,13 @@ export function ReviewCard({
       }
 
       onReviewUpdated?.()
-      toast.success("Content reported successfully")
+      toast.success(`${reportPopup.type === 'review' ? 'Review' : 'Reply'} reported successfully`)
+      setReportPopup(null)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to report content")
+    } finally {
+      setIsReporting(false)
     }
-    setShowMoreMenu(null)
   }
 
   const formatDate = (dateString: string) => {
@@ -259,10 +245,16 @@ export function ReviewCard({
                 <span className="text-xs text-zinc-500 dark:text-zinc-400">
                   {formatDate(review.date)}
                 </span>
+                {isReportedByUser && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full border border-red-500 text-red-500 bg-red-50 dark:bg-red-900/20">
+                    <Flag className="h-2.5 w-2.5 inline mr-1" />
+                    Reported
+                  </span>
+                )}
               </div>
             </div>
 
-            {isAuthenticated && (
+            {isAuthenticated && user?.id !== review.userId && (
               <div className="relative">
                 <button 
                   onClick={() => setShowMoreMenu(showMoreMenu === `review-${review.id}` ? null : `review-${review.id}`)}
@@ -274,7 +266,7 @@ export function ReviewCard({
                 {showMoreMenu === `review-${review.id}` && (
                   <div className="absolute right-0 top-8 z-10 bg-white dark:bg-zinc-800 shadow-lg rounded-md p-1 w-40 border border-zinc-200 dark:border-zinc-700">
                     <button 
-                      onClick={() => handleReport('review', review.id)}
+                      onClick={() => handleReportClick('review', review.id)}
                       disabled={isReportedByUser}
                       className={`w-full text-left px-3 py-2 text-sm flex items-center rounded-sm ${isReportedByUser ? 'text-zinc-400 dark:text-zinc-500' : 'text-red-500 hover:bg-zinc-100 dark:hover:bg-zinc-700'}`}
                     >
@@ -392,13 +384,14 @@ export function ReviewCard({
                               {formatDate(reply.date)}
                             </span>
                             {isReplyReportedByUser && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded-full border border-red-500 text-red-500">
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-full border border-red-500 text-red-500 bg-red-50 dark:bg-red-900/20">
+                                <Flag className="h-2.5 w-2.5 inline mr-1" />
                                 Reported
                               </span>
                             )}
                           </div>
 
-                          {isAuthenticated && (
+                          {isAuthenticated && user?.id !== reply.userId && (
                             <div className="relative">
                               <button
                                 onClick={() => setShowMoreMenu(showMoreMenu === `reply-${reply.id}` ? null : `reply-${reply.id}`)}
@@ -410,7 +403,7 @@ export function ReviewCard({
                               {showMoreMenu === `reply-${reply.id}` && (
                                 <div className="absolute right-0 top-6 z-10 bg-white dark:bg-zinc-800 shadow-lg rounded-md p-1 w-40 border border-zinc-200 dark:border-zinc-700">
                                   <button 
-                                    onClick={() => handleReport('reply', reply.id)}
+                                    onClick={() => handleReportClick('reply', reply.id)}
                                     disabled={isReplyReportedByUser}
                                     className={`w-full text-left px-3 py-2 text-sm flex items-center rounded-sm ${isReplyReportedByUser ? 'text-zinc-400 dark:text-zinc-500' : 'text-red-500 hover:bg-zinc-100 dark:hover:bg-zinc-700'}`}
                                   >
@@ -479,6 +472,15 @@ export function ReviewCard({
           </div>
         </div>
       )}
+
+      {/* Report Popup */}
+      <ReportPopup
+        isOpen={!!reportPopup}
+        onClose={() => setReportPopup(null)}
+        onSubmit={handleReportSubmit}
+        contentType={reportPopup?.type || 'review'}
+        isSubmitting={isReporting}
+      />
     </div>
   )
 }

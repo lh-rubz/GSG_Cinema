@@ -82,32 +82,69 @@ export default function ProfilePage() {
   return (
     <>
      
-      {/* Logout Confirmation Dialog */}
+      {/* Modern Logout Confirmation Dialog */}
       {showLogoutDialog && !isLoggingOut && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md rounded-2xl p-0 max-w-md w-full shadow-2xl border border-zinc-200/50 dark:border-zinc-700/50 transform transition-all duration-300 animate-in fade-in-0 zoom-in-95">
+            
+            {/* Header with Gradient Background */}
+            <div className="relative overflow-hidden rounded-t-2xl">
+              <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-orange-500/10 dark:from-red-600/20 dark:to-orange-600/20"></div>
+              <div className="relative p-6 pb-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center shadow-lg">
+                    <LogOut className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-zinc-900 dark:text-white">Sign Out</h3>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">Confirm your action</p>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Confirm Sign Out</h3>
             </div>
-            <p className="text-zinc-600 dark:text-zinc-400 mb-6">
-              Are you sure you want to sign out? You'll need to sign in again to access your account.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={cancelLogout}
-                className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmLogout}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors"
-              >
-                Sign Out
-              </button>
+
+            {/* Content */}
+            <div className="px-6 pb-2">
+              <div className="bg-zinc-50/80 dark:bg-zinc-800/50 rounded-xl p-4 border border-zinc-200/30 dark:border-zinc-700/30">
+                <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                  Are you sure you want to sign out of your account? You'll be redirected to the home page and will need to sign in again to access your profile.
+                </p>
+              </div>
+            </div>
+
+            {/* User Info Preview */}
+            <div className="px-6 pb-4">
+              <div className="flex items-center gap-3 p-3 bg-white/60 dark:bg-zinc-800/60 rounded-xl border border-zinc-200/30 dark:border-zinc-700/30">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center text-white text-sm font-bold">
+                  {user ? getInitials(user.username) : "U"}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">
+                    {user?.displayName || user?.username || "User"}
+                  </p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                    {user?.email || "No email"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="px-6 pb-6">
+              <div className="flex gap-3">
+                <button
+                  onClick={cancelLogout}
+                  className="flex-1 px-4 py-3 text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmLogout}
+                  className="flex-1 px-4 py-3 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
+                >
+                  Sign Out
+                </button>
+              </div>
             </div>
           </div>
         </div>

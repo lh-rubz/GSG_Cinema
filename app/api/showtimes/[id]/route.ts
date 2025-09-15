@@ -1,10 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Get the ID from the params object
-    const { id } = params
+    const { id } = await params
     
     const showtime = await prisma.showtime.findUnique({
       where: { id },
@@ -31,12 +31,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const body = await request.json()
     
     // Get the ID from the params object
-    const { id } = params
+    const { id } = await params
 
     // Check if the showtime exists
     const existingShowtime = await prisma.showtime.findUnique({
@@ -128,10 +128,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Get the ID from the params object
-    const { id } = params
+    const { id } = await params
     
     // Check if there are any tickets for this showtime
     const ticketsCount = await prisma.ticket.count({

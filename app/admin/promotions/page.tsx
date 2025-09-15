@@ -345,13 +345,16 @@ export default function PromotionsPage() {
         </table>
       </div>
 
-      {/* Add/Edit Modal */}
+      {/* Enhanced Add/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-xl max-w-2xl w-full p-6">
-            <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">
-              {currentPromotion ? "Edit Promotion" : "Add Promotion"}
-            </h2>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
+          <div className="bg-white/95 dark:bg-zinc-800/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 dark:border-zinc-700/50 max-w-2xl w-full p-6 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+            <div className="flex items-center gap-3 mb-6 p-4 bg-gradient-to-r from-red-50/50 to-orange-50/50 dark:from-red-900/10 dark:to-orange-900/10 rounded-xl">
+              <Tag className="h-6 w-6 text-red-600 dark:text-red-400" />
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-orange-600 dark:from-red-400 dark:to-orange-400 bg-clip-text text-transparent">
+                {currentPromotion ? "Edit Promotion" : "Add Promotion"}
+              </h2>
+            </div>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">

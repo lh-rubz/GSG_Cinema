@@ -146,7 +146,7 @@ export default function ConfirmationPage() {
                 <div className="flex justify-between">
                   <span className="text-zinc-600 dark:text-zinc-400">Date & Time</span>
                   <span className="text-zinc-800 dark:text-zinc-200 font-medium">
-                    {receipt.tickets[0]?.showtime?.date} • {formatTime(receipt.tickets[0]?.showtime?.time,preferences.timeFormat)}
+                    {receipt.tickets[0]?.showtime?.date} • {formatTime(receipt.tickets[0]?.showtime?.time, preferences.timeFormat === "TWENTY_FOUR_HOUR" ? "24-hour" : "12-hour")}
                   </span>
                 </div>
                 <div className="flex justify-between">

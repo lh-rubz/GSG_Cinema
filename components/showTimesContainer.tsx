@@ -196,7 +196,7 @@ const ShowTimesContainer: React.FC<ShowTimesContainerProps> = ({ moviesShowTimes
                                       flex items-center"
                           >
                             <Ticket className="w-4 h-4 mr-2 text-red-500 dark:text-red-400" />
-                            {formatTime(time, preferences.timeFormat)}
+                            {formatTime(time, preferences.timeFormat === "TWELVE_HOUR" ? "12-hour" : "24-hour")}
                           </Link>
                         ))}
                         {totalShowtimePages > 1 && (

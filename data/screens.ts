@@ -14,7 +14,7 @@ export const screens: Screen[] = [
   {
     id: "s2",
     name: "Screen 2",
-    type: ["Standard","4DX"],
+    type: ["Standard","FourDX"],
     capacity: 100,
     rows: 8,
     cols: 12,

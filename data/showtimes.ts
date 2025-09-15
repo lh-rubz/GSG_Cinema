@@ -10,7 +10,7 @@ import { Showtime } from "@/types/types";
       screenId: 's1',
       date: '29-03-2025',
       time: '10:00',
-      format: '2D',
+      format: 'TwoD',
       availableSeats:90,
       price: 12.99
     },
@@ -20,7 +20,7 @@ import { Showtime } from "@/types/types";
       screenId: 's1',
       date: '03-04-2025',
       time: '13:30',
-      format: '2D',
+      format: 'TwoD',
       availableSeats:80,
       price: 12.99
     },
@@ -42,7 +42,7 @@ import { Showtime } from "@/types/types";
       screenId: 's3',
       date: '03-04-2025',
       time: '14:00',
-      format: '4dx',
+      format: 'fourDx',
       availableSeats:90,
       price: 22.99
     },
@@ -52,7 +52,7 @@ import { Showtime } from "@/types/types";
       screenId: 's1',
       date: '15-11-2023',
       time: '16:30',
-      format: '3D',
+      format: 'ThreeD',
       availableSeats:90,
       price: 15.99
     },
@@ -62,7 +62,7 @@ import { Showtime } from "@/types/types";
       screenId: 's3',
       date: '16-11-2023',
       time: '12:00',
-      format: '3D',
+      format: 'ThreeD',
       availableSeats:90,
       price: 16.99
     }

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 
-import { CastMember, Director, Movie, Review, Showtime } from "@/types/types"
+import { CastMember, Director, Movie, EnrichedReview, Showtime } from "@/types/types"
 import { MovieInfoTab } from "./components/info-tab"
 import { MovieHeader } from "./components/movie-header"
 import { MovieTabs } from "./components/movie-tabs"
@@ -21,7 +21,7 @@ export default function MovieDetailsPage() {
   const [director, setDirector] = useState<Director | null>(null)
   const [cast, setCast] = useState<CastMember[]>([])
   const [showtimes, setShowtimes] = useState<Showtime[]|undefined>([])
-  const [reviews, setReviews] = useState<Review[]>([])
+  const [reviews, setReviews] = useState<EnrichedReview[]>([])
   const [activeTab, setActiveTab] = useState("info")
   const [showTrailer, setShowTrailer] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -43,7 +43,10 @@ export default function MovieDetailsPage() {
           ...c.castMember,
           character: c.character
         })))
-        setReviews(movieData!.reviews)
+        setReviews(movieData!.reviews.map((review: any) => ({
+          ...review,
+          likes: review.likedBy.length
+        })))
         
         
          const showtimesResponse = await showtimesApi.getShowtimes({ movieId: movieId! })
