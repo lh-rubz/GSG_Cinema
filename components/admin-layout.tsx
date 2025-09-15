@@ -15,8 +15,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false) // State for confirmation dialog
   const pathname = usePathname()
   const router = useRouter() // Initialize router
-  const { user, logout } = useAuth()
+  const { user, logout, isAuthenticated } = useAuth()
   const { preferences } = usePreferences()
+
+  // Additional safety check - redirect if not authenticated or not admin
+  if (!isAuthenticated || !user || user.role !== 'Admin') {
+    router.push('/403')
+    return null
+  }
 
   const navItems = [
     {
