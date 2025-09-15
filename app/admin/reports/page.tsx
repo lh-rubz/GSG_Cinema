@@ -310,7 +310,7 @@ export default function ReportsPage() {
                           Movie: {report.review.movie.title}
                         </span>
                         <span className="text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 px-2 py-1 rounded">
-                          Rating: {report.review.rating}/10
+                          Rating: {report.review.rating}/5
                         </span>
                       </div>
                       <p className="text-sm text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-800 p-3 rounded border">

@@ -74,6 +74,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Only the review owner can update it" }, { status: 403 })
     }
 
+    // Validate rating range if provided (1-5 stars)
+    if (body.rating !== undefined && (typeof body.rating !== 'number' || body.rating < 1 || body.rating > 5)) {
+      return NextResponse.json({ error: "Rating must be between 1 and 5" }, { status: 400 })
+    }
+
     const review = await prisma.review.update({
       where: { id: params.id },
       data: {

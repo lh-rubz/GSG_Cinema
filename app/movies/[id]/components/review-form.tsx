@@ -97,9 +97,9 @@ export function ReviewForm({ movieId, onReviewSubmitted }: ReviewFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4 p-6 bg-white dark:bg-zinc-800 rounded-lg shadow">
       <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-2">Rating (out of 10)</label>
+        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-2">Rating (out of 5)</label>
         <div className="flex items-center gap-1">
-          {[...Array(10)].map((_, index) => {
+          {[...Array(5)].map((_, index) => {
             const starValue = index + 1
             const isFilled = (hoveredRating || rating) >= starValue
             
@@ -113,15 +113,15 @@ export function ReviewForm({ movieId, onReviewSubmitted }: ReviewFormProps) {
                 className="focus:outline-none transition-colors"
               >
                 <Star 
-                  className={`h-6 w-6 ${isFilled ? 'text-yellow-400 fill-current' : 'text-zinc-300 dark:text-zinc-600'}`}
+                  className={`h-8 w-8 ${isFilled ? 'text-yellow-400 fill-current' : 'text-zinc-300 dark:text-zinc-600'}`}
                   strokeWidth={1}
                 />
               </button>
             )
           })}
           {(hoveredRating || rating) > 0 && (
-            <span className="ml-2 text-sm text-zinc-600 dark:text-zinc-300">
-              ({hoveredRating || rating}/10)
+            <span className="ml-3 text-sm text-zinc-600 dark:text-zinc-300 font-medium">
+              ({hoveredRating || rating}/5)
             </span>
           )}
         </div>

@@ -76,6 +76,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
+    // Validate rating range (1-5 stars)
+    if (typeof rating !== 'number' || rating < 1 || rating > 5) {
+      return NextResponse.json({ error: "Rating must be between 1 and 5" }, { status: 400 })
+    }
+
     // Check if user already reviewed this movie
     const existingReview = await prisma.review.findFirst({
       where: {
