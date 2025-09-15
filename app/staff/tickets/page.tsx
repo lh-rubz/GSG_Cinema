@@ -3,9 +3,9 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { Ticket } from "lucide-react"
+import { Ticket, Search, Filter, CheckCircle, Clock, AlertCircle, XCircle, Eye, Edit, RefreshCw } from "lucide-react"
 import { Modal } from "@/components/modal"
-import { FormField } from "@/components/form-field"
+import { DataTable } from "@/components/data-table"
 import type { Ticket as TicketType } from "@/types/types"
 import { ticketsApi } from "@/lib/endpoints/tickets"
 
@@ -196,145 +196,344 @@ export default function StaffTicketsPage() {
     return matchesSearch && matchesStatus
   })
 
+  // Define table columns for the DataTable
+  const columns = [
+    {
+      header: "Screen",
+      accessorKey: "screen" as keyof ExtendedTicket,
+      cell: (ticket: ExtendedTicket) => (
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+          <span className="font-medium text-zinc-900 dark:text-white">
+            {ticket.showtime?.screen?.name || "Unknown Screen"}
+          </span>
+        </div>
+      )
+    },
+    {
+      header: "Customer",
+      accessorKey: "customer" as keyof ExtendedTicket,
+      cell: (ticket: ExtendedTicket) => (
+        <div>
+          <div className="font-medium text-zinc-900 dark:text-white">
+            {ticket.user?.displayName || "Unknown User"}
+          </div>
+          <div className="text-xs text-zinc-500 dark:text-zinc-400">
+            {ticket.user?.email || "No email"}
+          </div>
+        </div>
+      )
+    },
+    {
+      header: "Movie",
+      accessorKey: "movie" as keyof ExtendedTicket,
+      cell: (ticket: ExtendedTicket) => (
+        <div>
+          <div className="font-medium text-zinc-900 dark:text-white">
+            {ticket.showtime?.movie?.title || "Unknown Movie"}
+          </div>
+          <div className="text-xs text-zinc-500 dark:text-zinc-400">
+            {ticket.showtime?.format || "Standard"}
+          </div>
+        </div>
+      )
+    },
+    {
+      header: "Showtime",
+      accessorKey: "showtime" as keyof ExtendedTicket,
+      cell: (ticket: ExtendedTicket) => (
+        <div>
+          <div className="font-medium text-zinc-900 dark:text-white">
+            {ticket.showtime?.date || "TBD"}
+          </div>
+          <div className="text-xs text-zinc-500 dark:text-zinc-400">
+            {ticket.showtime?.time || "TBD"}
+          </div>
+        </div>
+      )
+    },
+    {
+      header: "Seat",
+      accessorKey: "seatId" as keyof ExtendedTicket,
+      cell: (ticket: ExtendedTicket) => (
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xs font-bold text-blue-600 dark:text-blue-400">
+            {ticket.seatId}
+          </div>
+        </div>
+      )
+    },
+    {
+      header: "Price",
+      accessorKey: "price" as keyof ExtendedTicket,
+      cell: (ticket: ExtendedTicket) => (
+        <div className="font-semibold text-zinc-900 dark:text-white">
+          ${ticket.showtime?.price || 0}
+        </div>
+      )
+    },
+    {
+      header: "Status",
+      accessorKey: "status" as keyof ExtendedTicket,
+      cell: (ticket: ExtendedTicket) => {
+        const statusConfig = {
+          paid: { 
+            bg: "bg-green-100 dark:bg-green-900/30", 
+            text: "text-green-800 dark:text-green-400", 
+            icon: CheckCircle 
+          },
+          reserved: { 
+            bg: "bg-amber-100 dark:bg-amber-900/30", 
+            text: "text-amber-800 dark:text-amber-400", 
+            icon: Clock 
+          },
+          used: { 
+            bg: "bg-blue-100 dark:bg-blue-900/30", 
+            text: "text-blue-800 dark:text-blue-400", 
+            icon: CheckCircle 
+          },
+          deleted: { 
+            bg: "bg-red-100 dark:bg-red-900/30", 
+            text: "text-red-800 dark:text-red-400", 
+            icon: XCircle 
+          }
+        }
+        
+        const config = statusConfig[ticket.status as keyof typeof statusConfig] || statusConfig.reserved
+        const Icon = config.icon
+        
+        return (
+          <div className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full font-medium ${config.bg} ${config.text}`}>
+            <Icon className="h-3 w-3" />
+            {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
+          </div>
+        )
+      }
+    }
+  ]
+
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-gray-900 dark:text-white">Loading tickets...</div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="text-lg text-zinc-600 dark:text-zinc-400">Loading tickets...</div>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Ticket Management</h1>
+      {/* Header Section */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-indigo-600/10 rounded-2xl"></div>
+        <div className="relative p-6 rounded-2xl border border-blue-200/20 dark:border-blue-800/20">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                Ticket Management
+              </h1>
+              <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+                Manage customer tickets and reservations
+              </p>
+            </div>
+            <div className="hidden sm:flex items-center gap-4">
+              <div className="text-right">
+                <div className="text-2xl font-bold text-zinc-900 dark:text-white">
+                  {filteredTickets.length}
+                </div>
+                <div className="text-sm text-zinc-500 dark:text-zinc-400">
+                  Total Tickets
+                </div>
+              </div>
+              <button
+                onClick={fetchTickets}
+                className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+              >
+                <RefreshCw className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <input
-            type="search"
-            placeholder="Search tickets..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-          />
-          <Ticket className="absolute left-3 top-2.5 h-5 w-5 text-gray-500 dark:text-gray-400" />
-        </div>
+      {/* Filters Section */}
+      <div className="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm rounded-xl border border-zinc-200/50 dark:border-zinc-700/50 p-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+            <input
+              type="search"
+              placeholder="Search tickets..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-500 dark:placeholder-zinc-400 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+            />
+          </div>
 
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-        >
-          <option value="all">All Tickets</option>
-          <option value="reserved">Reserved</option>
-          <option value="paid">Paid</option>
-          <option value="used">Used</option>
-          <option value="deleted">Deleted</option>
-        </select>
+          <div className="relative">
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="pl-10 pr-8 py-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all appearance-none cursor-pointer"
+            >
+              <option value="all">All Statuses</option>
+              <option value="reserved">Reserved</option>
+              <option value="paid">Paid</option>
+              <option value="used">Used</option>
+              <option value="deleted">Deleted</option>
+            </select>
+          </div>
+
+          {/* Status Stats */}
+          <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+              <span className="text-zinc-600 dark:text-zinc-400">
+                {tickets.filter(t => t.status === 'paid').length} Paid
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+              <span className="text-zinc-600 dark:text-zinc-400">
+                {tickets.filter(t => t.status === 'reserved').length} Reserved
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+              <span className="text-zinc-600 dark:text-zinc-400">
+                {tickets.filter(t => t.status === 'used').length} Used
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-50 dark:bg-gray-700">
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Screen</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Customer</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Movie</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Showtime</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Seat</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Price</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Status</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTickets.map((ticket) => (
-                <tr key={ticket.id} className="border-b border-gray-200 dark:border-gray-700">
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{getScreenName(ticket)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{getUserName(ticket)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{getMovieTitle(ticket)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{getShowtimeDetails(ticket)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{ticket.seatId}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">${ticket.showtime?.price || 0}</td>
-                  <td className="px-4 py-3 text-sm">
-                    <span
-                      className={`px-2 py-1 text-xs rounded-full ${
-                        ticket.status === "paid"
-                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-500"
-                          : ticket.status === "reserved"
-                          ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500"
-                          : ticket.status === "used"
-                          ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-500"
-                          : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-500"
-                      }`}
-                    >
-                      {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    <button
-                      onClick={() => handleUpdateTicket(ticket)}
-                      className="text-primary hover:underline"
-                    >
-                      Update
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {filteredTickets.length === 0 && (
-                <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                    No tickets found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+      {/* Data Table */}
+      <div className="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm rounded-xl border border-zinc-200/50 dark:border-zinc-700/50 overflow-hidden">
+        <DataTable
+          data={filteredTickets}
+          columns={columns}
+          onEdit={handleUpdateTicket}
+          searchPlaceholder="Search tickets..."
+        />
       </div>
 
       <Modal
         isOpen={isUpdateModalOpen}
         onClose={() => setIsUpdateModalOpen(false)}
         title="Update Ticket Status"
+        size="lg"
       >
-        <div className="space-y-4">
-          <FormField
-            label="Status"
-            name="status"
-            type="select"
-            value={formData.status}
-            onChange={handleInputChange}
-            options={[
-              { value: "reserved", label: "Reserved" },
-              { value: "paid", label: "Paid" },
-              { value: "used", label: "Used" },
-              { value: "deleted", label: "Deleted" },
-            ]}
-          />
-          {formData.status === "deleted" && (
-            <FormField
-              label="Delete Reason"
-              name="deleteReason"
-              type="textarea"
-              value={formData.deleteReason}
-              onChange={handleInputChange}
-              placeholder="Enter reason for deletion..."
-            />
+        <div className="space-y-6">
+          {/* Current Ticket Info Header */}
+          {currentTicket && (
+            <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/10 rounded-xl p-4 border border-blue-200/30 dark:border-blue-800/30">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                  <Ticket className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-zinc-900 dark:text-white">Ticket #{currentTicket.id}</h4>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400">Update ticket status and details</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-zinc-500 dark:text-zinc-400">Movie:</span>
+                  <p className="font-medium text-zinc-900 dark:text-white">{getMovieTitle(currentTicket)}</p>
+                </div>
+                <div>
+                  <span className="text-zinc-500 dark:text-zinc-400">Customer:</span>
+                  <p className="font-medium text-zinc-900 dark:text-white">{getUserName(currentTicket)}</p>
+                </div>
+                <div>
+                  <span className="text-zinc-500 dark:text-zinc-400">Seat:</span>
+                  <p className="font-medium text-zinc-900 dark:text-white">{currentTicket.seatId}</p>
+                </div>
+                <div>
+                  <span className="text-zinc-500 dark:text-zinc-400">Current Status:</span>
+                  <div className="mt-1">
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full font-medium ${
+                      currentTicket.status === "paid"
+                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                        : currentTicket.status === "reserved"
+                        ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
+                        : currentTicket.status === "used"
+                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                    }`}>
+                      {currentTicket.status === "paid" && <CheckCircle className="h-3 w-3" />}
+                      {currentTicket.status === "reserved" && <Clock className="h-3 w-3" />}
+                      {currentTicket.status === "used" && <CheckCircle className="h-3 w-3" />}
+                      {currentTicket.status === "deleted" && <XCircle className="h-3 w-3" />}
+                      {currentTicket.status.charAt(0).toUpperCase() + currentTicket.status.slice(1)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
-          <div className="flex justify-end gap-2">
+
+          {/* Status Field */}
+          <div className="space-y-3">
+            <label htmlFor="status" className="block text-sm font-semibold text-zinc-900 dark:text-white">
+              New Ticket Status
+            </label>
+            <select
+              id="status"
+              name="status"
+              value={formData.status || "reserved"}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200 appearance-none cursor-pointer"
+            >
+              <option value="reserved">🕐 Reserved</option>
+              <option value="paid">✅ Paid</option>
+              <option value="used">🎬 Used</option>
+              <option value="deleted">❌ Deleted</option>
+            </select>
+          </div>
+
+          {/* Delete Reason Field - only show when status is deleted */}
+          {formData.status === "deleted" && (
+            <div className="space-y-3 animate-in slide-in-from-top-2 duration-300">
+              <label htmlFor="deleteReason" className="block text-sm font-semibold text-zinc-900 dark:text-white">
+                Reason for Deletion
+                <span className="text-red-500 ml-1">*</span>
+              </label>
+              <div className="relative">
+                <AlertCircle className="absolute left-3 top-3 h-4 w-4 text-red-500" />
+                <textarea
+                  id="deleteReason"
+                  name="deleteReason"
+                  value={formData.deleteReason || ""}
+                  onChange={handleInputChange}
+                  placeholder="Please provide a detailed reason for deleting this ticket..."
+                  rows={3}
+                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-red-200 dark:border-red-700 bg-red-50/50 dark:bg-red-900/10 text-zinc-900 dark:text-white placeholder-zinc-500 dark:placeholder-zinc-400 focus:border-red-500 dark:focus:border-red-400 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200 resize-none"
+                />
+              </div>
+              <p className="text-xs text-red-600 dark:text-red-400">
+                This action will permanently mark the ticket as deleted and cannot be undone.
+              </p>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200/50 dark:border-zinc-700/50">
             <button
               onClick={() => setIsUpdateModalOpen(false)}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+              className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-600 focus:ring-2 focus:ring-zinc-500/20 focus:outline-none transition-all duration-200"
             >
               Cancel
             </button>
             <button
               onClick={handleSaveTicket}
-              className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md"
+              disabled={formData.status === "deleted" && !formData.deleteReason?.trim()}
+              className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500/20 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-blue-500/25"
             >
               Save Changes
             </button>

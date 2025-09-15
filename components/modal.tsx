@@ -56,29 +56,29 @@ export function Modal({ isOpen, onClose, title, children, size = "md" }: ModalPr
   if (!isOpen) return null
 
   const sizeClasses = {
-    sm: "max-w-sm",
-    md: "max-w-md",
-    lg: "max-w-lg",
-    xl: "max-w-xl",
+    sm: "max-w-md",
+    md: "max-w-lg",
+    lg: "max-w-xl",
+    xl: "max-w-2xl",
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div 
         ref={modalRef} 
-        className={`${sizeClasses[size]} w-full bg-white dark:bg-zinc-800 rounded-lg shadow-lg shadow-black/10 dark:shadow-black/30 overflow-hidden`}
+        className={`${sizeClasses[size]} w-full bg-white dark:bg-red-900/20 backdrop-blur-sm rounded-xl shadow-2xl shadow-red-500/10 dark:shadow-red-900/30 overflow-hidden border border-red-200 dark:border-red-800`}
       >
-        <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-700">
-          <h3 className="text-lg font-medium text-zinc-900 dark:text-white">{title}</h3>
+        <div className="flex items-center justify-between p-6 border-b border-red-200 dark:border-red-800 bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20">
+          <h3 className="text-xl font-semibold text-red-900 dark:text-white">{title}</h3>
           <button 
             onClick={onClose} 
-            className="p-1 rounded-md text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-white transition-colors" 
+            className="p-2 rounded-lg text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200" 
             aria-label="Close"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="p-4 text-zinc-900 dark:text-zinc-100">{children}</div>
+        <div className="p-6 text-red-900 dark:text-red-100 bg-white dark:bg-red-950/30">{children}</div>
       </div>
     </div>
   )

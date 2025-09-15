@@ -23,7 +23,7 @@ const sidebarItems: SidebarItem[] = [
   },
   {
     title: "Dashboard",
-    href: "/staff",
+    href: "/staff/dashboard",
     icon: Home,
     roles: ["Staff"],
   },
@@ -149,10 +149,16 @@ export function AppSidebar({ userRole, userName = "User", userImage }: AppSideba
           {/* Logo and title */}
           <div className="p-4 border-b border-zinc-200 dark:border-zinc-800">
             <div className="flex items-center">
-              <div className="p-2 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">
+              <div className={`p-2 rounded-full ${
+                userRole === "Admin" 
+                  ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400"
+                  : "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+              }`}>
                 <Film className="h-6 w-6" />
               </div>
-              <h1 className="ml-3 text-xl font-bold text-zinc-900 dark:text-white">Cinema Admin</h1>
+              <h1 className="ml-3 text-xl font-bold text-zinc-900 dark:text-white">
+                {userRole === "Admin" ? "Cinema Admin" : "Staff Panel"}
+              </h1>
             </div>
           </div>
 

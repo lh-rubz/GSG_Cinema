@@ -166,25 +166,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             )}
           </div>
         </div>
-        <div className="absolute bottom-0 w-full p-4 border-t border-zinc-200/50 dark:border-zinc-700/50 bg-gradient-to-r from-white/90 to-red-50/50 dark:from-zinc-800/90 dark:to-red-900/10 backdrop-blur-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-red-600 flex items-center justify-center text-white">
+        <div className="absolute bottom-0 w-full border-t border-zinc-200/50 dark:border-zinc-700/50 bg-gradient-to-r from-white/90 to-red-50/50 dark:from-zinc-800/90 dark:to-red-900/10 backdrop-blur-sm">
+          {/* Theme Toggle and Logout Row */}
+          <div className="px-4 py-2 flex items-center justify-center gap-2 border-b border-zinc-200/30 dark:border-zinc-700/30">
+            <ThemeToggle />
+            <button 
+              onClick={() => setIsConfirmDialogOpen(true)}
+              className="rounded-lg p-2 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-white transition-all duration-200 hover:scale-105"
+              title="Logout"
+            >
+              <LogOut className="h-5 w-5" />
+            </button>
+          </div>
+          
+          {/* User Info Row */}
+          <div className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center text-white font-semibold shadow-lg">
                 {user?.displayName?.[0]?.toUpperCase() || 'A'}
               </div>
-              <div>
-                <p className="text-sm font-medium text-zinc-900 dark:text-white">{user?.displayName || 'Admin User'}</p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">{user?.email || 'admin@cinema.com'}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-zinc-900 dark:text-white truncate">
+                  {user?.displayName || 'Admin User'}
+                </p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate" title={user?.email || 'admin@cinema.com'}>
+                  {user?.email || 'admin@cinema.com'}
+                </p>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <ThemeToggle />
-              <button 
-                onClick={() => setIsConfirmDialogOpen(true)} // Open confirmation dialog
-                className="rounded-md p-2 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-white transition-colors"
-              >
-                <LogOut className="h-5 w-5" />
-              </button>
             </div>
           </div>
         </div>
