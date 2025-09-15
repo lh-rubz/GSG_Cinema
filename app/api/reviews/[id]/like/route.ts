@@ -2,8 +2,9 @@ import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
 // POST: Like a review
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id: reviewId } = await params
     const body = await request.json()
     const { id, userId } = body
 
@@ -13,7 +14,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     // Check if the review exists
     const review = await prisma.review.findUnique({
-      where: { id: params.id },
+      where: { id: reviewId },
       include: {
         likedBy: true,
       },
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     // Add the like
     const updatedReview = await prisma.review.update({
-      where: { id: params.id },
+      where: { id: reviewId },
       data: {
         id,
         likes: review.likes + 1,
@@ -58,8 +59,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 }
 
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id: reviewId } = await params
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get("userId")
 
@@ -69,7 +71,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     // Check if the review exists
     const review = await prisma.review.findUnique({
-      where: { id: params.id },
+      where: { id: reviewId },
       include: {
         likedBy: true,
       },
@@ -88,7 +90,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     // Remove the like
     const updatedReview = await prisma.review.update({
-      where: { id: params.id },
+      where: { id: reviewId },
       data: {
         likes: review.likes - 1,
         likedBy: {

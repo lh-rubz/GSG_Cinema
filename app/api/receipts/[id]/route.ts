@@ -2,10 +2,11 @@ import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { TicketStatus } from "@prisma/client"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const receipt = await prisma.receipt.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         user: {
           select: {
@@ -41,12 +42,13 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const body = await request.json()
 
     const existingReceipt = await prisma.receipt.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     if (!existingReceipt) {
@@ -59,7 +61,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     const receipt = await prisma.receipt.update({
-      where: { id: params.id },
+      where: { id: id },
       data: allowedUpdates,
       include: {
         user: true,
@@ -75,10 +77,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const receipt = await prisma.receipt.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         tickets: true,
       },
@@ -101,7 +104,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     )
 
     await prisma.receipt.delete({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     return NextResponse.json({ message: "Receipt deleted successfully" })

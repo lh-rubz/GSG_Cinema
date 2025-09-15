@@ -53,7 +53,7 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
                 onClick={() => setUse24HourFormat(!use24HourFormat)}
                 className="text-2xl font-bold text-zinc-900 dark:text-white hover:text-red-600 transition-colors"
               >
-                {formatTime(showtime.time,preferences.timeFormat )}
+                {formatTime(showtime.time, preferences.timeFormat === "TWELVE_HOUR" ? "12-hour" : "24-hour")}
               </button>
               <div className="text-sm text-zinc-500 dark:text-zinc-400">
                 {screen?.name || "Screen"}

@@ -27,10 +27,20 @@ export default function CastPage() {
 
   useEffect(() => {
     const fetchCastMember = async () => {
+      if (!id) {
+        setError("Invalid cast member ID")
+        setLoading(false)
+        return
+      }
+      
       try {
         setLoading(true)
         const response = await castMembersApi.getCastMember(id)
-        setCast(response.data)
+        if (response.data) {
+          setCast(response.data)
+        } else {
+          setError("Cast member not found")
+        }
       } catch (err) {
         console.error("Failed to fetch cast member:", err)
         setError("Failed to load cast member details. Please try again later.")
@@ -170,12 +180,7 @@ export default function CastPage() {
               </div>
             </div>
 
-            {cast.bio && (
-              <div className="bg-zinc-50 dark:bg-zinc-700/30 p-5 rounded-lg border border-zinc-100 dark:border-zinc-700">
-                <h3 className="text-lg font-semibold mb-3 text-zinc-800 dark:text-zinc-200">Biography</h3>
-                <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed">{cast.bio}</p>
-              </div>
-            )}
+
           </div>
         </div>
       </div>
@@ -189,7 +194,7 @@ export default function CastPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {cast.movies.map(({ movie }) => (
+            {cast.movies.map((movie) => (
               <MovieCard key={movie.id} movie={movie} />
             ))}
           </div>

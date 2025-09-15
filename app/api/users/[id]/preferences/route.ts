@@ -2,9 +2,10 @@ import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
 // GET user preferences
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const userId = params.id
+    const { id } = await params
+    const userId = id
     
     let preferences = await prisma.userPreferences.findUnique({
       where: { userId },
@@ -29,9 +30,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 // UPDATE user preferences
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const userId = params.id
+    const { id } = await params
+    const userId = id
     const data = await request.json()
     
     const { timeFormat, durationFormat, currency } = data

@@ -1,12 +1,10 @@
-import { Review } from "@/types/types"
+import { EnrichedReview } from "@/types/types"
 import { ReviewCard } from "./review-card"
-import { replies } from "@/data/replies"
-import { users } from "@/data/users"
 import { ReviewForm } from "./review-form"
 import { useState } from "react"
 
 interface ReviewsTabProps {
-  reviews: Review[]
+  reviews: EnrichedReview[]
   movieId: string
   userId: string
 }
@@ -40,7 +38,6 @@ export function ReviewsTab({ reviews, movieId, userId }: ReviewsTabProps) {
         <div className="mb-8">
           <ReviewForm 
             movieId={movieId}
-            userId={userId}
             onReviewSubmitted={handleReviewSubmitted}
           />
         </div>
@@ -49,7 +46,7 @@ export function ReviewsTab({ reviews, movieId, userId }: ReviewsTabProps) {
       {currentReviews.length > 0 ? (
         <div className="space-y-8">
           {currentReviews.map(review => (
-            <ReviewCard key={review.id} review={review} replies={replies} users={users} />
+            <ReviewCard key={review.id} review={review} />
           ))}
         </div>
       ) : (

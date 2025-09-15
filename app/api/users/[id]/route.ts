@@ -3,10 +3,11 @@ import { prisma } from "@/lib/prisma"
 import { Role } from "@prisma/client"
 
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const user = await prisma.user.findUnique({
-      where: { id: params.id || "" },
+      where: { id: id || "" },
       select: {
         role: true,
         id: true,
@@ -50,8 +51,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const body = await request.json()
 
     // Check if username already exists (if being updated)
@@ -60,7 +62,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         where: {
           username: body.username,
           NOT: {
-            id: params.id,
+            id: id,
           },
         },
       })
@@ -76,7 +78,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         where: {
           email: body.email,
           NOT: {
-            id: params.id,
+            id: id,
           },
         },
       })
@@ -99,7 +101,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     const user = await prisma.user.update({
-      where: { id: params.id },
+      where: { id: id },
       data: updateData,
     })
 
@@ -110,10 +112,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const userWithRelations = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         _count: {
           select: {
@@ -132,12 +135,12 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     // Delete all related data
     await prisma.reply.deleteMany({
-      where: { userId: params.id },
+      where: { userId: id },
     })
 
     // Delete reviews
     const reviews = await prisma.review.findMany({
-      where: { userId: params.id },
+      where: { userId: id },
       select: { id: true },
     })
 
@@ -148,22 +151,22 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     await prisma.review.deleteMany({
-      where: { userId: params.id },
+      where: { userId: id },
     })
 
     // Delete tickets
     await prisma.ticket.deleteMany({
-      where: { userId: params.id },
+      where: { userId: id },
     })
 
     // Delete receipts
     await prisma.receipt.deleteMany({
-      where: { userId: params.id },
+      where: { userId: id },
     })
 
     // delete the user
     await prisma.user.delete({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     return NextResponse.json({ message: "User deleted successfully" })

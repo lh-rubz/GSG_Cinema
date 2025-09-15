@@ -25,7 +25,7 @@ export default function TicketCard({ tickets, movie, showtime, screen, isPast }:
   const hasMultipleTickets = userTickets.length > 1;
 
   // Extract ticketNumber from the first ticket in the filtered array
-  const ticketNumber = userTickets[0]?.ticketNumber || "N/A";
+  const ticketNumber = userTickets[0]?.id || "N/A";
 
   if (userTickets.length === 0) {
     return null; // If no tickets belong to the user, render nothing

@@ -1,8 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const body = await request.json()
     const { available } = body
 
@@ -11,7 +12,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     const existingSeat = await prisma.seat.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     if (!existingSeat) {
@@ -19,7 +20,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     const seat = await prisma.seat.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         available
       },

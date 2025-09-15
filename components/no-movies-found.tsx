@@ -1,6 +1,6 @@
 "use client";
 
-import { ActiveTab } from "@/app/movies/page";
+import { ActiveTab } from "@/types/types";
 
 interface NoMoviesFoundProps {
   filters: {

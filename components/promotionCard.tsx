@@ -70,7 +70,7 @@ const preferences = usePreferences();
         return `${formatCurrency(promotion.value,preferences.preferences.currency)}% OFF`
       case "FIXED_AMOUNT":
         return `${formatCurrency(promotion.value,preferences.preferences.currency)} OFF`
-      case "BUY_X_GET_Y":
+      case "BUY_ONE_GET_ONE":
         return "BUY 1 GET 1"
       default:
         return "SPECIAL OFFER"
@@ -111,7 +111,7 @@ const preferences = usePreferences();
 
         {/* Cinema-style title overlay */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4 pt-8">
-          <h2 className="text-xl font-bold text-white sm:text-2xl">{promotion.title}</h2>
+          <h2 className="text-xl font-bold text-white sm:text-2xl">{promotion.code}</h2>
         </div>
       </div>
 

@@ -1,10 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const ticket = await prisma.ticket.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         user: {
           select: {
@@ -36,12 +37,13 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const body = await request.json()
 
     const existingTicket = await prisma.ticket.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     if (!existingTicket) {
@@ -58,7 +60,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
             in: ["reserved", "paid"],
           },
           NOT: {
-            id: params.id,
+            id: id,
           },
         },
       })
@@ -69,7 +71,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     const ticket = await prisma.ticket.update({
-      where: { id: params.id },
+      where: { id: id },
       data: body,
       include: {
         user: true,
@@ -90,13 +92,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const { searchParams } = new URL(request.url)
     const reason = searchParams.get("reason") || "Cancelled by user"
 
     const ticket = await prisma.ticket.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     if (!ticket) {
@@ -105,7 +108,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     if (ticket.receiptId) {
       await prisma.ticket.update({
-        where: { id: params.id },
+        where: { id: id },
         data: {
           status: "deleted",
           deleteReason: reason,
@@ -115,7 +118,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ message: "Ticket marked as deleted" })
     } else {
       await prisma.ticket.delete({
-        where: { id: params.id },
+        where: { id: id },
       })
 
       return NextResponse.json({ message: "Ticket deleted successfully" })

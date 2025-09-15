@@ -1,10 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const replies = await prisma.reply.findMany({
-      where: { reviewId: params.id },
+      where: { reviewId: id },
       include: {
         user: {
           select: {
@@ -27,8 +28,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id: reviewId } = await params
     const body = await request.json()
     const {id, userId, comment } = body
 
@@ -38,7 +40,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     // Check if the review exists
     const review = await prisma.review.findUnique({
-      where: { id: params.id },
+      where: { id: reviewId },
     })
 
     if (!review) {
@@ -49,7 +51,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const reply = await prisma.reply.create({
       data: {
         id,
-        reviewId: params.id,
+        reviewId: reviewId,
         userId,
         comment,
         date: new Date().toISOString(),

@@ -9,42 +9,10 @@ import { toast } from "react-hot-toast"
 import Link from "next/link"
 import { ReportPopup } from "@/components/report-popup"
 
+import { EnrichedReview } from "@/types/types"
+
 interface ReviewCardProps {
-  review: {
-    id: string;
-    movieId: string;
-    userId: string;
-    rating: number;
-    comment: string;
-    date: string;
-    likes: number;
-    likedBy: {
-      id: string;
-      username: string;
-      displayName: string | null;
-      profileImage: string | null;
-    }[];
-    replies: {
-      id: string;
-      userId: string;
-      comment: string;
-      date: string;
-      reportedBy: string[];
-      user: {
-        id: string;
-        username: string;
-        displayName: string | null;
-        profileImage: string | null;
-      };
-    }[];
-    reportedBy: string[];
-    user: {
-      id: string;
-      username: string;
-      displayName: string | null;
-      profileImage: string | null;
-    };
-  };
+  review: EnrichedReview;
   onReviewUpdated?: () => void;
   defaultVisibleReplies?: number;
 }

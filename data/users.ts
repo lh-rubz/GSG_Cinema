@@ -11,7 +11,7 @@ export const users: User[] = [
       gender: "M",
       movieIdsPurchased: ["movie1", "movie3", "movie5"],
       profileImage: "https://pm1.aminoapps.com/7464/cdd2988d62cb97ca09dcf65f1d1e65bd32db05e1r1-250-249v2_hq.jpg",
-      role: "customer"
+      role: "User"
     },
     {
       id: "u2",
@@ -23,7 +23,7 @@ export const users: User[] = [
       gender: "F",
       movieIdsPurchased: ["movie2", "movie4"],
       profileImage: "https://pm1.aminoapps.com/7464/c18b6bd02be060d45be655ba5707a558ba17905cr1-250-249v2_uhq.jpg",
-      role: "customer"
+      role: "User"
     },
     {
       id: "u3",
@@ -35,7 +35,7 @@ export const users: User[] = [
       gender: "M",
       movieIdsPurchased: ["movie1", "movie2", "movie3", "movie4", "movie5"],
       profileImage: "https://static.wikia.nocookie.net/29397ee9-9811-487c-9cca-cee576bab17a/scale-to-width/370",
-      role: "admin"
+      role: "Admin"
     },
     {
       id: "u4",
@@ -47,7 +47,7 @@ export const users: User[] = [
       gender: "M",
       movieIdsPurchased: ["movie1", "movie3", "movie5"],
       profileImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBn5ehGPihohiyKjNCHcu6v-1Tal--Zw3IadKrXybHYobVmj60hW2NZ4RUzdJuLYgTzcQ&usqp=CAU",
-      role: "staff"
+      role: "Staff"
     },
     {
       id: "u5",
@@ -59,7 +59,7 @@ export const users: User[] = [
       gender: "F",
       movieIdsPurchased: ["movie2", "movie4"],
       profileImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRJr80-rjIaA_qsFPZX_zCO5lBaWWk3i-A0Q&s",
-      role: "customer"
+      role: "User"
     }
   ];
   

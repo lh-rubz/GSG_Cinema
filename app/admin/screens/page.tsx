@@ -88,6 +88,9 @@ export default function ScreensPage() {
           number: seatNumber,
           type: seatType,
           available: true,
+          screenId: screenId,
+          row: row,
+          col: col,
           age: "adult" as const
         })
       }

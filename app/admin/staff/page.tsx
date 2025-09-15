@@ -42,27 +42,7 @@ export default function StaffPage() {
       setIsLoading(true)
       const response = await usersApi.getUsers()
       if (response.data) {
-        const mappedUsers = response.data.map(user => {
-          const apiRole = user.role as string;
-          let frontendRole: "admin" | "staff" | "customer";
-          
-          if (apiRole === "User") {
-            frontendRole = "customer";
-          } else if (apiRole === "Admin") {
-            frontendRole = "admin";
-          } else if (apiRole === "Staff") {
-            frontendRole = "staff";
-          } else {
-            frontendRole = "customer";
-          }
-          
-          return {
-            ...user,
-            role: frontendRole
-          };
-        });
-        
-        const filteredStaff = mappedUsers.filter(user => user.role === "staff")
+        const filteredStaff = response.data.filter(user => user.role === "Staff")
         setStaff(filteredStaff)
       }
     } catch (error) {
@@ -134,25 +114,8 @@ export default function StaffPage() {
   }
 
   const sendStaffWelcomeEmail = async (email: string, staffName: string, password: string) => {
-    try {
-      const response = await resend.emails.send({
-        from: "no-reply@cinemahub.com",
-        to: email,
-        subject: "Welcome to CinemaHub Staff",
-        html: `
-          <p>Dear ${staffName},</p>
-          <p>Welcome to CinemaHub! Your temporary password is: <strong>${password}</strong></p>
-          <p>Please log in and change your password as soon as possible.</p>
-          <p>Best regards,<br/>CinemaHub Team</p>
-        `,
-      });
-
-      if (response.error) {
-        console.error("Failed to send welcome email:", response.error);
-      }
-    } catch (error) {
-      console.error("Error sending welcome email:", error);
-    }
+    // TODO: Implement email service
+    console.log(`Welcome email would be sent to ${email} for ${staffName} with password ${password}`);
   };
 
   const sendStaffRemovalEmail = async (email: string, staffName: string) => {
@@ -203,7 +166,7 @@ export default function StaffPage() {
           gender: formData.gender || "M",
           bio: formData.bio || "",
           profileImage: formData.profileImage || "",
-          role: "Staff",
+          role: "Staff" as const,
         };
 
         const response = await usersApi.createUser(userData);

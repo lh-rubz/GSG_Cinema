@@ -1,10 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const movie = await prisma.movie.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         director: true,
         cast: {
@@ -54,14 +55,15 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const body = await request.json()
     const { castIds, director, cast, characters, ...movieData } = body
 
     // First update the movie without relations
     const updatedMovie = await prisma.movie.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         title: movieData.title,
         year: movieData.year,
@@ -81,7 +83,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     if (castIds !== undefined) {
       // Delete existing cast relations
       await prisma.castMovie.deleteMany({
-        where: { movieId: params.id },
+        where: { movieId: id },
       })
 
       // Create new cast relations if castIds is not empty
@@ -90,7 +92,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
           castIds.map(async (castId: string) => {
             await prisma.castMovie.create({
               data: {
-                movieId: params.id,
+                movieId: id,
                 castMemberId: castId,
                 character: characters?.[castId] || "Unknown Character",
               },
@@ -102,7 +104,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Fetch the updated movie with all relations
     const movie = await prisma.movie.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         director: true,
         cast: {
@@ -120,10 +122,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const movie = await prisma.movie.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     if (!movie) {
@@ -131,11 +134,11 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     await prisma.castMovie.deleteMany({
-      where: { movieId: params.id },
+      where: { movieId: id },
     })
 
     const reviews = await prisma.review.findMany({
-      where: { movieId: params.id },
+      where: { movieId: id },
       select: { id: true },
     })
 
@@ -146,11 +149,11 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     await prisma.review.deleteMany({
-      where: { movieId: params.id },
+      where: { movieId: id },
     })
 
     const showtimes = await prisma.showtime.findMany({
-      where: { movieId: params.id },
+      where: { movieId: id },
       select: { id: true },
     })
 
@@ -161,11 +164,11 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     await prisma.showtime.deleteMany({
-      where: { movieId: params.id },
+      where: { movieId: id },
     })
 
     await prisma.movie.delete({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     return NextResponse.json({ message: "Movie deleted successfully" })

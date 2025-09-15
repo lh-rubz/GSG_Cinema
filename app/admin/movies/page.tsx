@@ -4,6 +4,7 @@ import type React from "react"
 import { useState, useEffect, useMemo } from "react"
 import { Film, Star, Search, X, ChevronDown, ChevronUp, Edit, Trash2, Calendar, Tag, User } from "lucide-react"
 import type { Movie, MovieGenre, CastMember, Director } from "@/types/types"
+import { ALL_GENRES } from "@/types/types"
 import type { ApiResponse } from "@/lib/client"
 import { moviesApi } from "@/lib/endpoints/movies"
 import { castMembersApi } from "@/lib/endpoints/cast-members"
@@ -18,25 +19,7 @@ interface MovieWithCast extends Movie {
   }>
 }
 
-// Sample data
-const ALL_GENRES: MovieGenre[] = [
-  "Action",
-  "Adventure",
-  "Comedy",
-  "Drama",
-  "Fantasy",
-  "Horror",
-  "Mystery",
-  "Romance",
-  "SciFi",
-  "Thriller",
-  "Crime",
-  "Animation",
-  "Documentary",
-  "Family",
-  "Western",
-  "Arabic",
-]
+// Use genres from types file
 
 export default function MoviesPage() {
   const [movies, setMovies] = useState<MovieWithCast[]>([])
